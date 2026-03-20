@@ -1,0 +1,26 @@
+{
+  "query": "\nSELECT 'veiculos' as tabela, COUNT(*) as total FROM veiculos WHERE empresaId = 1\nUNION ALL\nSELECT 'funcionarios', COUNT(*) FROM funcionarios WHERE empresaId = 1\nUNION ALL\nSELECT 'abastecimentos', COUNT(*) FROM abastecimentos WHERE empresaId = 1\nUNION ALL\nSELECT 'manutencoes', COUNT(*) FROM manutencoes WHERE empresaId = 1;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2p5XLKLvFgibmRt.root --database WQ2q64r9ZdMRQ3rHt9WnPA --execute \nSELECT 'veiculos' as tabela, COUNT(*) as total FROM veiculos WHERE empresaId = 1\nUNION ALL\nSELECT 'funcionarios', COUNT(*) FROM funcionarios WHERE empresaId = 1\nUNION ALL\nSELECT 'abastecimentos', COUNT(*) FROM abastecimentos WHERE empresaId = 1\nUNION ALL\nSELECT 'manutencoes', COUNT(*) FROM manutencoes WHERE empresaId = 1;\n",
+  "rows": [
+    {
+      "tabela": "veiculos",
+      "total": "21"
+    },
+    {
+      "tabela": "funcionarios",
+      "total": "14"
+    },
+    {
+      "tabela": "manutencoes",
+      "total": "354"
+    },
+    {
+      "tabela": "abastecimentos",
+      "total": "1632"
+    }
+  ],
+  "messages": [],
+  "stdout": "tabela\ttotal\nveiculos\t21\nfuncionarios\t14\nmanutencoes\t354\nabastecimentos\t1632\n",
+  "stderr": "",
+  "execution_time_ms": 68
+}

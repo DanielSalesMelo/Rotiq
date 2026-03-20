@@ -6,6 +6,7 @@ import { createRoot } from "react-dom/client";
 import superjson from "superjson";
 import App from "./App";
 import { getLoginUrl } from "./const";
+import { Toaster } from "sonner";
 import "./index.css";
 
 const queryClient = new QueryClient();
@@ -56,6 +57,7 @@ createRoot(document.getElementById("root")!).render(
   <trpc.Provider client={trpcClient} queryClient={queryClient}>
     <QueryClientProvider client={queryClient}>
       <App />
+      <Toaster richColors position="top-right" />
     </QueryClientProvider>
   </trpc.Provider>
 );

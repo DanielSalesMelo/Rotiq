@@ -1,0 +1,233 @@
+import { protectedProcedure, router } from "../_core/trpc";
+import { getDb } from "../db";
+import { viagens, despesasViagem, funcionarios, veiculos } from "../../drizzle/schema";
+import { eq, and, isNull, isNotNull, desc, sql } from "drizzle-orm";
+import { z } from "zod";
+import { safeDb, requireDb } from "../helpers/errorHandler";
+
+// Apenas veículo é obrigatório para criar uma viagem — resto pode ser preenchido depois
+const viagemInput = z.object({
+  empresaId: z.number(),
+  veiculoId: z.number(),
+  cavaloPrincipalId: z.number().nullable().optional(),
+  motoristaId: z.number().nullable().optional(),
+  ajudante1Id: z.number().nullable().optional(),
+  ajudante2Id: z.number().nullable().optional(),
+  ajudante3Id: z.number().nullable().optional(),
+  origem: z.string().optional(),
+  destino: z.string().optional(),
+  dataSaida: z.string().nullable().optional(),
+  dataChegada: z.string().nullable().optional(),
+  kmSaida: z.number().nullable().optional(),
+  kmChegada: z.number().nullable().optional(),
+  kmRodado: z.number().nullable().optional(),
+  descricaoCarga: z.string().optional(),
+  pesoCarga: z.string().nullable().optional(),
+  freteTotalIda: z.string().nullable().optional(),
+  freteTotalVolta: z.string().nullable().optional(),
+  freteTotal: z.string().nullable().optional(),
+  adiantamento: z.string().nullable().optional(),
+  saldoViagem: z.string().nullable().optional(),
+  totalDespesas: z.string().nullable().optional(),
+  mediaConsumo: z.string().nullable().optional(),
+  status: z.enum(["planejada", "em_andamento", "concluida", "cancelada"]).optional(),
+  observacoes: z.string().optional(),
+});
+
+export const viagensRouter = router({
+  list: protectedProcedure
+    .input(z.object({
+      empresaId: z.number(),
+      status: z.enum(["planejada", "em_andamento", "concluida", "cancelada"]).optional(),
+      limit: z.number().default(50),
+    }))
+    .query(async ({ input }) => {
+      return safeDb(async () => {
+        const db = requireDb(await getDb(), "viagens.list");
+        const rows = await db.select({
+          id: viagens.id,
+          status: viagens.status,
+          origem: viagens.origem,
+          destino: viagens.destino,
+          dataSaida: viagens.dataSaida,
+          dataChegada: viagens.dataChegada,
+          kmRodado: viagens.kmRodado,
+          freteTotal: viagens.freteTotal,
+          totalDespesas: viagens.totalDespesas,
+          saldoViagem: viagens.saldoViagem,
+          adiantamento: viagens.adiantamento,
+          pesoCarga: viagens.pesoCarga,
+          descricaoCarga: viagens.descricaoCarga,
+          createdAt: viagens.createdAt,
+          motoristaNome: funcionarios.nome,
+          veiculoPlaca: veiculos.placa,
+          veiculoTipo: veiculos.tipo,
+          veiculoCapacidade: veiculos.capacidadeCarga,
+        }).from(viagens)
+          .leftJoin(funcionarios, eq(viagens.motoristaId, funcionarios.id))
+          .leftJoin(veiculos, eq(viagens.veiculoId, veiculos.id))
+          .where(and(
+            eq(viagens.empresaId, input.empresaId),
+            isNull(viagens.deletedAt),
+            input.status ? eq(viagens.status, input.status) : undefined,
+          ))
+          .orderBy(desc(viagens.dataSaida))
+          .limit(input.limit);
+        return rows;
+      }, "viagens.list");
+    }),
+
+  getById: protectedProcedure
+    .input(z.object({ id: z.number() }))
+    .query(async ({ input }) => {
+      return safeDb(async () => {
+        const db = requireDb(await getDb(), "viagens.getById");
+        const rows = await db.select().from(viagens)
+          .where(and(eq(viagens.id, input.id), isNull(viagens.deletedAt)))
+          .limit(1);
+        if (!rows[0]) return null;
+        const despesas = await db.select().from(despesasViagem)
+          .where(and(eq(despesasViagem.viagemId, input.id), isNull(despesasViagem.deletedAt)));
+        return { ...rows[0], despesas };
+      }, "viagens.getById");
+    }),
+
+  create: protectedProcedure
+    .input(viagemInput)
+    .mutation(async ({ input }) => {
+      return safeDb(async () => {
+        const db = requireDb(await getDb(), "viagens.create");
+        const [result] = await db.insert(viagens).values({
+          ...input,
+          dataSaida: input.dataSaida ? new Date(input.dataSaida) : null,
+          dataChegada: input.dataChegada ? new Date(input.dataChegada) : null,
+          status: input.status ?? "planejada",
+        });
+        return { id: (result as any).insertId };
+      }, "viagens.create");
+    }),
+
+  update: protectedProcedure
+    .input(z.object({ id: z.number() }).merge(viagemInput.partial()))
+    .mutation(async ({ input }) => {
+      return safeDb(async () => {
+        const db = requireDb(await getDb(), "viagens.update");
+        const { id, ...data } = input;
+        await db.update(viagens).set({
+          ...data,
+          dataSaida: data.dataSaida !== undefined ? (data.dataSaida ? new Date(data.dataSaida) : null) : undefined,
+          dataChegada: data.dataChegada !== undefined ? (data.dataChegada ? new Date(data.dataChegada) : null) : undefined,
+          updatedAt: new Date(),
+        }).where(eq(viagens.id, id));
+        return { success: true };
+      }, "viagens.update");
+    }),
+
+  updateStatus: protectedProcedure
+    .input(z.object({
+      id: z.number(),
+      status: z.enum(["planejada", "em_andamento", "concluida", "cancelada"]),
+      kmChegada: z.number().optional(),
+      dataChegada: z.string().optional(),
+    }))
+    .mutation(async ({ input }) => {
+      return safeDb(async () => {
+        const db = requireDb(await getDb(), "viagens.updateStatus");
+        await db.update(viagens).set({
+          status: input.status,
+          kmChegada: input.kmChegada,
+          dataChegada: input.dataChegada ? new Date(input.dataChegada) : undefined,
+          updatedAt: new Date(),
+        }).where(eq(viagens.id, input.id));
+        return { success: true };
+      }, "viagens.updateStatus");
+    }),
+
+  softDelete: protectedProcedure
+    .input(z.object({ id: z.number(), reason: z.string().min(1, "Informe o motivo da exclusão") }))
+    .mutation(async ({ input, ctx }) => {
+      return safeDb(async () => {
+        const db = requireDb(await getDb(), "viagens.softDelete");
+        await db.update(viagens).set({
+          deletedAt: new Date(),
+          deletedBy: ctx.user!.id,
+          deleteReason: input.reason,
+        }).where(eq(viagens.id, input.id));
+        return { success: true };
+      }, "viagens.softDelete");
+    }),
+
+  restore: protectedProcedure
+    .input(z.object({ id: z.number() }))
+    .mutation(async ({ input }) => {
+      return safeDb(async () => {
+        const db = requireDb(await getDb(), "viagens.restore");
+        await db.update(viagens).set({
+          deletedAt: null,
+          deletedBy: null,
+          deleteReason: null,
+        }).where(eq(viagens.id, input.id));
+        return { success: true };
+      }, "viagens.restore");
+    }),
+
+  listDeleted: protectedProcedure
+    .input(z.object({ empresaId: z.number() }))
+    .query(async ({ input }) => {
+      return safeDb(async () => {
+        const db = requireDb(await getDb(), "viagens.listDeleted");
+        return db.select().from(viagens)
+          .where(and(eq(viagens.empresaId, input.empresaId), isNotNull(viagens.deletedAt)))
+          .orderBy(desc(viagens.deletedAt));
+      }, "viagens.listDeleted");
+    }),
+
+  // Despesas da viagem
+  addDespesa: protectedProcedure
+    .input(z.object({
+      viagemId: z.number(),
+      empresaId: z.number(),
+      tipo: z.enum(["combustivel", "pedagio", "borracharia", "estacionamento", "oficina", "telefone", "descarga", "diaria", "alimentacao", "outro"]),
+      descricao: z.string().optional(),
+      valor: z.string(),
+      data: z.string().optional(),
+      comprovante: z.string().optional(),
+    }))
+    .mutation(async ({ input }) => {
+      return safeDb(async () => {
+        const db = requireDb(await getDb(), "viagens.addDespesa");
+        const [result] = await db.insert(despesasViagem).values({
+          ...input,
+          data: input.data ? new Date(input.data) : null,
+        });
+        // Atualizar total de despesas na viagem
+        const totalRows = await db.select({
+          total: sql<number>`SUM(${despesasViagem.valor})`,
+        }).from(despesasViagem)
+          .where(and(eq(despesasViagem.viagemId, input.viagemId), isNull(despesasViagem.deletedAt)));
+        const novoTotal = String(Number(totalRows[0]?.total) || 0);
+        await db.update(viagens).set({ totalDespesas: novoTotal, updatedAt: new Date() })
+          .where(eq(viagens.id, input.viagemId));
+        return { id: (result as any).insertId };
+      }, "viagens.addDespesa");
+    }),
+
+  // Resumo financeiro para dashboard
+  resumoFinanceiro: protectedProcedure
+    .input(z.object({ empresaId: z.number() }))
+    .query(async ({ input }) => {
+      return safeDb(async () => {
+        const db = requireDb(await getDb(), "viagens.resumoFinanceiro");
+        const rows = await db.select({
+          status: viagens.status,
+          totalFrete: sql<number>`SUM(${viagens.freteTotal})`,
+          totalDespesas: sql<number>`SUM(${viagens.totalDespesas})`,
+          totalSaldo: sql<number>`SUM(${viagens.saldoViagem})`,
+          quantidade: sql<number>`COUNT(*)`,
+        }).from(viagens)
+          .where(and(eq(viagens.empresaId, input.empresaId), isNull(viagens.deletedAt)))
+          .groupBy(viagens.status);
+        return rows;
+      }, "viagens.resumoFinanceiro");
+    }),
+});
