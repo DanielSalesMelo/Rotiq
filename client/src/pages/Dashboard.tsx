@@ -33,23 +33,21 @@ function KpiCard({
   };
   return (
     <Card className="hover:shadow-md transition-shadow">
-      <CardContent className="p-5">
-        <div className="flex items-start justify-between">
-          <div className="flex-1 min-w-0">
-            <p className="text-sm text-muted-foreground font-medium">{title}</p>
-            <p className="text-2xl font-bold mt-1 text-foreground">{value}</p>
-            {subtitle && <p className="text-xs text-muted-foreground mt-1">{subtitle}</p>}
-            {trend && (
-              <div className="flex items-center gap-1 mt-2">
-                <ArrowUpRight className="h-3 w-3 text-green-500" />
-                <span className="text-xs text-green-600 dark:text-green-400">{trend}</span>
-              </div>
-            )}
-          </div>
-          <div className={`h-10 w-10 rounded-xl flex items-center justify-center shrink-0 ml-3 ${colors[color]}`}>
-            <Icon className="h-5 w-5" />
+      <CardContent className="p-4">
+        <div className="flex items-start justify-between gap-2 mb-2">
+          <p className="text-xs text-muted-foreground font-medium leading-snug flex-1">{title}</p>
+          <div className={`h-7 w-7 rounded-lg flex items-center justify-center shrink-0 ${colors[color]}`}>
+            <Icon className="h-4 w-4" />
           </div>
         </div>
+        <p className="text-xl font-bold text-foreground leading-none">{value}</p>
+        {subtitle && <p className="text-xs text-muted-foreground mt-1">{subtitle}</p>}
+        {trend && (
+          <div className="flex items-center gap-1 mt-2">
+            <ArrowUpRight className="h-3 w-3 text-green-500" />
+            <span className="text-xs text-green-600 dark:text-green-400">{trend}</span>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

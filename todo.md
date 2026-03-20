@@ -117,3 +117,8 @@
 - [ ] Criar página Calendário (/gestao/calendario)
 - [x] Criar página Relatórios com abas Viagens/Abastecimentos/Manutenções (/relatorios)
 - [ ] Adicionar campo ARLA (litros) no formulário de Abastecimento
+
+## Bugs reportados (20/03/2026 — sessão 2)
+- [ ] Custos Operacionais — cards KPI com valores grandes quebrando linha (ex: "R$ 81.641,75" não cabe)
+- [ ] Dashboard — ícones sobrepostos nos títulos dos cards KPI em telas pequenas
+- [ ] Custos Operacionais — valores grandes cortados nos cards KPI

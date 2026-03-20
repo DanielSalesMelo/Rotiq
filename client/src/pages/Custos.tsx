@@ -160,48 +160,40 @@ export default function Custos() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <Card>
             <CardContent className="p-4">
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="text-xs text-muted-foreground">Total Geral</p>
-                  <p className="text-xl font-bold mt-1">{fmt(metricas.totalGeral)}</p>
-                </div>
-                <DollarSign className="h-5 w-5 text-muted-foreground/50" />
+              <div className="flex items-start justify-between gap-2 mb-2">
+                <p className="text-xs text-muted-foreground">Total Geral</p>
+                <DollarSign className="h-4 w-4 text-muted-foreground/50 shrink-0" />
               </div>
+              <p className="text-lg font-bold leading-tight">{fmt(metricas.totalGeral)}</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4">
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="text-xs text-muted-foreground">Combustível</p>
-                  <p className="text-xl font-bold mt-1">{fmt(metricas.totalCombustivel)}</p>
-                  <p className="text-xs text-muted-foreground">{fmtN(metricas.totalLitros)} L</p>
-                </div>
-                <Fuel className="h-5 w-5 text-blue-500/50" />
+              <div className="flex items-start justify-between gap-2 mb-2">
+                <p className="text-xs text-muted-foreground">Combustível</p>
+                <Fuel className="h-4 w-4 text-blue-500/70 shrink-0" />
               </div>
+              <p className="text-lg font-bold leading-tight">{fmt(metricas.totalCombustivel)}</p>
+              <p className="text-xs text-muted-foreground mt-1">{fmtN(metricas.totalLitros)} L</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4">
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="text-xs text-muted-foreground">Manutenção</p>
-                  <p className="text-xl font-bold mt-1">{fmt(metricas.totalManutencao)}</p>
-                </div>
-                <Wrench className="h-5 w-5 text-orange-500/50" />
+              <div className="flex items-start justify-between gap-2 mb-2">
+                <p className="text-xs text-muted-foreground">Manutenção</p>
+                <Wrench className="h-4 w-4 text-orange-500/70 shrink-0" />
               </div>
+              <p className="text-lg font-bold leading-tight">{fmt(metricas.totalManutencao)}</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4">
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="text-xs text-muted-foreground">Custo/KM</p>
-                  <p className="text-xl font-bold mt-1">R$ {fmtN(metricas.custoPorKm, 3)}</p>
-                  <p className="text-xs text-muted-foreground">{fmtN(metricas.totalKmRodado, 0)} km</p>
-                </div>
-                <Truck className="h-5 w-5 text-muted-foreground/50" />
+              <div className="flex items-start justify-between gap-2 mb-2">
+                <p className="text-xs text-muted-foreground">Custo/KM</p>
+                <Truck className="h-4 w-4 text-muted-foreground/50 shrink-0" />
               </div>
+              <p className="text-lg font-bold leading-tight">R$ {fmtN(metricas.custoPorKm, 3)}</p>
+              <p className="text-xs text-muted-foreground mt-1">{fmtN(metricas.totalKmRodado, 0)} km</p>
             </CardContent>
           </Card>
         </div>
