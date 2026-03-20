@@ -73,3 +73,12 @@
 - [ ] Dashboard financeiro: gráfico de custo por km por veículo (comparativo)
 - [ ] Alerta: veículo com custo por km acima da média da frota
 - [ ] Relatório mensal: receita de fretes vs custo total operacional por veículo
+
+## Bugs reportados (20/03/2026)
+- [x] 404 em /empresa — rota não registrada no App.tsx
+- [x] 404 em /financeiro/adiantamentos — rota não registrada
+- [x] 404 em /checklist — rota não registrada
+- [x] Criar página Empresa (configurações da empresa)
+- [x] Criar página Adiantamentos completa
+- [x] Criar página Checklist digital (35 itens)
+- [ ] Criar página Gerenciamento de Usuários (permissões por empresa)

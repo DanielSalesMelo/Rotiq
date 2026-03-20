@@ -11,21 +11,41 @@ import Funcionarios from "./pages/Funcionarios";
 import Abastecimentos from "./pages/Abastecimentos";
 import Manutencoes from "./pages/Manutencoes";
 import Financeiro from "./pages/Financeiro";
+import Adiantamentos from "./pages/Adiantamentos";
 import Viagens from "./pages/Viagens";
+import Checklist from "./pages/Checklist";
+import Empresa from "./pages/Empresa";
 
 function Router() {
   return (
     <Switch>
-      <Route path={"/"} component={Home} />
-      <Route path={"/dashboard"} component={Dashboard} />
-      <Route path={"/veiculos"} component={Veiculos} />
-      <Route path={"/funcionarios"} component={Funcionarios} />
-      <Route path={"/abastecimentos"} component={Abastecimentos} />
-      <Route path={"/manutencoes"} component={Manutencoes} />
-      <Route path={"/financeiro"} component={Financeiro} />
-      <Route path={"/financeiro/receber"} component={Financeiro} />
-      <Route path={"/viagens"} component={Viagens} />
-      <Route path={"/404"} component={NotFound} />
+      {/* Raiz */}
+      <Route path="/" component={Home} />
+
+      {/* Dashboard */}
+      <Route path="/dashboard" component={Dashboard} />
+
+      {/* Frota */}
+      <Route path="/veiculos" component={Veiculos} />
+      <Route path="/abastecimentos" component={Abastecimentos} />
+      <Route path="/manutencoes" component={Manutencoes} />
+      <Route path="/checklist" component={Checklist} />
+      <Route path="/viagens" component={Viagens} />
+
+      {/* RH */}
+      <Route path="/funcionarios" component={Funcionarios} />
+
+      {/* Financeiro */}
+      <Route path="/financeiro" component={Financeiro} />
+      <Route path="/financeiro/receber" component={Financeiro} />
+      <Route path="/financeiro/adiantamentos" component={Adiantamentos} />
+      <Route path="/adiantamentos" component={Adiantamentos} />
+
+      {/* Configurações */}
+      <Route path="/empresa" component={Empresa} />
+
+      {/* 404 */}
+      <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
     </Switch>
   );
