@@ -136,3 +136,6 @@
 
 ## Bugs reportados (20/03/2026 — sessão 3)
 - [x] Menu lateral desaparece ao navegar para Painel Master, Permissões e outras páginas que não usam DashboardLayout
+
+## Bugs reportados (20/03/2026 — sessão 4)
+- [x] Menu lateral: ao clicar em alguns itens, o scroll do menu volta para o topo em vez de manter a posição

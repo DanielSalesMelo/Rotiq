@@ -1,5 +1,4 @@
 import { useState } from "react";
-import DashboardLayout from "@/components/DashboardLayout";
 import { trpc } from "@/lib/trpc";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -55,8 +54,7 @@ export default function Relatorios() {
   ];
 
   return (
-    <DashboardLayout>
-      <div className="space-y-6">
+<div className="space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold flex items-center gap-2">
@@ -254,6 +252,5 @@ export default function Relatorios() {
           </Card>
         )}
       </div>
-    </DashboardLayout>
-  );
+);
 }

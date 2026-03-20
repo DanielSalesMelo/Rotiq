@@ -1,5 +1,4 @@
 import { useState } from "react";
-import DashboardLayout from "@/components/DashboardLayout";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { toast } from "sonner";
@@ -66,8 +65,7 @@ export default function Usuarios() {
   const isCurrentUserAdmin = (currentUser as any)?.role === "admin" || isCurrentUserMasterAdmin;
 
   return (
-    <DashboardLayout>
-      <div className="space-y-6">
+<div className="space-y-6">
         {/* Header */}
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
@@ -212,6 +210,5 @@ export default function Usuarios() {
           </CardContent>
         </Card>
       </div>
-    </DashboardLayout>
-  );
+);
 }

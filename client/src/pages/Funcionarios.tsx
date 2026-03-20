@@ -1,4 +1,3 @@
-import DashboardLayout from "@/components/DashboardLayout";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -377,8 +376,7 @@ export default function Funcionarios() {
   }, [lista, search, filterFuncao, filterContrato]);
 
   return (
-    <DashboardLayout>
-      <div className="space-y-5">
+<div className="space-y-5">
         <div className="flex items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold">Funcionários</h1>
@@ -466,6 +464,5 @@ export default function Funcionarios() {
           </DialogContent>
         </Dialog>
       </div>
-    </DashboardLayout>
-  );
+);
 }

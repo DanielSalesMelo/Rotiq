@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import DashboardLayout from "@/components/DashboardLayout";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -107,8 +106,7 @@ export default function SaidaViagem() {
   const agora = new Date().toLocaleString("pt-BR");
 
   return (
-    <DashboardLayout>
-      <div className="space-y-6 max-w-5xl mx-auto">
+<div className="space-y-6 max-w-5xl mx-auto">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
             <Send className="h-6 w-6 text-primary" />
@@ -363,6 +361,5 @@ export default function SaidaViagem() {
           </div>
         </div>
       </div>
-    </DashboardLayout>
-  );
+);
 }

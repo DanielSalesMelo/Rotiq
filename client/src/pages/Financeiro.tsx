@@ -1,4 +1,3 @@
-import DashboardLayout from "@/components/DashboardLayout";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -248,8 +247,7 @@ export default function Financeiro() {
   });
 
   return (
-    <DashboardLayout>
-      <div className="space-y-5">
+<div className="space-y-5">
         <h1 className="text-2xl font-bold">Financeiro</h1>
 
         {/* KPIs */}
@@ -420,6 +418,5 @@ export default function Financeiro() {
           </TabsContent>
         </Tabs>
       </div>
-    </DashboardLayout>
-  );
+);
 }

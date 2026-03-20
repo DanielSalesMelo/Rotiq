@@ -1,5 +1,4 @@
 import { useState } from "react";
-import DashboardLayout from "@/components/DashboardLayout";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -157,8 +156,7 @@ export default function SimuladorViagem() {
     setForm(p => ({ ...p, [field]: e.target.value }));
 
   return (
-    <DashboardLayout>
-      <div className="space-y-6 max-w-6xl mx-auto">
+<div className="space-y-6 max-w-6xl mx-auto">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
             <Calculator className="h-6 w-6 text-primary" />
@@ -506,6 +504,5 @@ export default function SimuladorViagem() {
           </Card>
         )}
       </div>
-    </DashboardLayout>
-  );
+);
 }
