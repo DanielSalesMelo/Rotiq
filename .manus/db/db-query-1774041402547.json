@@ -1,0 +1,42 @@
+{
+  "query": "SELECT id, name, email, openId, role, lastSignedIn FROM users ORDER BY id;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2p5XLKLvFgibmRt.root --database WQ2q64r9ZdMRQ3rHt9WnPA --execute SELECT id, name, email, openId, role, lastSignedIn FROM users ORDER BY id;",
+  "rows": [
+    {
+      "id": "1",
+      "name": "KATIUSCIA ANDRADE DE SOUSA GARRIDO",
+      "email": "nutrikatiusciagarrido@gmail.com",
+      "openId": "LdvCSTtJoyQHxhWoodHCF5",
+      "role": "admin",
+      "lastSignedIn": "2026-03-20 21:16:31"
+    },
+    {
+      "id": "150468",
+      "name": "tiagogomesb12",
+      "email": "tiagogomesb12@gmail.com",
+      "openId": "HsdNsATBUPGAMrEymGL4dQ",
+      "role": "admin",
+      "lastSignedIn": "2026-03-20 20:59:23"
+    },
+    {
+      "id": "150506",
+      "name": "Daniel Sales",
+      "email": "danielsalestrafegopago@gmail.com",
+      "openId": "4nocDeYhVen3XLG4294rxu",
+      "role": "admin",
+      "lastSignedIn": "2026-03-20 20:54:36"
+    },
+    {
+      "id": "150581",
+      "name": "Luiz Silva",
+      "email": "luiz.lsldf@gmail.com",
+      "openId": "4MKKEH3UZvUtGMaek75yLR",
+      "role": "admin",
+      "lastSignedIn": "2026-03-20 21:11:28"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\temail\topenId\trole\tlastSignedIn\n1\tKATIUSCIA ANDRADE DE SOUSA GARRIDO\tnutrikatiusciagarrido@gmail.com\tLdvCSTtJoyQHxhWoodHCF5\tadmin\t2026-03-20 21:16:31\n150468\ttiagogomesb12\ttiagogomesb12@gmail.com\tHsdNsATBUPGAMrEymGL4dQ\tadmin\t2026-03-20 20:59:23\n150506\tDaniel Sales\tdanielsalestrafegopago@gmail.com\t4nocDeYhVen3XLG4294rxu\tadmin\t2026-03-20 20:54:36\n150581\tLuiz Silva\tluiz.lsldf@gmail.com\t4MKKEH3UZvUtGMaek75yLR\tadmin\t2026-03-20 21:11:28\n",
+  "stderr": "",
+  "execution_time_ms": 57
+}

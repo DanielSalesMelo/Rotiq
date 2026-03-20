@@ -161,3 +161,4 @@
 - [x] Abastecimento: filtrar veículos por status (interno=na base, externo=em viagem) e auto-preencher motorista vinculado
 - [x] Painel Master: admin master pode promover outro usuário a admin master
 - [x] Simulador de Viagem: mover mapa para abaixo dos dados de simulação
+- [x] Bug: Painel Master — botão de promover usuário a master admin não funcionava pois owner estava como admin em vez de master_admin (corrigido no db.ts e banco)
