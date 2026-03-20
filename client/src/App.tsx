@@ -16,6 +16,7 @@ import Viagens from "./pages/Viagens";
 import Checklist from "./pages/Checklist";
 import Empresa from "./pages/Empresa";
 import Custos from "./pages/Custos";
+import SimuladorViagem from "./pages/SimuladorViagem";
 import Despachante from "./pages/Despachante";
 import Usuarios from "./pages/Usuarios";
 import SaidaEntrega from "./pages/SaidaEntrega";
@@ -129,6 +130,7 @@ function Router() {
       <Route path="/financeiro/adiantamentos" component={Adiantamentos} />
       <Route path="/adiantamentos" component={Adiantamentos} />
       <Route path="/custos" component={Custos} />
+      <Route path="/simulador-viagem" component={SimuladorViagem} />
 
       {/* 404 */}
       <Route path="/404" component={NotFound} />

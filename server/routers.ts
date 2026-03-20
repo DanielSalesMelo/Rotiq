@@ -9,6 +9,7 @@ import { financeiroRouter } from "./routers/financeiro";
 import { dashboardRouter } from "./routers/dashboard";
 import { viagensRouter } from "./routers/viagens";
 import { custosRouter } from "./routers/custos";
+import { multasRouter } from "./routers/multas";
 
 export const appRouter = router({
   system: systemRouter,
@@ -28,6 +29,7 @@ export const appRouter = router({
   dashboard: dashboardRouter,
   viagens: viagensRouter,
   custos: custosRouter,
+  multas: multasRouter,
 });
 
 export type AppRouter = typeof appRouter;

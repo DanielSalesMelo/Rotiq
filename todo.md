@@ -102,10 +102,10 @@
 
 ## Funcionalidades do Sistema Antigo (FrotaSegura) a Implementar
 
-- [ ] Reorganizar menu: seções DESPACHANTE, OPERACIONAL, FROTA, GESTÃO, SISTEMA, MASTER
-- [ ] Criar página Saída de Entrega (/despachante/entrega) - entrega local, sai e volta no mesmo dia
-- [ ] Criar página Saída de Viagem (/despachante/viagem) - viagens longas
-- [ ] Criar página Retorno de Veículo (/despachante/retorno) com checklist de inspeção
+- [x] Reorganizar menu: seções DESPACHANTE, OPERACIONAL, FROTA, GESTÃO, SISTEMA, MASTER
+- [x] Criar página Saída de Entrega (/despachante/entrega) - entrega local, sai e volta no mesmo dia
+- [x] Criar página Saída de Viagem (/despachante/viagem) - viagens longas
+- [x] Criar página Retorno de Veículo (/despachante/retorno) com checklist de inspeção
 - [ ] Criar página Plano de Manutenção (/plano-manutencao)
 - [ ] Criar página Estoque de Combustível (/gestao/estoque-combustivel)
 - [ ] Criar página Multas (/gestao/multas)
@@ -115,5 +115,5 @@
 - [ ] Criar página Documentos (/gestao/documentos)
 - [ ] Criar página Alertas (/gestao/alertas)
 - [ ] Criar página Calendário (/gestao/calendario)
-- [ ] Criar página Relatórios com abas Viagens/Abastecimentos/Manutenções (/relatorios)
+- [x] Criar página Relatórios com abas Viagens/Abastecimentos/Manutenções (/relatorios)
 - [ ] Adicionar campo ARLA (litros) no formulário de Abastecimento

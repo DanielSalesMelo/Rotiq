@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
@@ -9,11 +9,12 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Clock, Truck, User, CheckCircle2, Play, Square } from "lucide-react";
+import { MapPin, Clock, Truck, User, CheckCircle2, Play, Square, Info } from "lucide-react";
 
 export default function SaidaEntrega() {
   const [form, setForm] = useState({
     veiculoId: "",
+    cavaloPrincipalId: "",
     motoristaId: "",
     kmSaida: "",
     destino: "",
@@ -21,8 +22,10 @@ export default function SaidaEntrega() {
     observacoes: "",
   });
   const [sucesso, setSucesso] = useState(false);
+  const [kmCarregando, setKmCarregando] = useState(false);
 
   const { data: veiculos } = trpc.veiculos.list.useQuery({ empresaId: 1 });
+  const { data: cavalos } = trpc.veiculos.listCavalos.useQuery({ empresaId: 1 });
   const { data: funcionarios } = trpc.funcionarios.list.useQuery({ empresaId: 1 });
   const { data: emAndamento, refetch } = trpc.viagens.list.useQuery({
     empresaId: 1,
@@ -30,13 +33,28 @@ export default function SaidaEntrega() {
     status: "em_andamento",
   });
 
+  // Buscar último KM quando veículo é selecionado
+  const { data: ultimoKmData, isFetching: fetchingKm } = trpc.veiculos.getUltimoKm.useQuery(
+    { veiculoId: parseInt(form.veiculoId) },
+    { enabled: !!form.veiculoId && parseInt(form.veiculoId) > 0 }
+  );
+
+  useEffect(() => {
+    if (ultimoKmData?.kmAtual && !fetchingKm) {
+      setForm(p => ({ ...p, kmSaida: String(ultimoKmData.kmAtual) }));
+      toast.info(`KM anterior carregado: ${ultimoKmData.kmAtual.toLocaleString("pt-BR")} km`);
+    }
+  }, [ultimoKmData, fetchingKm]);
+
   const motoristas = (funcionarios ?? []).filter(f => f.funcao === "motorista");
+  const veiculoSelecionado = (veiculos ?? []).find(v => String(v.id) === form.veiculoId);
+  const isCarreta = veiculoSelecionado?.tipo === "carreta";
 
   const criarViagem = trpc.viagens.create.useMutation({
     onSuccess: () => {
       toast.success("Saída de entrega registrada com sucesso!");
       setSucesso(true);
-      setForm({ veiculoId: "", motoristaId: "", kmSaida: "", destino: "", tipoCarga: "", observacoes: "" });
+      setForm({ veiculoId: "", cavaloPrincipalId: "", motoristaId: "", kmSaida: "", destino: "", tipoCarga: "", observacoes: "" });
       refetch();
       setTimeout(() => setSucesso(false), 3000);
     },
@@ -53,10 +71,15 @@ export default function SaidaEntrega() {
       toast.error("Veículo, motorista e KM de saída são obrigatórios");
       return;
     }
+    if (isCarreta && !form.cavaloPrincipalId) {
+      toast.error("Selecione o cavalo (caminhão trator) para esta carreta");
+      return;
+    }
     criarViagem.mutate({
       empresaId: 1,
       tipo: "entrega",
       veiculoId: parseInt(form.veiculoId),
+      cavaloPrincipalId: form.cavaloPrincipalId ? parseInt(form.cavaloPrincipalId) : undefined,
       motoristaId: parseInt(form.motoristaId),
       kmSaida: parseFloat(form.kmSaida),
       destino: form.destino || undefined,
@@ -93,7 +116,10 @@ export default function SaidaEntrega() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label>Veículo *</Label>
-                    <Select value={form.veiculoId} onValueChange={v => setForm(p => ({ ...p, veiculoId: v }))}>
+                    <Select
+                      value={form.veiculoId}
+                      onValueChange={v => setForm(p => ({ ...p, veiculoId: v, cavaloPrincipalId: "", kmSaida: "" }))}
+                    >
                       <SelectTrigger>
                         <SelectValue placeholder="Selecione o veículo" />
                       </SelectTrigger>
@@ -124,15 +150,53 @@ export default function SaidaEntrega() {
                   </div>
                 </div>
 
+                {/* Seleção de cavalo — aparece apenas se for carreta */}
+                {isCarreta && (
+                  <div className="space-y-2 p-3 rounded-lg border border-orange-200 bg-orange-500/5">
+                    <Label className="flex items-center gap-1.5 text-orange-700">
+                      <Truck className="h-3.5 w-3.5" />
+                      Cavalo (Caminhão Trator) *
+                    </Label>
+                    <Select
+                      value={form.cavaloPrincipalId}
+                      onValueChange={v => setForm(p => ({ ...p, cavaloPrincipalId: v }))}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione o cavalo acoplado" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {(cavalos ?? []).map(c => (
+                          <SelectItem key={c.id} value={String(c.id)}>
+                            {c.placa} — {c.modelo ?? "Cavalo"}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <p className="text-xs text-orange-600">Carreta selecionada — informe o cavalo trator acoplado</p>
+                  </div>
+                )}
+
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label>KM de Saída *</Label>
-                    <Input
-                      type="number"
-                      placeholder="Ex: 125430"
-                      value={form.kmSaida}
-                      onChange={e => setForm(p => ({ ...p, kmSaida: e.target.value }))}
-                    />
+                    <Label className="flex items-center gap-1.5">
+                      KM de Saída *
+                      {fetchingKm && <span className="text-xs text-muted-foreground">(buscando...)</span>}
+                    </Label>
+                    <div className="relative">
+                      <Input
+                        type="number"
+                        placeholder={fetchingKm ? "Buscando KM anterior..." : "Ex: 125430"}
+                        value={form.kmSaida}
+                        onChange={e => setForm(p => ({ ...p, kmSaida: e.target.value }))}
+                        disabled={fetchingKm}
+                      />
+                      {ultimoKmData?.kmAtual && form.kmSaida && (
+                        <div className="flex items-center gap-1 mt-1 text-xs text-blue-600">
+                          <Info className="h-3 w-3" />
+                          Último KM registrado: {ultimoKmData.kmAtual.toLocaleString("pt-BR")} km
+                        </div>
+                      )}
+                    </div>
                   </div>
 
                   <div className="space-y-2">
@@ -169,7 +233,7 @@ export default function SaidaEntrega() {
 
                 <Button
                   onClick={handleSubmit}
-                  disabled={criarViagem.isPending}
+                  disabled={criarViagem.isPending || fetchingKm}
                   className="w-full"
                   size="lg"
                 >
@@ -201,6 +265,18 @@ export default function SaidaEntrega() {
                     <span className="text-muted-foreground">Data/Hora</span>
                     <span className="font-medium text-xs">{agora}</span>
                   </div>
+                  {veiculoSelecionado && (
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Veículo</span>
+                      <span className="font-medium text-xs">{veiculoSelecionado.placa}</span>
+                    </div>
+                  )}
+                  {form.kmSaida && (
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">KM Saída</span>
+                      <span className="font-medium text-xs">{Number(form.kmSaida).toLocaleString("pt-BR")} km</span>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>

@@ -38,10 +38,10 @@ export default function Custos() {
     const abs = (abastecimentos ?? []).filter((a: any) => !a.deletedAt && new Date(a.data).getTime() > cutoff);
     const mans = (manutencoes ?? []).filter((m: any) => !m.deletedAt && new Date(m.data).getTime() > cutoff);
 
-    const totalCombustivel = abs.reduce((s: number, a: any) => s + (a.valorTotal ?? 0), 0);
-    const totalLitros = abs.reduce((s: number, a: any) => s + (a.litros ?? 0), 0);
-    const totalManutencao = mans.reduce((s: number, m: any) => s + (m.valor ?? 0), 0);
-    const totalKmRodado = abs.reduce((s: number, a: any) => s + (a.kmRodado ?? 0), 0);
+    const totalCombustivel = abs.reduce((s: number, a: any) => s + Number(a.valorTotal ?? 0), 0);
+    const totalLitros = abs.reduce((s: number, a: any) => s + Number(a.litros ?? 0), 0);
+    const totalManutencao = mans.reduce((s: number, m: any) => s + Number(m.valor ?? 0), 0);
+    const totalKmRodado = abs.reduce((s: number, a: any) => s + Number(a.kmRodado ?? 0), 0);
 
     const mediaCombustivel = totalLitros > 0 ? totalKmRodado / totalLitros : 0;
     const custoPorKm = totalKmRodado > 0 ? (totalCombustivel + totalManutencao) / totalKmRodado : 0;
@@ -57,10 +57,10 @@ export default function Custos() {
     const porVeiculo = (veiculos ?? []).map((v: any) => {
       const absV = abs.filter((a: any) => a.veiculoId === v.id);
       const mansV = mans.filter((m: any) => m.veiculoId === v.id);
-      const combV = absV.reduce((s: number, a: any) => s + (a.valorTotal ?? 0), 0);
-      const manV = mansV.reduce((s: number, m: any) => s + (m.valor ?? 0), 0);
-      const litrosV = absV.reduce((s: number, a: any) => s + (a.litros ?? 0), 0);
-      const kmV = absV.reduce((s: number, a: any) => s + (a.kmRodado ?? 0), 0);
+      const combV = absV.reduce((s: number, a: any) => s + Number(a.valorTotal ?? 0), 0);
+      const manV = mansV.reduce((s: number, m: any) => s + Number(m.valor ?? 0), 0);
+      const litrosV = absV.reduce((s: number, a: any) => s + Number(a.litros ?? 0), 0);
+      const kmV = absV.reduce((s: number, a: any) => s + Number(a.kmRodado ?? 0), 0);
       return {
         ...v,
         combustivel: combV,

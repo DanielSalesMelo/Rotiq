@@ -9,43 +9,15 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { getLoginUrl } from "@/const";
 import {
-  LayoutDashboard,
-  Truck,
-  Users,
-  Fuel,
-  Wrench,
-  DollarSign,
-  ClipboardCheck,
-  MapPin,
-  LogOut,
-  Menu,
-  X,
-  TrendingUp,
-  TrendingDown,
-  Wallet,
-  BarChart3,
-  Sun,
-  Moon,
-  Monitor,
-  UserCog,
-  Send,
-  RotateCcw,
-  Navigation,
-  AlertTriangle,
-  FileText,
-  Bell,
-  Calendar,
-  Gauge,
-  ClipboardList,
-  BookOpen,
-  Shield,
-  Settings,
-  Star,
-  ChevronLeft,
-  ChevronRight,
+  LayoutDashboard, Truck, Users, Fuel, Wrench, DollarSign,
+  ClipboardCheck, MapPin, LogOut, Menu, TrendingUp, TrendingDown,
+  Wallet, BarChart3, Sun, Moon, Monitor, UserCog, Send, RotateCcw,
+  Navigation, AlertTriangle, FileText, Bell, Calendar, Gauge,
+  ClipboardList, BookOpen, Shield, Settings, Star, ChevronLeft,
+  ChevronRight, Calculator,
 } from "lucide-react";
 import { useTheme } from "@/contexts/ThemeContext";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useLocation } from "wouter";
 import { DashboardLayoutSkeleton } from "./DashboardLayoutSkeleton";
 import { Button } from "./ui/button";
@@ -53,9 +25,7 @@ import { Button } from "./ui/button";
 const menuGroups = [
   {
     label: "Principal",
-    items: [
-      { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
-    ],
+    items: [{ icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" }],
   },
   {
     label: "Despachante",
@@ -70,6 +40,7 @@ const menuGroups = [
     items: [
       { icon: Navigation, label: "Viagens", path: "/viagens" },
       { icon: Fuel, label: "Abastecimentos", path: "/abastecimentos" },
+      { icon: Calculator, label: "Simulador de Viagem", path: "/simulador-viagem" },
     ],
   },
   {
@@ -114,47 +85,34 @@ const menuGroups = [
   },
   {
     label: "Master",
-    items: [
-      { icon: Star, label: "Permissões", path: "/usuarios" },
-    ],
+    items: [{ icon: Star, label: "Permissões", path: "/usuarios" }],
   },
 ];
 
-export default function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const { loading, user } = useAuth();
-
-  if (loading) return <DashboardLayoutSkeleton />;
-
-  if (!user) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-background">
-        <div className="flex flex-col items-center gap-8 p-8 max-w-md w-full">
-          <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-xl bg-primary flex items-center justify-center">
-              <Truck className="h-5 w-5 text-primary-foreground" />
-            </div>
-            <span className="text-2xl font-bold tracking-tight">Rotiq</span>
-          </div>
-          <Button onClick={() => { window.location.href = getLoginUrl(); }} size="lg" className="w-full">
-            Entrar
-          </Button>
-        </div>
-      </div>
-    );
-  }
-
-  return <AppShell>{children}</AppShell>;
-}
-
-function AppShell({ children }: { children: React.ReactNode }) {
-  const { user, logout } = useAuth();
-  const [location, setLocation] = useLocation();
-  const [collapsed, setCollapsed] = useState(false);
-  const [mobileOpen, setMobileOpen] = useState(false);
+// Sidebar as a stable component — never re-mounts on navigation, preserves scroll
+function Sidebar({
+  collapsed,
+  setCollapsed,
+  location,
+  navigate,
+  user,
+  logout,
+}: {
+  collapsed: boolean;
+  setCollapsed: (v: boolean) => void;
+  location: string;
+  navigate: (path: string) => void;
+  user: any;
+  logout: () => void;
+}) {
   const { theme, setTheme } = useTheme();
+  const navRef = useRef<HTMLElement>(null);
+
+  const isActive = (path: string) =>
+    location === path || (path !== "/" && location.startsWith(path + "/"));
 
   const initials = user?.name
-    ? user.name.split(" ").map((n) => n[0]).slice(0, 2).join("").toUpperCase()
+    ? user.name.split(" ").map((n: string) => n[0]).slice(0, 2).join("").toUpperCase()
     : "U";
 
   const roleLabel =
@@ -163,15 +121,15 @@ function AppShell({ children }: { children: React.ReactNode }) {
     user?.role === "dispatcher" ? "Despachante" :
     user?.role === "monitor" ? "Monitor" : "Usuário";
 
-  const isActive = (path: string) =>
-    location === path || (path !== "/" && location.startsWith(path + "/"));
-
-  const navigate = (path: string) => {
-    setLocation(path);
-    setMobileOpen(false);
+  const handleNav = (path: string) => {
+    const scrollTop = navRef.current?.scrollTop ?? 0;
+    navigate(path);
+    requestAnimationFrame(() => {
+      if (navRef.current) navRef.current.scrollTop = scrollTop;
+    });
   };
 
-  const sidebarContent = (
+  return (
     <div className="flex flex-col h-full">
       {/* Logo */}
       <div className="flex items-center gap-3 px-4 h-14 border-b border-border shrink-0">
@@ -193,9 +151,9 @@ function AppShell({ children }: { children: React.ReactNode }) {
       </div>
 
       {/* Menu items */}
-      <nav className="flex-1 overflow-y-auto py-2">
+      <nav ref={navRef} className="flex-1 overflow-y-auto py-2">
         {menuGroups.map((group) => (
-          <div key={group.label} className="mb-1">
+          <div key={group.label}>
             {!collapsed && (
               <div className="px-4 pt-3 pb-1">
                 <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/60">
@@ -209,7 +167,7 @@ function AppShell({ children }: { children: React.ReactNode }) {
               return (
                 <button
                   key={item.path}
-                  onClick={() => navigate(item.path)}
+                  onClick={() => handleNav(item.path)}
                   title={collapsed ? item.label : undefined}
                   className={`w-full flex items-center gap-3 px-4 py-2 text-sm transition-colors ${
                     active
@@ -228,7 +186,6 @@ function AppShell({ children }: { children: React.ReactNode }) {
 
       {/* Footer */}
       <div className="border-t border-border shrink-0 p-3 space-y-2">
-        {/* Theme switcher */}
         {!collapsed && (
           <div className="flex items-center gap-1 rounded-lg bg-muted p-1">
             {[
@@ -251,8 +208,6 @@ function AppShell({ children }: { children: React.ReactNode }) {
             ))}
           </div>
         )}
-
-        {/* User */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button className={`flex items-center gap-2 w-full rounded-lg p-2 hover:bg-accent transition-colors ${collapsed ? "justify-center" : ""}`}>
@@ -283,12 +238,47 @@ function AppShell({ children }: { children: React.ReactNode }) {
       </div>
     </div>
   );
+}
+
+export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+  const { loading, user } = useAuth();
+  if (loading) return <DashboardLayoutSkeleton />;
+  if (!user) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-background">
+        <div className="flex flex-col items-center gap-8 p-8 max-w-md w-full">
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-xl bg-primary flex items-center justify-center">
+              <Truck className="h-5 w-5 text-primary-foreground" />
+            </div>
+            <span className="text-2xl font-bold tracking-tight">Rotiq</span>
+          </div>
+          <Button onClick={() => { window.location.href = getLoginUrl(); }} size="lg" className="w-full">
+            Entrar
+          </Button>
+        </div>
+      </div>
+    );
+  }
+  return <AppShell>{children}</AppShell>;
+}
+
+function AppShell({ children }: { children: React.ReactNode }) {
+  const { user, logout } = useAuth();
+  const [location, setLocation] = useLocation();
+  const [collapsed, setCollapsed] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  const navigate = (path: string) => {
+    setLocation(path);
+    setMobileOpen(false);
+  };
 
   return (
     <div className="flex h-screen bg-background overflow-hidden">
-      {/* Desktop sidebar */}
+      {/* Desktop sidebar — stable component, never re-mounts */}
       <aside
-        className={`hidden md:flex flex-col border-r border-border bg-card transition-all duration-200 shrink-0 ${
+        className={`hidden md:flex flex-col border-r border-border bg-card transition-all duration-200 shrink-0 relative ${
           collapsed ? "w-14" : "w-60"
         }`}
       >
@@ -301,7 +291,14 @@ function AppShell({ children }: { children: React.ReactNode }) {
             <ChevronRight className="h-3 w-3" />
           </button>
         )}
-        {sidebarContent}
+        <Sidebar
+          collapsed={collapsed}
+          setCollapsed={setCollapsed}
+          location={location}
+          navigate={navigate}
+          user={user}
+          logout={logout}
+        />
       </aside>
 
       {/* Mobile overlay */}
@@ -318,12 +315,18 @@ function AppShell({ children }: { children: React.ReactNode }) {
           mobileOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        {sidebarContent}
+        <Sidebar
+          collapsed={false}
+          setCollapsed={() => {}}
+          location={location}
+          navigate={navigate}
+          user={user}
+          logout={logout}
+        />
       </aside>
 
       {/* Main content */}
       <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
-        {/* Top bar */}
         <header className="h-14 flex items-center gap-3 px-4 border-b border-border bg-background shrink-0">
           <button
             className="md:hidden p-2 rounded-lg hover:bg-accent transition-colors"
@@ -333,8 +336,6 @@ function AppShell({ children }: { children: React.ReactNode }) {
           </button>
           <div className="flex-1" />
         </header>
-
-        {/* Page content */}
         <main className="flex-1 overflow-auto p-4 md:p-6">
           {children}
         </main>

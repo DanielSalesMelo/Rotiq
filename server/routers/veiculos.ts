@@ -1,7 +1,7 @@
 import { protectedProcedure, router } from "../_core/trpc";
 import { getDb } from "../db";
 import { veiculos, funcionarios } from "../../drizzle/schema";
-import { eq, and, isNull, isNotNull, desc } from "drizzle-orm";
+import { eq, and, isNull, isNotNull, desc, sql } from "drizzle-orm";
 import { z } from "zod";
 import { safeDb, requireDb } from "../helpers/errorHandler";
 
@@ -145,6 +145,26 @@ export const veiculosRouter = router({
         }).where(eq(veiculos.id, input.id));
         return { success: true };
       }, "veiculos.restore");
+    }),
+
+  getUltimoKm: protectedProcedure
+    .input(z.object({ veiculoId: z.number() }))
+    .query(async ({ input }) => {
+      return safeDb(async () => {
+        const db = requireDb(await getDb(), "veiculos.getUltimoKm");
+        // Busca o maior KM entre viagens, abastecimentos e odômetro do veículo
+        const rows = await db.execute(sql`
+          SELECT GREATEST(
+            COALESCE((SELECT MAX(kmChegada) FROM viagens WHERE veiculoId = ${input.veiculoId} AND kmChegada IS NOT NULL), 0),
+            COALESCE((SELECT MAX(kmSaida) FROM viagens WHERE veiculoId = ${input.veiculoId} AND kmSaida IS NOT NULL), 0),
+            COALESCE((SELECT MAX(kmAtual) FROM abastecimentos WHERE veiculoId = ${input.veiculoId} AND kmAtual IS NOT NULL), 0),
+            COALESCE((SELECT kmAtual FROM veiculos WHERE id = ${input.veiculoId}), 0)
+          ) as ultimoKm
+        `);
+        const r = ((rows as unknown as [any[]])[0] ?? [])[0] ?? {};
+        const km = Number(r.ultimoKm) || null;
+        return { kmAtual: km };
+      }, "veiculos.getUltimoKm");
     }),
 
   listDeleted: protectedProcedure

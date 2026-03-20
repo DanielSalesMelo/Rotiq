@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Send, MapPin, Truck, User, Clock, CheckCircle2, Play, Square } from "lucide-react";
+import { Send, MapPin, Truck, User, Clock, CheckCircle2, Play, Square, Info } from "lucide-react";
 
 export default function SaidaViagem() {
   const [form, setForm] = useState({
@@ -30,6 +30,7 @@ export default function SaidaViagem() {
   const [sucesso, setSucesso] = useState(false);
 
   const { data: veiculos } = trpc.veiculos.list.useQuery({ empresaId: 1 });
+  const { data: cavalosData } = trpc.veiculos.listCavalos.useQuery({ empresaId: 1 });
   const { data: funcionarios } = trpc.funcionarios.list.useQuery({ empresaId: 1 });
   const { data: emAndamento, refetch } = trpc.viagens.list.useQuery({
     empresaId: 1,
@@ -37,10 +38,25 @@ export default function SaidaViagem() {
     status: "em_andamento",
   });
 
+  // Buscar último KM quando veículo é selecionado
+  const { data: ultimoKmData, isFetching: fetchingKm } = trpc.veiculos.getUltimoKm.useQuery(
+    { veiculoId: parseInt(form.veiculoId) },
+    { enabled: !!form.veiculoId && parseInt(form.veiculoId) > 0 }
+  );
+
+  useEffect(() => {
+    if (ultimoKmData?.kmAtual && !fetchingKm) {
+      setForm(p => ({ ...p, kmSaida: String(ultimoKmData.kmAtual) }));
+      toast.info(`KM anterior carregado: ${ultimoKmData.kmAtual.toLocaleString("pt-BR")} km`);
+    }
+  }, [ultimoKmData, fetchingKm]);
+
   const motoristas = (funcionarios ?? []).filter(f => f.funcao === "motorista");
   const ajudantes = (funcionarios ?? []).filter(f => f.funcao === "ajudante");
-  const cavalos = (veiculos ?? []).filter(v => v.tipo === "cavalo");
+  const cavalos = cavalosData ?? [];
   const carretas = (veiculos ?? []).filter(v => v.tipo !== "cavalo");
+  const veiculoSelecionado = (veiculos ?? []).find(v => String(v.id) === form.veiculoId);
+  const isCarreta = veiculoSelecionado?.tipo === "carreta";
 
   const criarViagem = trpc.viagens.create.useMutation({
     onSuccess: () => {
@@ -61,6 +77,10 @@ export default function SaidaViagem() {
   const handleSubmit = () => {
     if (!form.veiculoId || !form.motoristaId || !form.kmSaida) {
       toast.error("Veículo, motorista e KM de saída são obrigatórios");
+      return;
+    }
+    if (isCarreta && !form.cavaloCopladoId) {
+      toast.error("Selecione o cavalo (caminhão trator) para esta carreta");
       return;
     }
     criarViagem.mutate({
@@ -110,7 +130,7 @@ export default function SaidaViagem() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label>Veículo *</Label>
-                    <Select value={form.veiculoId} onValueChange={v => setForm(p => ({ ...p, veiculoId: v }))}>
+                    <Select value={form.veiculoId} onValueChange={v => setForm(p => ({ ...p, veiculoId: v, cavaloCopladoId: "", kmSaida: "" }))}>
                       <SelectTrigger>
                         <SelectValue placeholder="Selecione um veículo" />
                       </SelectTrigger>
@@ -124,15 +144,19 @@ export default function SaidaViagem() {
                     </Select>
                   </div>
 
-                  {cavalos.length > 0 && (
-                    <div className="space-y-2">
-                      <Label>Cavalo Acoplado <span className="text-muted-foreground text-xs">(para carretas)</span></Label>
+                  {/* Cavalo obrigatório para carreta, opcional para outros */}
+                  {(isCarreta || cavalos.length > 0) && (
+                    <div className={`space-y-2 ${isCarreta ? "p-3 rounded-lg border border-orange-200 bg-orange-500/5" : ""}`}>
+                      <Label className={isCarreta ? "flex items-center gap-1.5 text-orange-700" : ""}>
+                        {isCarreta && <Truck className="h-3.5 w-3.5" />}
+                        Cavalo (Caminhão Trator){isCarreta ? " *" : " (opcional)"}
+                      </Label>
                       <Select value={form.cavaloCopladoId} onValueChange={v => setForm(p => ({ ...p, cavaloCopladoId: v === "__none__" ? "" : v }))}>
                         <SelectTrigger>
-                          <SelectValue placeholder="Selecione o cavalo (opcional)" />
+                          <SelectValue placeholder={isCarreta ? "Selecione o cavalo acoplado" : "Selecione o cavalo (opcional)"} />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="__none__">Nenhum</SelectItem>
+                          {!isCarreta && <SelectItem value="__none__">Nenhum</SelectItem>}
                           {cavalos.map(v => (
                             <SelectItem key={v.id} value={String(v.id)}>
                               {v.placa} — {v.modelo ?? "Cavalo"}
@@ -140,6 +164,7 @@ export default function SaidaViagem() {
                           ))}
                         </SelectContent>
                       </Select>
+                      {isCarreta && <p className="text-xs text-orange-600">Carreta selecionada — informe o cavalo trator acoplado</p>}
                     </div>
                   )}
                 </div>
@@ -191,13 +216,23 @@ export default function SaidaViagem() {
                 {/* KM e Rota */}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div className="space-y-2">
-                    <Label>KM de Saída *</Label>
+                    <Label className="flex items-center gap-1.5">
+                      KM de Saída *
+                      {fetchingKm && <span className="text-xs text-muted-foreground">(buscando...)</span>}
+                    </Label>
                     <Input
                       type="number"
-                      placeholder="Ex: 125430"
+                      placeholder={fetchingKm ? "Buscando KM anterior..." : "Ex: 125430"}
                       value={form.kmSaida}
                       onChange={e => setForm(p => ({ ...p, kmSaida: e.target.value }))}
+                      disabled={fetchingKm}
                     />
+                    {ultimoKmData?.kmAtual && form.kmSaida && (
+                      <div className="flex items-center gap-1 text-xs text-blue-600">
+                        <Info className="h-3 w-3" />
+                        Último KM: {ultimoKmData.kmAtual.toLocaleString("pt-BR")} km
+                      </div>
+                    )}
                   </div>
                   <div className="space-y-2">
                     <Label>Origem</Label>

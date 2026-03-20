@@ -444,4 +444,50 @@ export const frotaRouter = router({
         };
       }, "frota.calcularCustoViagem");
     }),
+
+  // ─── SIMULAÇÕES DE VIAGEM ─────────────────────────────────────────────────
+  listSimulacoes: protectedProcedure
+    .input(z.object({ empresaId: z.number() }))
+    .query(async ({ input }) => {
+      return safeDb(async () => {
+        const db = requireDb(await getDb(), "frota.listSimulacoes");
+        const rows = await db.execute(sql`
+          SELECT * FROM simulacoes_viagem
+          WHERE empresaId = ${input.empresaId}
+          ORDER BY createdAt DESC
+          LIMIT 50
+        `);
+        return ((rows as unknown as [any[]])[0] ?? []) as any[];
+      }, "frota.listSimulacoes");
+    }),
+
+  salvarSimulacao: protectedProcedure
+    .input(z.object({
+      empresaId: z.number(),
+      veiculoId: z.number().optional(),
+      descricao: z.string().min(1),
+      origem: z.string().optional(),
+      destino: z.string().optional(),
+      distanciaKm: z.number(),
+      valorFrete: z.number(),
+      custoTotal: z.number(),
+      margemBruta: z.number(),
+      margemPct: z.number(),
+      detalhes: z.string().optional(),
+      observacoes: z.string().optional(),
+    }))
+    .mutation(async ({ input, ctx }) => {
+      return safeDb(async () => {
+        const db = requireDb(await getDb(), "frota.salvarSimulacao");
+        await db.execute(sql`
+          INSERT INTO simulacoes_viagem
+            (empresaId, veiculoId, descricao, origem, destino, distanciaKm, valorFrete, custoTotal, margemBruta, margemPct, detalhes, observacoes, createdBy)
+          VALUES
+            (${input.empresaId}, ${input.veiculoId ?? null}, ${input.descricao}, ${input.origem ?? null}, ${input.destino ?? null},
+             ${input.distanciaKm}, ${input.valorFrete}, ${input.custoTotal}, ${input.margemBruta}, ${input.margemPct},
+             ${input.detalhes ?? null}, ${input.observacoes ?? null}, ${ctx.user?.name ?? null})
+        `);
+        return { success: true };
+      }, "frota.salvarSimulacao");
+    }),
 });
