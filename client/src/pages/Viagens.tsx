@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
+import { PlacesAutocomplete } from "@/components/PlacesAutocomplete";
 import {
   Truck, Plus, Calculator, TrendingUp, TrendingDown, AlertTriangle,
   CheckCircle, Clock, MapPin, User, Package, DollarSign, Fuel
@@ -254,6 +255,7 @@ function FormViagem({ onSuccess }: { onSuccess: () => void }) {
   const [pesoCarga, setPesoCarga] = useState("");
   const [freteTotal, setFreteTotal] = useState("");
   const [adiantamento, setAdiantamento] = useState("");
+  const [notaFiscal, setNotaFiscal] = useState("");
 
   const { data: veiculosList } = trpc.veiculos.list.useQuery({ empresaId: EMPRESA_ID, apenasAtivos: true });
   const { data: cavalos } = trpc.veiculos.listCavalos.useQuery({ empresaId: EMPRESA_ID });
@@ -290,6 +292,7 @@ function FormViagem({ onSuccess }: { onSuccess: () => void }) {
       pesoCarga: pesoCarga || null,
       freteTotal: freteTotal || null,
       adiantamento: adiantamento || null,
+      notaFiscal: notaFiscal || undefined,
       status: "planejada",
     });
   };
@@ -323,7 +326,7 @@ function FormViagem({ onSuccess }: { onSuccess: () => void }) {
                 <SelectValue placeholder="Selecione o cavalo" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Nenhum</SelectItem>
+                <SelectItem value="none">Nenhum</SelectItem>
                 {cavalos?.map(c => (
                   <SelectItem key={c.id} value={String(c.id)}>{c.placa}</SelectItem>
                 ))}
@@ -339,7 +342,7 @@ function FormViagem({ onSuccess }: { onSuccess: () => void }) {
               <SelectValue placeholder="Selecione" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Nenhum</SelectItem>
+              <SelectItem value="none">Nenhum</SelectItem>
               {motoristas?.map(m => (
                 <SelectItem key={m.id} value={String(m.id)}>{m.nome}</SelectItem>
               ))}
@@ -354,7 +357,7 @@ function FormViagem({ onSuccess }: { onSuccess: () => void }) {
               <SelectValue placeholder="Nenhum" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Nenhum</SelectItem>
+              <SelectItem value="none">Nenhum</SelectItem>
               {ajudantes?.map(a => (
                 <SelectItem key={a.id} value={String(a.id)}>{a.nome}</SelectItem>
               ))}
@@ -369,7 +372,7 @@ function FormViagem({ onSuccess }: { onSuccess: () => void }) {
               <SelectValue placeholder="Nenhum" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Nenhum</SelectItem>
+              <SelectItem value="none">Nenhum</SelectItem>
               {ajudantes?.map(a => (
                 <SelectItem key={a.id} value={String(a.id)}>{a.nome}</SelectItem>
               ))}
@@ -384,7 +387,7 @@ function FormViagem({ onSuccess }: { onSuccess: () => void }) {
               <SelectValue placeholder="Nenhum" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Nenhum</SelectItem>
+              <SelectItem value="none">Nenhum</SelectItem>
               {ajudantes?.map(a => (
                 <SelectItem key={a.id} value={String(a.id)}>{a.nome}</SelectItem>
               ))}
@@ -394,12 +397,24 @@ function FormViagem({ onSuccess }: { onSuccess: () => void }) {
 
         <div>
           <Label>Origem</Label>
-          <Input className="mt-1" value={origem} onChange={e => setOrigem(e.target.value)} placeholder="Cidade de origem" />
+          <PlacesAutocomplete
+            value={origem}
+            onChange={setOrigem}
+            placeholder="Cidade, endereço ou empresa..."
+            iconColor="text-green-500"
+            className="mt-1"
+          />
         </div>
 
         <div>
           <Label>Destino</Label>
-          <Input className="mt-1" value={destino} onChange={e => setDestino(e.target.value)} placeholder="Cidade de destino" />
+          <PlacesAutocomplete
+            value={destino}
+            onChange={setDestino}
+            placeholder="Cidade, endereço ou empresa..."
+            iconColor="text-red-500"
+            className="mt-1"
+          />
         </div>
 
         <div>
@@ -430,6 +445,10 @@ function FormViagem({ onSuccess }: { onSuccess: () => void }) {
         <div>
           <Label>Adiantamento (R$)</Label>
           <Input className="mt-1" type="number" value={adiantamento} onChange={e => setAdiantamento(e.target.value)} placeholder="Dinheiro para viagem" />
+        </div>
+        <div>
+          <Label>Nota Fiscal</Label>
+          <Input className="mt-1" value={notaFiscal} onChange={e => setNotaFiscal(e.target.value)} placeholder="Nº da NF" />
         </div>
       </div>
 

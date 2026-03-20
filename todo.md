@@ -148,3 +148,13 @@
 - [x] Estoque Combustível: custo médio ponderado do tanque interno (registrar compras com preço e calcular média)
 - [x] Estoque Combustível: histórico de compras com data, fornecedor, litros, valor unitário, valor total
 - [x] Abastecimentos: adicionar lista dos principais postos de combustível do Brasil (Ipiranga, BR, Shell, Ale, etc.) no campo de posto externo
+
+## Importação e Planilha (20/03/2026 — sessão 6)
+- [x] Importar compras do tanque diesel (CIAPETRO): 04/02 NF112126 10000L R$5,28; 05/03 NF113065 5000L R$5,75; 20/03 NF125078 (pendente)
+- [x] Criar planilha Excel de abastecimentos com coluna tipo (interno/externo), veículos, motoristas, Nota Fiscal e postos
+- [x] Bug: Viagens — erro "Select.Item must have a non-empty value" ao abrir a página
+- [x] Google Maps autocomplete em todos os campos de origem/destino: Viagens, Saída de Entrega, Saída de Viagem, Despachante
+- [x] Simulador de Viagem: calculadora completa de frete já estava presente (custos, margem, diárias, combustível estimado, indicador lucro/prejuízo) junto com o mapa
+- [x] Adicionar campo Nota Fiscal nos formulários de Abastecimento e Viagem
+- [x] Empresa BSB — precisa ser criada via "Nova Empresa" no Painel Master (não é bug)
+- [ ] Modo de teste: criar contas de demonstração com usuário/senha, tempo limitado e dados fictícios para prospects

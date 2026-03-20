@@ -1,0 +1,1 @@
+ALTER TABLE `viagens` ADD `notaFiscal` varchar(50);

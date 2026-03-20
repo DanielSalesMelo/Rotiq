@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
+import { PlacesAutocomplete } from "@/components/PlacesAutocomplete";
 import {
   Send, Truck, User, MapPin, Clock, CheckCircle2,
   AlertCircle, Play, Square, RefreshCw, Plus, Eye
@@ -422,7 +423,7 @@ export default function Despachante() {
                   >
                     <SelectTrigger className="text-xs"><SelectValue placeholder="Opcional" /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Nenhum</SelectItem>
+                      <SelectItem value="none">Nenhum</SelectItem>
                       {ajudantes.map((a: any) => (
                         <SelectItem key={a.id} value={String(a.id)}>{a.nome}</SelectItem>
                       ))}
@@ -439,7 +440,7 @@ export default function Despachante() {
                 <Select value={novaViagem.cavaloCoplado} onValueChange={v => setNovaViagem(p => ({ ...p, cavaloCoplado: v }))}>
                   <SelectTrigger><SelectValue placeholder="Selecione o cavalo (opcional)" /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Nenhum</SelectItem>
+                    <SelectItem value="none">Nenhum</SelectItem>
                     {cavalos.map((v: any) => (
                       <SelectItem key={v.id} value={String(v.id)}>{v.placa} — {v.modelo ?? "Cavalo"}</SelectItem>
                     ))}
@@ -453,11 +454,21 @@ export default function Despachante() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Origem</Label>
-                <Input placeholder="Cidade de origem" value={novaViagem.origem} onChange={e => setNovaViagem(p => ({ ...p, origem: e.target.value }))} />
+                <PlacesAutocomplete
+                  value={novaViagem.origem}
+                  onChange={v => setNovaViagem(p => ({ ...p, origem: v }))}
+                  placeholder="Cidade, endereço ou empresa..."
+                  iconColor="text-green-500"
+                />
               </div>
               <div className="space-y-2">
                 <Label>Destino</Label>
-                <Input placeholder="Cidade de destino" value={novaViagem.destino} onChange={e => setNovaViagem(p => ({ ...p, destino: e.target.value }))} />
+                <PlacesAutocomplete
+                  value={novaViagem.destino}
+                  onChange={v => setNovaViagem(p => ({ ...p, destino: v }))}
+                  placeholder="Cidade, endereço ou empresa..."
+                  iconColor="text-red-500"
+                />
               </div>
             </div>
 

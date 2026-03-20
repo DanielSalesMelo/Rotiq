@@ -1,0 +1,157 @@
+{
+  "query": "SELECT id, placa, tipo, marca, modelo FROM veiculos ORDER BY placa LIMIT 50;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2p5XLKLvFgibmRt.root --database WQ2q64r9ZdMRQ3rHt9WnPA --execute SELECT id, placa, tipo, marca, modelo FROM veiculos ORDER BY placa LIMIT 50;",
+  "rows": [
+    {
+      "id": "7",
+      "placa": "OZZ3I28",
+      "tipo": "toco",
+      "marca": "NULL",
+      "modelo": "NULL"
+    },
+    {
+      "id": "10",
+      "placa": "OZZ3I33",
+      "tipo": "toco",
+      "marca": "NULL",
+      "modelo": "NULL"
+    },
+    {
+      "id": "11",
+      "placa": "OZZ3J72",
+      "tipo": "toco",
+      "marca": "NULL",
+      "modelo": "NULL"
+    },
+    {
+      "id": "9",
+      "placa": "OZZ3J79",
+      "tipo": "toco",
+      "marca": "NULL",
+      "modelo": "NULL"
+    },
+    {
+      "id": "12",
+      "placa": "OZZ8B78",
+      "tipo": "toco",
+      "marca": "NULL",
+      "modelo": "NULL"
+    },
+    {
+      "id": "8",
+      "placa": "OZZ8C28",
+      "tipo": "toco",
+      "marca": "NULL",
+      "modelo": "NULL"
+    },
+    {
+      "id": "20",
+      "placa": "OZZ9E21",
+      "tipo": "cavalo",
+      "marca": "NULL",
+      "modelo": "NULL"
+    },
+    {
+      "id": "21",
+      "placa": "PBH6C22",
+      "tipo": "carreta",
+      "marca": "NULL",
+      "modelo": "NULL"
+    },
+    {
+      "id": "5",
+      "placa": "REI2H51",
+      "tipo": "toco",
+      "marca": "NULL",
+      "modelo": "NULL"
+    },
+    {
+      "id": "4",
+      "placa": "REI8A70",
+      "tipo": "toco",
+      "marca": "NULL",
+      "modelo": "NULL"
+    },
+    {
+      "id": "6",
+      "placa": "REK4D69",
+      "tipo": "toco",
+      "marca": "NULL",
+      "modelo": "NULL"
+    },
+    {
+      "id": "2",
+      "placa": "SGX0G54",
+      "tipo": "van",
+      "marca": "NULL",
+      "modelo": "NULL"
+    },
+    {
+      "id": "18",
+      "placa": "SGZ1C50",
+      "tipo": "cavalo",
+      "marca": "NULL",
+      "modelo": "NULL"
+    },
+    {
+      "id": "19",
+      "placa": "SGZ4I04",
+      "tipo": "carreta",
+      "marca": "NULL",
+      "modelo": "NULL"
+    },
+    {
+      "id": "16",
+      "placa": "SSF1G21",
+      "tipo": "toco",
+      "marca": "NULL",
+      "modelo": "NULL"
+    },
+    {
+      "id": "14",
+      "placa": "SSF1G89",
+      "tipo": "toco",
+      "marca": "NULL",
+      "modelo": "NULL"
+    },
+    {
+      "id": "15",
+      "placa": "SSF1G96",
+      "tipo": "toco",
+      "marca": "NULL",
+      "modelo": "NULL"
+    },
+    {
+      "id": "13",
+      "placa": "SSF1H04",
+      "tipo": "toco",
+      "marca": "NULL",
+      "modelo": "NULL"
+    },
+    {
+      "id": "17",
+      "placa": "SSF1H18",
+      "tipo": "truck",
+      "marca": "NULL",
+      "modelo": "NULL"
+    },
+    {
+      "id": "1",
+      "placa": "SSL4F96",
+      "tipo": "van",
+      "marca": "NULL",
+      "modelo": "NULL"
+    },
+    {
+      "id": "3",
+      "placa": "SSL7J07",
+      "tipo": "van",
+      "marca": "NULL",
+      "modelo": "NULL"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tplaca\ttipo\tmarca\tmodelo\n7\tOZZ3I28\ttoco\tNULL\tNULL\n10\tOZZ3I33\ttoco\tNULL\tNULL\n11\tOZZ3J72\ttoco\tNULL\tNULL\n9\tOZZ3J79\ttoco\tNULL\tNULL\n12\tOZZ8B78\ttoco\tNULL\tNULL\n8\tOZZ8C28\ttoco\tNULL\tNULL\n20\tOZZ9E21\tcavalo\tNULL\tNULL\n21\tPBH6C22\tcarreta\tNULL\tNULL\n5\tREI2H51\ttoco\tNULL\tNULL\n4\tREI8A70\ttoco\tNULL\tNULL\n6\tREK4D69\ttoco\tNULL\tNULL\n2\tSGX0G54\tvan\tNULL\tNULL\n18\tSGZ1C50\tcavalo\tNULL\tNULL\n19\tSGZ4I04\tcarreta\tNULL\tNULL\n16\tSSF1G21\ttoco\tNULL\tNULL\n14\tSSF1G89\ttoco\tNULL\tNULL\n15\tSSF1G96\ttoco\tNULL\tNULL\n13\tSSF1H04\ttoco\tNULL\tNULL\n17\tSSF1H18\ttruck\tNULL\tNULL\n1\tSSL4F96\tvan\tNULL\tNULL\n3\tSSL7J07\tvan\tNULL\tNULL\n",
+  "stderr": "",
+  "execution_time_ms": 58
+}

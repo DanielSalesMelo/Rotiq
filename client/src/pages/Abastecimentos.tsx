@@ -54,6 +54,7 @@ function AbastecimentoForm({ veiculos, motoristas, onSave, onClose }: {
     local: "",
     tipoAbastecimento: "interno",
     observacoes: "",
+    notaFiscal: "",
   });
 
   function calcTotal() {
@@ -80,6 +81,7 @@ function AbastecimentoForm({ veiculos, motoristas, onSave, onClose }: {
       local: form.local || undefined,
       tipoAbastecimento: form.tipoAbastecimento as "interno" | "externo",
       observacoes: form.observacoes || undefined,
+      notaFiscal: form.notaFiscal || undefined,
     });
   }
 
@@ -183,6 +185,16 @@ function AbastecimentoForm({ veiculos, motoristas, onSave, onClose }: {
               <SelectItem value="externo">Posto externo</SelectItem>
             </SelectContent>
           </Select>
+        </div>
+      </div>
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-1.5">
+          <Label>Nota Fiscal</Label>
+          <Input placeholder="Nº da NF" value={form.notaFiscal} onChange={e => setForm(f => ({ ...f, notaFiscal: e.target.value }))} />
+        </div>
+        <div className="space-y-1.5">
+          <Label>Observações</Label>
+          <Input placeholder="Observações..." value={form.observacoes} onChange={e => setForm(f => ({ ...f, observacoes: e.target.value }))} />
         </div>
       </div>
       <div className="flex justify-end gap-2 pt-2">

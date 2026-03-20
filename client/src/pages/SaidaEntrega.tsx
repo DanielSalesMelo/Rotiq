@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { MapPin, Clock, Truck, User, CheckCircle2, Play, Square, Info } from "lucide-react";
+import { PlacesAutocomplete } from "@/components/PlacesAutocomplete";
 
 export default function SaidaEntrega() {
   const [form, setForm] = useState({
@@ -202,10 +203,11 @@ export default function SaidaEntrega() {
                       <MapPin className="h-3.5 w-3.5" />
                       Destino
                     </Label>
-                    <Input
-                      placeholder="Ex: Cliente ABC - Taguatinga"
+                    <PlacesAutocomplete
                       value={form.destino}
-                      onChange={e => setForm(p => ({ ...p, destino: e.target.value }))}
+                      onChange={v => setForm(p => ({ ...p, destino: v }))}
+                      placeholder="Cliente, cidade ou endereço..."
+                      iconColor="text-red-500"
                     />
                   </div>
                 </div>

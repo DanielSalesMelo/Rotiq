@@ -37,6 +37,7 @@ const viagemInput = z.object({
   voltouComCarga: z.boolean().optional(),
   observacoesChegada: z.string().optional(),
   tipoCarga: z.string().optional(),
+  notaFiscal: z.string().optional(),
 });
 
 export const viagensRouter = router({
@@ -70,6 +71,7 @@ export const viagensRouter = router({
           adiantamento: viagens.adiantamento,
           pesoCarga: viagens.pesoCarga,
           descricaoCarga: viagens.descricaoCarga,
+          notaFiscal: viagens.notaFiscal,
           createdAt: viagens.createdAt,
           motoristaNome: funcionarios.nome,
           veiculoPlaca: veiculos.placa,

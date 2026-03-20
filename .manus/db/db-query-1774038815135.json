@@ -1,0 +1,152 @@
+{
+  "query": "SELECT id, placa, modelo, tipo FROM veiculos WHERE deletedAt IS NULL ORDER BY placa;\nSELECT id, nome, funcao FROM funcionarios WHERE deletedAt IS NULL ORDER BY nome;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2p5XLKLvFgibmRt.root --database WQ2q64r9ZdMRQ3rHt9WnPA --execute SELECT id, placa, modelo, tipo FROM veiculos WHERE deletedAt IS NULL ORDER BY placa;\nSELECT id, nome, funcao FROM funcionarios WHERE deletedAt IS NULL ORDER BY nome;",
+  "rows": [
+    {
+      "id": "7",
+      "placa": "OZZ3I28",
+      "modelo": "NULL",
+      "tipo": "toco"
+    },
+    {
+      "id": "10",
+      "placa": "OZZ3I33",
+      "modelo": "NULL",
+      "tipo": "toco"
+    },
+    {
+      "id": "11",
+      "placa": "OZZ3J72",
+      "modelo": "NULL",
+      "tipo": "toco"
+    },
+    {
+      "id": "9",
+      "placa": "OZZ3J79",
+      "modelo": "NULL",
+      "tipo": "toco"
+    },
+    {
+      "id": "12",
+      "placa": "OZZ8B78",
+      "modelo": "NULL",
+      "tipo": "toco"
+    },
+    {
+      "id": "8",
+      "placa": "OZZ8C28",
+      "modelo": "NULL",
+      "tipo": "toco"
+    },
+    {
+      "id": "20",
+      "placa": "OZZ9E21",
+      "modelo": "NULL",
+      "tipo": "cavalo"
+    },
+    {
+      "id": "21",
+      "placa": "PBH6C22",
+      "modelo": "NULL",
+      "tipo": "carreta"
+    },
+    {
+      "id": "5",
+      "placa": "REI2H51",
+      "modelo": "NULL",
+      "tipo": "toco"
+    },
+    {
+      "id": "4",
+      "placa": "REI8A70",
+      "modelo": "NULL",
+      "tipo": "toco"
+    },
+    {
+      "id": "6",
+      "placa": "REK4D69",
+      "modelo": "NULL",
+      "tipo": "toco"
+    },
+    {
+      "id": "2",
+      "placa": "SGX0G54",
+      "modelo": "NULL",
+      "tipo": "van"
+    },
+    {
+      "id": "18",
+      "placa": "SGZ1C50",
+      "modelo": "NULL",
+      "tipo": "cavalo"
+    },
+    {
+      "id": "19",
+      "placa": "SGZ4I04",
+      "modelo": "NULL",
+      "tipo": "carreta"
+    },
+    {
+      "id": "16",
+      "placa": "SSF1G21",
+      "modelo": "NULL",
+      "tipo": "toco"
+    },
+    {
+      "id": "14",
+      "placa": "SSF1G89",
+      "modelo": "NULL",
+      "tipo": "toco"
+    },
+    {
+      "id": "15",
+      "placa": "SSF1G96",
+      "modelo": "NULL",
+      "tipo": "toco"
+    },
+    {
+      "id": "13",
+      "placa": "SSF1H04",
+      "modelo": "NULL",
+      "tipo": "toco"
+    },
+    {
+      "id": "17",
+      "placa": "SSF1H18",
+      "modelo": "NULL",
+      "tipo": "truck"
+    },
+    {
+      "id": "1",
+      "placa": "SSL4F96",
+      "modelo": "NULL",
+      "tipo": "van"
+    },
+    {
+      "id": "3",
+      "placa": "SSL7J07",
+      "modelo": "NULL",
+      "tipo": "van"
+    }
+  ],
+  "messages": [
+    "id\tnome\tfuncao",
+    "12\tADRIANO\tmotorista",
+    "4\tALCIMAR\tmotorista",
+    "6\tANILTON\tmotorista",
+    "1\tANTÔNIO\tmotorista",
+    "10\tCARLOS\tmotorista",
+    "9\tEVENDRO\tmotorista",
+    "14\tJOSENILDO\tmotorista",
+    "7\tJOSÉ CARLOS\tmotorista",
+    "11\tMARILON\tmotorista",
+    "2\tOZEIAS\tmotorista",
+    "3\tPAULO\tmotorista",
+    "13\tPEDRO\tmotorista",
+    "5\tSEGIO\tmotorista",
+    "8\tWELLIGTON\tmotorista"
+  ],
+  "stdout": "id\tplaca\tmodelo\ttipo\n7\tOZZ3I28\tNULL\ttoco\n10\tOZZ3I33\tNULL\ttoco\n11\tOZZ3J72\tNULL\ttoco\n9\tOZZ3J79\tNULL\ttoco\n12\tOZZ8B78\tNULL\ttoco\n8\tOZZ8C28\tNULL\ttoco\n20\tOZZ9E21\tNULL\tcavalo\n21\tPBH6C22\tNULL\tcarreta\n5\tREI2H51\tNULL\ttoco\n4\tREI8A70\tNULL\ttoco\n6\tREK4D69\tNULL\ttoco\n2\tSGX0G54\tNULL\tvan\n18\tSGZ1C50\tNULL\tcavalo\n19\tSGZ4I04\tNULL\tcarreta\n16\tSSF1G21\tNULL\ttoco\n14\tSSF1G89\tNULL\ttoco\n15\tSSF1G96\tNULL\ttoco\n13\tSSF1H04\tNULL\ttoco\n17\tSSF1H18\tNULL\ttruck\n1\tSSL4F96\tNULL\tvan\n3\tSSL7J07\tNULL\tvan\nid\tnome\tfuncao\n12\tADRIANO\tmotorista\n4\tALCIMAR\tmotorista\n6\tANILTON\tmotorista\n1\tANTÔNIO\tmotorista\n10\tCARLOS\tmotorista\n9\tEVENDRO\tmotorista\n14\tJOSENILDO\tmotorista\n7\tJOSÉ CARLOS\tmotorista\n11\tMARILON\tmotorista\n2\tOZEIAS\tmotorista\n3\tPAULO\tmotorista\n13\tPEDRO\tmotorista\n5\tSEGIO\tmotorista\n8\tWELLIGTON\tmotorista\n",
+  "stderr": "",
+  "execution_time_ms": 57
+}

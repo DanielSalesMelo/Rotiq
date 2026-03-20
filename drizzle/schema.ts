@@ -207,6 +207,8 @@ export const viagens = mysqlTable("viagens", {
   // Despesas da viagem
   totalDespesas: decimal("totalDespesas", { precision: 10, scale: 2 }),
   mediaConsumo: decimal("mediaConsumo", { precision: 5, scale: 2 }),
+  // Documentação
+  notaFiscal: varchar("notaFiscal", { length: 50 }),
   // Status
   status: mysqlEnum("status", ["planejada", "em_andamento", "concluida", "cancelada"]).default("planejada").notNull(),
   observacoes: text("observacoes"),

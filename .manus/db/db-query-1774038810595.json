@@ -1,0 +1,9 @@
+{
+  "query": "INSERT INTO controle_tanque (empresaId, tipo, data, operacao, quantidade, valorUnitario, valorTotal, fornecedor, notaFiscal, saldoAnterior, saldoAtual, observacoes)\nVALUES \n(1, 'diesel', '2026-02-04', 'entrada', 10000.000, 5.280, 52800.00, 'CIAPETRO DISTRIBUIDORA', '112126', 0.000, 10000.000, 'Importação inicial - NF 112126'),\n(1, 'diesel', '2026-03-05', 'entrada', 5000.000, 5.750, 28750.00, 'CIAPETRO DISTRIBUIDORA', '113065', 10000.000, 15000.000, 'Segunda compra - NF 113065'),\n(1, 'diesel', '2026-03-20', 'entrada', 0.000, 0.000, 0.000, 'CIAPETRO DISTRIBUIDORA', '125078', 15000.000, 15000.000, 'NF 125078 - quantidade e valor pendentes de preenchimento');",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2p5XLKLvFgibmRt.root --database WQ2q64r9ZdMRQ3rHt9WnPA --execute INSERT INTO controle_tanque (empresaId, tipo, data, operacao, quantidade, valorUnitario, valorTotal, fornecedor, notaFiscal, saldoAnterior, saldoAtual, observacoes)\nVALUES \n(1, 'diesel', '2026-02-04', 'entrada', 10000.000, 5.280, 52800.00, 'CIAPETRO DISTRIBUIDORA', '112126', 0.000, 10000.000, 'Importação inicial - NF 112126'),\n(1, 'diesel', '2026-03-05', 'entrada', 5000.000, 5.750, 28750.00, 'CIAPETRO DISTRIBUIDORA', '113065', 10000.000, 15000.000, 'Segunda compra - NF 113065'),\n(1, 'diesel', '2026-03-20', 'entrada', 0.000, 0.000, 0.000, 'CIAPETRO DISTRIBUIDORA', '125078', 15000.000, 15000.000, 'NF 125078 - quantidade e valor pendentes de preenchimento');",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 95
+}

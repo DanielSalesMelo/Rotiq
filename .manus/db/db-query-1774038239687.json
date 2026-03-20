@@ -1,0 +1,90 @@
+{
+  "query": "SELECT id, placa, tipo FROM veiculos WHERE id > 20 ORDER BY placa; SELECT id, nome, funcao FROM funcionarios ORDER BY nome;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2p5XLKLvFgibmRt.root --database WQ2q64r9ZdMRQ3rHt9WnPA --execute SELECT id, placa, tipo FROM veiculos WHERE id > 20 ORDER BY placa; SELECT id, nome, funcao FROM funcionarios ORDER BY nome;",
+  "rows": [
+    {
+      "id": "21",
+      "placa": "PBH6C22",
+      "tipo": "carreta"
+    },
+    {
+      "id": "id",
+      "placa": "nome",
+      "tipo": "funcao"
+    },
+    {
+      "id": "12",
+      "placa": "ADRIANO",
+      "tipo": "motorista"
+    },
+    {
+      "id": "4",
+      "placa": "ALCIMAR",
+      "tipo": "motorista"
+    },
+    {
+      "id": "6",
+      "placa": "ANILTON",
+      "tipo": "motorista"
+    },
+    {
+      "id": "1",
+      "placa": "ANTÔNIO",
+      "tipo": "motorista"
+    },
+    {
+      "id": "10",
+      "placa": "CARLOS",
+      "tipo": "motorista"
+    },
+    {
+      "id": "9",
+      "placa": "EVENDRO",
+      "tipo": "motorista"
+    },
+    {
+      "id": "14",
+      "placa": "JOSENILDO",
+      "tipo": "motorista"
+    },
+    {
+      "id": "7",
+      "placa": "JOSÉ CARLOS",
+      "tipo": "motorista"
+    },
+    {
+      "id": "11",
+      "placa": "MARILON",
+      "tipo": "motorista"
+    },
+    {
+      "id": "2",
+      "placa": "OZEIAS",
+      "tipo": "motorista"
+    },
+    {
+      "id": "3",
+      "placa": "PAULO",
+      "tipo": "motorista"
+    },
+    {
+      "id": "13",
+      "placa": "PEDRO",
+      "tipo": "motorista"
+    },
+    {
+      "id": "5",
+      "placa": "SEGIO",
+      "tipo": "motorista"
+    },
+    {
+      "id": "8",
+      "placa": "WELLIGTON",
+      "tipo": "motorista"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tplaca\ttipo\n21\tPBH6C22\tcarreta\nid\tnome\tfuncao\n12\tADRIANO\tmotorista\n4\tALCIMAR\tmotorista\n6\tANILTON\tmotorista\n1\tANTÔNIO\tmotorista\n10\tCARLOS\tmotorista\n9\tEVENDRO\tmotorista\n14\tJOSENILDO\tmotorista\n7\tJOSÉ CARLOS\tmotorista\n11\tMARILON\tmotorista\n2\tOZEIAS\tmotorista\n3\tPAULO\tmotorista\n13\tPEDRO\tmotorista\n5\tSEGIO\tmotorista\n8\tWELLIGTON\tmotorista\n",
+  "stderr": "",
+  "execution_time_ms": 65
+}
