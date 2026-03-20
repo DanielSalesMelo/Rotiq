@@ -24,6 +24,17 @@ import SaidaViagem from "./pages/SaidaViagem";
 import RetornoVeiculo from "./pages/RetornoVeiculo";
 import Relatorios from "./pages/Relatorios";
 import { GestaoPlaceholder } from "./pages/GestaoPlaceholder";
+import EstoqueCombustivel from "./pages/EstoqueCombustivel";
+import Multas from "./pages/Multas";
+import Relatos from "./pages/Relatos";
+import DocumentacaoFrota from "./pages/DocumentacaoFrota";
+import Alertas from "./pages/Alertas";
+import Acertos from "./pages/Acertos";
+import Calendario from "./pages/Calendario";
+import Acidentes from "./pages/Acidentes";
+import PlanoManutencao from "./pages/PlanoManutencao";
+import PainelMaster from "./pages/PainelMaster";
+import Permissoes from "./pages/Permissoes";
 import {
   Gauge, AlertTriangle, Shield, DollarSign, BookOpen,
   FileText, Bell, Calendar, ClipboardList
@@ -52,72 +63,18 @@ function Router() {
       <Route path="/veiculos" component={Veiculos} />
       <Route path="/funcionarios" component={Funcionarios} />
       <Route path="/manutencoes" component={Manutencoes} />
-      <Route path="/plano-manutencao" component={() => (
-        <GestaoPlaceholder
-          titulo="Plano de Manutenção"
-          descricao="Gerencie os planos preventivos de manutenção por km ou período"
-          icone={<ClipboardList className="h-6 w-6 text-primary" />}
-        />
-      )} />
+      <Route path="/plano-manutencao" component={PlanoManutencao} />
 
       {/* Gestão */}
-      <Route path="/gestao/estoque-combustivel" component={() => (
-        <GestaoPlaceholder
-          titulo="Estoque de Combustível"
-          descricao="Controle o estoque interno de diesel e ARLA"
-          icone={<Gauge className="h-6 w-6 text-primary" />}
-        />
-      )} />
-      <Route path="/gestao/multas" component={() => (
-        <GestaoPlaceholder
-          titulo="Multas"
-          descricao="Registre e acompanhe as multas de trânsito da frota"
-          icone={<AlertTriangle className="h-6 w-6 text-primary" />}
-        />
-      )} />
-      <Route path="/gestao/acidentes" component={() => (
-        <GestaoPlaceholder
-          titulo="Acidentes"
-          descricao="Registre e gerencie ocorrências de acidentes"
-          icone={<Shield className="h-6 w-6 text-primary" />}
-        />
-      )} />
-      <Route path="/gestao/acertos" component={() => (
-        <GestaoPlaceholder
-          titulo="Acertos"
-          descricao="Controle os acertos financeiros com motoristas e ajudantes"
-          icone={<DollarSign className="h-6 w-6 text-primary" />}
-        />
-      )} />
+      <Route path="/gestao/estoque-combustivel" component={EstoqueCombustivel} />
+      <Route path="/gestao/multas" component={Multas} />
+      <Route path="/gestao/acidentes" component={Acidentes} />
+      <Route path="/gestao/acertos" component={Acertos} />
       <Route path="/checklist" component={Checklist} />
-      <Route path="/gestao/relatos" component={() => (
-        <GestaoPlaceholder
-          titulo="Relatos"
-          descricao="Registre ocorrências e relatos operacionais"
-          icone={<BookOpen className="h-6 w-6 text-primary" />}
-        />
-      )} />
-      <Route path="/gestao/documentos" component={() => (
-        <GestaoPlaceholder
-          titulo="Documentos"
-          descricao="Gerencie documentos de veículos e motoristas"
-          icone={<FileText className="h-6 w-6 text-primary" />}
-        />
-      )} />
-      <Route path="/gestao/alertas" component={() => (
-        <GestaoPlaceholder
-          titulo="Alertas"
-          descricao="Alertas automáticos de vencimentos, manutenções e documentos"
-          icone={<Bell className="h-6 w-6 text-primary" />}
-        />
-      )} />
-      <Route path="/gestao/calendario" component={() => (
-        <GestaoPlaceholder
-          titulo="Calendário"
-          descricao="Visualize viagens, manutenções e eventos no calendário"
-          icone={<Calendar className="h-6 w-6 text-primary" />}
-        />
-      )} />
+      <Route path="/gestao/relatos" component={Relatos} />
+      <Route path="/gestao/documentos" component={DocumentacaoFrota} />
+      <Route path="/gestao/alertas" component={Alertas} />
+      <Route path="/gestao/calendario" component={Calendario} />
 
       {/* Sistema */}
       <Route path="/relatorios" component={Relatorios} />
@@ -131,6 +88,10 @@ function Router() {
       <Route path="/adiantamentos" component={Adiantamentos} />
       <Route path="/custos" component={Custos} />
       <Route path="/simulador-viagem" component={SimuladorViagem} />
+
+      {/* Master */}
+      <Route path="/master/painel" component={PainelMaster} />
+      <Route path="/master/permissoes" component={Permissoes} />
 
       {/* 404 */}
       <Route path="/404" component={NotFound} />

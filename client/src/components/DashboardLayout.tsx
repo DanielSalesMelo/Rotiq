@@ -85,7 +85,10 @@ const menuGroups = [
   },
   {
     label: "Master",
-    items: [{ icon: Star, label: "Permissões", path: "/usuarios" }],
+    items: [
+      { icon: Star, label: "Painel Master", path: "/master/painel" },
+      { icon: Shield, label: "Permissões", path: "/master/permissoes" },
+    ],
   },
 ];
 

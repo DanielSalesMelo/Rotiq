@@ -106,19 +106,30 @@
 - [x] Criar página Saída de Entrega (/despachante/entrega) - entrega local, sai e volta no mesmo dia
 - [x] Criar página Saída de Viagem (/despachante/viagem) - viagens longas
 - [x] Criar página Retorno de Veículo (/despachante/retorno) com checklist de inspeção
-- [ ] Criar página Plano de Manutenção (/plano-manutencao)
-- [ ] Criar página Estoque de Combustível (/gestao/estoque-combustivel)
-- [ ] Criar página Multas (/gestao/multas)
-- [ ] Criar página Acidentes (/gestao/acidentes)
-- [ ] Criar página Acertos (/gestao/acertos)
-- [ ] Criar página Relatos (/gestao/relatos)
-- [ ] Criar página Documentos (/gestao/documentos)
-- [ ] Criar página Alertas (/gestao/alertas)
-- [ ] Criar página Calendário (/gestao/calendario)
+- [x] Criar página Plano de Manutenção (/plano-manutencao)
+- [x] Criar página Estoque de Combustível (/gestao/estoque-combustivel)
+- [x] Criar página Multas (/gestao/multas)
+- [x] Criar página Acidentes (/gestao/acidentes)
+- [x] Criar página Acertos (/gestao/acertos)
+- [x] Criar página Relatos (/gestao/relatos)
+- [x] Criar página Documentos (/gestao/documentos)
+- [x] Criar página Alertas (/gestao/alertas)
+- [x] Criar página Calendário (/gestao/calendario)
 - [x] Criar página Relatórios com abas Viagens/Abastecimentos/Manutenções (/relatorios)
 - [ ] Adicionar campo ARLA (litros) no formulário de Abastecimento
 
 ## Bugs reportados (20/03/2026 — sessão 2)
-- [ ] Custos Operacionais — cards KPI com valores grandes quebrando linha (ex: "R$ 81.641,75" não cabe)
-- [ ] Dashboard — ícones sobrepostos nos títulos dos cards KPI em telas pequenas
-- [ ] Custos Operacionais — valores grandes cortados nos cards KPI
+- [x] Custos Operacionais — cards KPI com valores grandes quebrando linha (ex: "R$ 81.641,75" não cabe)
+- [x] Dashboard — ícones sobrepostos nos títulos dos cards KPI em telas pequenas
+- [x] Custos Operacionais — valores grandes cortados nos cards KPI
+
+## Módulos a Implementar (sessão 20/03/2026 — tarde)
+- [x] Estoque de Combustível — gauge circular + KPIs + histórico + botão Adicionar Combustível
+- [x] Multas — interface completa: formulário + listagem + filtros + status
+- [x] Relatos de Ocorrências — formulário com veículo, motorista, tipo, urgência, descrição
+- [x] Documentação da Frota — CRLV, seguro, status por veículo, KPIs vencidos/a vencer/em dia
+- [x] Alertas automáticos — documentos vencendo, manutenções atrasadas, multas a vencer
+- [x] Acertos — fechamento financeiro de viagens com motoristas
+- [x] Painel Master — gestão de empresas e licenças (acesso exclusivo do dono)
+- [x] Gestão de Permissões — perfis de acesso por módulo
+- [x] Scripts .bat + .env para instalação local no Windows
