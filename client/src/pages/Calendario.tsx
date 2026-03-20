@@ -1,3 +1,4 @@
+import DashboardLayout from "@/components/DashboardLayout";
 import { useState, useMemo } from "react";
 import { trpc } from "@/lib/trpc";
 import { Card, CardContent } from "@/components/ui/card";
@@ -106,6 +107,7 @@ export default function Calendario() {
   };
 
   return (
+    <DashboardLayout>
     <div className="p-6 space-y-6">
       <div>
         <h1 className="text-2xl font-bold flex items-center gap-2">
@@ -209,5 +211,6 @@ export default function Calendario() {
         </Card>
       </div>
     </div>
+    </DashboardLayout>
   );
 }

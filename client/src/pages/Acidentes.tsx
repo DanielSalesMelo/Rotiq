@@ -1,3 +1,4 @@
+import DashboardLayout from "@/components/DashboardLayout";
 import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { Card, CardContent } from "@/components/ui/card";
@@ -100,6 +101,7 @@ export default function Acidentes() {
   const custoTotal = acidentes.reduce((s: number, a: any) => s + (Number(a.custoEstimado) || 0), 0);
 
   return (
+    <DashboardLayout>
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
@@ -281,5 +283,6 @@ export default function Acidentes() {
         )}
       </div>
     </div>
+    </DashboardLayout>
   );
 }

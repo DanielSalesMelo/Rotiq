@@ -1,3 +1,4 @@
+import DashboardLayout from "@/components/DashboardLayout";
 import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -96,6 +97,7 @@ export default function Acertos() {
   const totalAReceber = acertos.filter((a: any) => a.status === "a_receber").reduce((s: number, a: any) => s + Math.abs(a.saldoFinal), 0);
 
   return (
+    <DashboardLayout>
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
@@ -314,5 +316,6 @@ export default function Acertos() {
         </CardContent>
       </Card>
     </div>
+    </DashboardLayout>
   );
 }

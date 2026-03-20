@@ -1,3 +1,4 @@
+import DashboardLayout from "@/components/DashboardLayout";
 import { trpc } from "@/lib/trpc";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -109,6 +110,7 @@ export default function Alertas() {
   const medios = alertas.filter(a => a.nivel === "medio").length;
 
   return (
+    <DashboardLayout>
     <div className="p-6 space-y-6">
       <div>
         <h1 className="text-2xl font-bold flex items-center gap-2">
@@ -194,5 +196,6 @@ export default function Alertas() {
         </div>
       )}
     </div>
+    </DashboardLayout>
   );
 }

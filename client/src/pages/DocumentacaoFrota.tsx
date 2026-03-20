@@ -1,3 +1,4 @@
+import DashboardLayout from "@/components/DashboardLayout";
 import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -105,6 +106,7 @@ export default function DocumentacaoFrota() {
   const emDia = documentos.filter(d => getDiasRestantes(d.vencimento) > 90).length;
 
   return (
+    <DashboardLayout>
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
@@ -289,5 +291,6 @@ export default function DocumentacaoFrota() {
         </CardContent>
       </Card>
     </div>
+    </DashboardLayout>
   );
 }

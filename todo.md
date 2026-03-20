@@ -133,3 +133,6 @@
 - [x] Painel Master — gestão de empresas e licenças (acesso exclusivo do dono)
 - [x] Gestão de Permissões — perfis de acesso por módulo
 - [x] Scripts .bat + .env para instalação local no Windows
+
+## Bugs reportados (20/03/2026 — sessão 3)
+- [x] Menu lateral desaparece ao navegar para Painel Master, Permissões e outras páginas que não usam DashboardLayout
