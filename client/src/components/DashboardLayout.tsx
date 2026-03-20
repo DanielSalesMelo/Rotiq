@@ -58,7 +58,6 @@ import {
   Star,
 } from "lucide-react";
 import { useTheme } from "@/contexts/ThemeContext";
-import { useEffect } from "react";
 import { useLocation } from "wouter";
 import { DashboardLayoutSkeleton } from './DashboardLayoutSkeleton';
 import { Button } from "./ui/button";
@@ -206,8 +205,8 @@ function DashboardLayoutContent({
     <>
       <Sidebar collapsible="icon">
         {/* Header */}
-        <SidebarHeader className="h-14 justify-center border-b border-sidebar-border px-3">
-          <div className="flex items-center gap-3">
+        <SidebarHeader className="border-b border-sidebar-border">
+          <div className="flex h-14 items-center px-3 gap-3">
             <button
               onClick={toggleSidebar}
               className="h-8 w-8 flex items-center justify-center hover:bg-sidebar-accent rounded-lg transition-colors shrink-0"
@@ -228,15 +227,15 @@ function DashboardLayoutContent({
         </SidebarHeader>
 
         {/* Menu */}
-        <SidebarContent className="py-1">
+        <SidebarContent>
           {menuGroups.map(group => (
-            <SidebarGroup key={group.label} className="py-0 px-0">
+            <SidebarGroup key={group.label}>
               {!isCollapsed && (
-                <SidebarGroupLabel className="text-sidebar-foreground/40 text-[10px] uppercase tracking-widest px-3 pt-3 pb-0.5 h-auto">
+                <SidebarGroupLabel>
                   {group.label}
                 </SidebarGroupLabel>
               )}
-              <SidebarMenu className="px-2">
+              <SidebarMenu>
                 {group.items.map(item => {
                   const isActive = location === item.path || (item.path !== "/" && location.startsWith(item.path + "/"));
                   return (
@@ -245,10 +244,9 @@ function DashboardLayoutContent({
                         isActive={isActive}
                         onClick={() => setLocation(item.path)}
                         tooltip={item.label}
-                        className={`h-8 transition-all font-normal ${isActive ? "bg-sidebar-accent text-sidebar-foreground font-medium" : "text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent/60"}`}
                       >
-                        <item.icon className={`h-4 w-4 shrink-0 ${isActive ? "text-primary" : "text-sidebar-foreground/50"}`} />
-                        <span className="truncate text-[13px]">{item.label}</span>
+                        <item.icon />
+                        <span>{item.label}</span>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
                   );
@@ -259,67 +257,69 @@ function DashboardLayoutContent({
         </SidebarContent>
 
         {/* Footer */}
-        <SidebarFooter className="p-3 border-t border-sidebar-border space-y-2">
-          {/* Seletor de tema */}
-          {!isCollapsed && (
-            <div className="flex items-center gap-1 rounded-lg bg-sidebar-accent/50 p-1">
-              {[
-                { key: "light" as const, icon: Sun, label: "Claro" },
-                { key: "gray" as const, icon: Monitor, label: "Cinza" },
-                { key: "dark" as const, icon: Moon, label: "Escuro" },
-              ].map(t => (
-                <button
-                  key={t.key}
-                  onClick={() => setTheme(t.key)}
-                  title={`Tema ${t.label}`}
-                  className={`flex-1 flex items-center justify-center gap-1 rounded-md py-1.5 text-xs transition-colors ${
-                    theme === t.key
-                      ? "bg-sidebar-accent text-sidebar-foreground font-medium"
-                      : "text-sidebar-foreground/50 hover:text-sidebar-foreground"
-                  }`}
-                >
-                  <t.icon className="h-3 w-3" />
-                  <span>{t.label}</span>
-                </button>
-              ))}
-            </div>
-          )}
+        <SidebarFooter className="border-t border-sidebar-border">
+          <div className="p-2 space-y-2">
+            {/* Seletor de tema */}
+            {!isCollapsed && (
+              <div className="flex items-center gap-1 rounded-lg bg-sidebar-accent/50 p-1">
+                {[
+                  { key: "light" as const, icon: Sun, label: "Claro" },
+                  { key: "gray" as const, icon: Monitor, label: "Cinza" },
+                  { key: "dark" as const, icon: Moon, label: "Escuro" },
+                ].map(t => (
+                  <button
+                    key={t.key}
+                    onClick={() => setTheme(t.key)}
+                    title={`Tema ${t.label}`}
+                    className={`flex-1 flex items-center justify-center gap-1 rounded-md py-1.5 text-xs transition-colors ${
+                      theme === t.key
+                        ? "bg-sidebar-accent text-sidebar-foreground font-medium"
+                        : "text-sidebar-foreground/50 hover:text-sidebar-foreground"
+                    }`}
+                  >
+                    <t.icon className="h-3 w-3" />
+                    <span>{t.label}</span>
+                  </button>
+                ))}
+              </div>
+            )}
 
-          {/* User */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button className="flex items-center gap-2 w-full rounded-lg p-2 hover:bg-sidebar-accent transition-colors">
-                <Avatar className="h-7 w-7 shrink-0">
-                  <AvatarFallback className="text-xs bg-primary text-primary-foreground">
-                    {initials}
-                  </AvatarFallback>
-                </Avatar>
-                {!isCollapsed && (
-                  <div className="flex-1 min-w-0 text-left">
-                    <p className="text-xs font-medium text-sidebar-foreground truncate">
-                      {user?.name ?? "Usuário"}
-                    </p>
-                    <p className="text-xs text-sidebar-foreground/50 truncate">
-                      {user?.role === "master_admin" ? "Master ADM" :
-                        user?.role === "admin" ? "Administrador" :
-                        user?.role === "dispatcher" ? "Despachante" :
-                        user?.role === "monitor" ? "Monitor" : "Usuário"}
-                    </p>
-                  </div>
-                )}
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent side="top" align="start" className="w-48">
-              <DropdownMenuItem disabled className="text-xs text-muted-foreground">
-                {user?.email ?? user?.name}
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={logout} className="text-red-600">
-                <LogOut className="h-4 w-4 mr-2" />
-                Sair
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+            {/* User */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="flex items-center gap-2 w-full rounded-lg p-2 hover:bg-sidebar-accent transition-colors">
+                  <Avatar className="h-7 w-7 shrink-0">
+                    <AvatarFallback className="text-xs bg-primary text-primary-foreground">
+                      {initials}
+                    </AvatarFallback>
+                  </Avatar>
+                  {!isCollapsed && (
+                    <div className="flex-1 min-w-0 text-left">
+                      <p className="text-xs font-medium text-sidebar-foreground truncate">
+                        {user?.name ?? "Usuário"}
+                      </p>
+                      <p className="text-xs text-sidebar-foreground/50 truncate">
+                        {user?.role === "master_admin" ? "Master ADM" :
+                          user?.role === "admin" ? "Administrador" :
+                          user?.role === "dispatcher" ? "Despachante" :
+                          user?.role === "monitor" ? "Monitor" : "Usuário"}
+                      </p>
+                    </div>
+                  )}
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent side="top" align="start" className="w-48">
+                <DropdownMenuItem disabled className="text-xs text-muted-foreground">
+                  {user?.email ?? user?.name}
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={logout} className="text-red-600">
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Sair
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </SidebarFooter>
       </Sidebar>
 
