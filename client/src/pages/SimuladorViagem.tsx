@@ -1,508 +1,763 @@
-import { useState } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { trpc } from "@/lib/trpc";
-import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { MapView } from "@/components/Map";
 import {
-  Calculator, TrendingUp, TrendingDown, Fuel, Wrench, DollarSign,
-  MapPin, Truck, CheckCircle2, AlertTriangle, Clock, BarChart3, Save
+  Route, MapPin, Clock, Fuel, DollarSign, TrendingUp, Save,
+  ArrowRight, Navigation, AlertTriangle, Truck, Calculator, RotateCcw,
+  History
 } from "lucide-react";
+import { toast } from "sonner";
 
-interface SimulacaoForm {
-  descricao: string;
-  veiculoId: string;
-  origem: string;
-  destino: string;
-  distanciaKm: string;
-  // Receita
-  valorFrete: string;
-  // Combustível
-  mediaConsumoKmL: string;
-  precoDieselLitro: string;
-  // Pedágios
-  valorPedagios: string;
-  // Diárias / Alimentação
-  diasViagem: string;
-  valorDiaria: string;
-  // Manutenção estimada
-  custoManutencaoKm: string;
-  // Outros
-  outrosCustos: string;
-  observacoes: string;
-}
-
-const FORM_INICIAL: SimulacaoForm = {
-  descricao: "",
-  veiculoId: "",
-  origem: "",
-  destino: "",
-  distanciaKm: "",
-  valorFrete: "",
-  mediaConsumoKmL: "3.5",
-  precoDieselLitro: "6.50",
-  valorPedagios: "",
-  diasViagem: "1",
-  valorDiaria: "120",
-  custoManutencaoKm: "0.15",
-  outrosCustos: "",
-  observacoes: "",
-};
-
-function calcular(form: SimulacaoForm) {
-  const dist = parseFloat(form.distanciaKm) || 0;
-  const frete = parseFloat(form.valorFrete) || 0;
-  const media = parseFloat(form.mediaConsumoKmL) || 3.5;
-  const diesel = parseFloat(form.precoDieselLitro) || 6.5;
-  const pedagios = parseFloat(form.valorPedagios) || 0;
-  const dias = parseFloat(form.diasViagem) || 1;
-  const diaria = parseFloat(form.valorDiaria) || 0;
-  const manutKm = parseFloat(form.custoManutencaoKm) || 0;
-  const outros = parseFloat(form.outrosCustos) || 0;
-
-  const litros = dist > 0 && media > 0 ? dist / media : 0;
-  const custoCombustivel = litros * diesel;
-  const custoDiarias = dias * diaria;
-  const custoManutencao = dist * manutKm;
-
-  const custoTotal = custoCombustivel + pedagios + custoDiarias + custoManutencao + outros;
-  const margemBruta = frete - custoTotal;
-  const margemPct = frete > 0 ? (margemBruta / frete) * 100 : 0;
-  const custoPorKm = dist > 0 ? custoTotal / dist : 0;
-  const receitaPorKm = dist > 0 ? frete / dist : 0;
-
-  return {
-    litros,
-    custoCombustivel,
-    custoDiarias,
-    custoManutencao,
-    custoTotal,
-    margemBruta,
-    margemPct,
-    custoPorKm,
-    receitaPorKm,
-    viavel: margemPct >= 15,
-  };
-}
+const EMPRESA_ID = 1;
 
 function fmt(v: number) {
   return v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 }
 
-function fmtN(v: number, dec = 2) {
-  return v.toLocaleString("pt-BR", { minimumFractionDigits: dec, maximumFractionDigits: dec });
+function fmtKm(v: number) {
+  return v.toLocaleString("pt-BR", { maximumFractionDigits: 0 }) + " km";
 }
 
+function fmtTempo(seconds: number) {
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  if (h === 0) return `${m} min`;
+  return `${h}h ${m}min`;
+}
+
+interface RotaInfo {
+  index: number;
+  summary: string;
+  distanceKm: number;
+  durationSec: number;
+  hasTolls: boolean;
+  warnings: string[];
+}
+
+const ROUTE_COLORS = ["#2563eb", "#16a34a", "#ea580c"];
+
 export default function SimuladorViagem() {
-  const [form, setForm] = useState<SimulacaoForm>(FORM_INICIAL);
-  const [simulado, setSimulado] = useState(false);
-  const [salvando, setSalvando] = useState(false);
+  // Map refs
+  const mapRef = useRef<google.maps.Map | null>(null);
+  const directionsServiceRef = useRef<google.maps.DirectionsService | null>(null);
+  const renderersRef = useRef<google.maps.DirectionsRenderer[]>([]);
+  const autocompleteOrigemRef = useRef<google.maps.places.Autocomplete | null>(null);
+  const autocompleteDestinoRef = useRef<google.maps.places.Autocomplete | null>(null);
+  const origemInputRef = useRef<HTMLInputElement>(null);
+  const destinoInputRef = useRef<HTMLInputElement>(null);
 
-  const { data: veiculos } = trpc.veiculos.list.useQuery({ empresaId: 1 });
-  const { data: historico, refetch } = trpc.frota.listSimulacoes.useQuery({ empresaId: 1 });
+  // State
+  const [origem, setOrigem] = useState("");
+  const [destino, setDestino] = useState("");
+  const [rotas, setRotas] = useState<RotaInfo[]>([]);
+  const [rotaSelecionada, setRotaSelecionada] = useState(0);
+  const [calculando, setCalculando] = useState(false);
+  const [idaVolta, setIdaVolta] = useState(false);
+  const [veiculoId, setVeiculoId] = useState("");
+  const [pedagioManual, setPedagioManual] = useState("");
+  const [outrosCustos, setOutrosCustos] = useState("");
+  const [freteTotal, setFreteTotal] = useState("");
+  const [diasViagem, setDiasViagem] = useState("1");
+  const [precoDiesel, setPrecoDiesel] = useState("");
+  const [showHistorico, setShowHistorico] = useState(false);
+  const [showSalvar, setShowSalvar] = useState(false);
+  const [descricaoSalvar, setDescricaoSalvar] = useState("");
+  const [mapReady, setMapReady] = useState(false);
 
-  const salvarSimulacao = trpc.frota.salvarSimulacao.useMutation({
-    onSuccess: () => {
-      toast.success("Simulação salva no histórico!");
-      setSalvando(false);
-      refetch();
+  // Data
+  const { data: veiculos = [] } = trpc.veiculos.list.useQuery({ empresaId: EMPRESA_ID });
+  const { data: simulacoes = [] } = trpc.frota.listSimulacoes.useQuery({ empresaId: EMPRESA_ID });
+  const { data: custoMedioTanque } = trpc.frota.tanque.custoMedio.useQuery({ empresaId: EMPRESA_ID });
+
+  const custoViagemQuery = trpc.frota.calcularCustoViagem.useQuery(
+    {
+      empresaId: EMPRESA_ID,
+      veiculoId: veiculoId ? Number(veiculoId) : 0,
+      distanciaKm: rotas[rotaSelecionada]
+        ? (idaVolta ? rotas[rotaSelecionada].distanceKm * 2 : rotas[rotaSelecionada].distanceKm)
+        : 0,
+      freteTotal: Number(freteTotal) || 0,
+      diasViagem: Number(diasViagem) || 1,
+      pedagioEstimado: Number(pedagioManual) || 0,
+      outrosCustos: Number(outrosCustos) || 0,
+      precoDiesel: precoDiesel ? Number(precoDiesel) : (custoMedioTanque?.diesel.custoMedio || null),
     },
-    onError: (e) => { toast.error(e.message); setSalvando(false); },
+    {
+      enabled: rotas.length > 0 && !!veiculoId && Number(veiculoId) > 0,
+    }
+  );
+
+  const salvarMutation = trpc.frota.salvarSimulacao.useMutation({
+    onSuccess: () => {
+      toast.success("Simulação salva com sucesso!");
+      setShowSalvar(false);
+      setDescricaoSalvar("");
+    },
+    onError: (e) => toast.error(e.message),
   });
 
-  const resultado = calcular(form);
+  // Initialize Google Maps services
+  const handleMapReady = useCallback((map: google.maps.Map) => {
+    mapRef.current = map;
+    directionsServiceRef.current = new google.maps.DirectionsService();
+    setMapReady(true);
+  }, []);
 
-  const handleSimular = () => {
-    if (!form.distanciaKm || !form.valorFrete) {
-      toast.error("Informe a distância e o valor do frete para simular");
+  // Setup autocomplete after map is ready — aceita qualquer tipo de local (empresas, endereços, cidades, etc.)
+  useEffect(() => {
+    if (!mapReady || !window.google) return;
+
+    if (origemInputRef.current && !autocompleteOrigemRef.current) {
+      autocompleteOrigemRef.current = new google.maps.places.Autocomplete(origemInputRef.current, {
+        componentRestrictions: { country: "br" },
+        fields: ["formatted_address", "name", "geometry"],
+      });
+      autocompleteOrigemRef.current.addListener("place_changed", () => {
+        const place = autocompleteOrigemRef.current?.getPlace();
+        if (place?.formatted_address) setOrigem(place.formatted_address);
+        else if (place?.name) setOrigem(place.name);
+      });
+    }
+
+    if (destinoInputRef.current && !autocompleteDestinoRef.current) {
+      autocompleteDestinoRef.current = new google.maps.places.Autocomplete(destinoInputRef.current, {
+        componentRestrictions: { country: "br" },
+        fields: ["formatted_address", "name", "geometry"],
+      });
+      autocompleteDestinoRef.current.addListener("place_changed", () => {
+        const place = autocompleteDestinoRef.current?.getPlace();
+        if (place?.formatted_address) setDestino(place.formatted_address);
+        else if (place?.name) setDestino(place.name);
+      });
+    }
+  }, [mapReady]);
+
+  // Calculate routes
+  const calcularRotas = useCallback(() => {
+    if (!directionsServiceRef.current || !mapRef.current) {
+      toast.error("Mapa ainda carregando, aguarde...");
       return;
     }
-    setSimulado(true);
-  };
+    const o = origemInputRef.current?.value || origem;
+    const d = destinoInputRef.current?.value || destino;
+    if (!o || !d) {
+      toast.error("Informe origem e destino");
+      return;
+    }
 
-  const handleSalvar = () => {
-    if (!simulado) { toast.error("Simule primeiro antes de salvar"); return; }
-    setSalvando(true);
-    salvarSimulacao.mutate({
-      empresaId: 1,
-      descricao: form.descricao || `${form.origem || "Origem"} → ${form.destino || "Destino"}`,
-      veiculoId: form.veiculoId ? parseInt(form.veiculoId) : undefined,
-      origem: form.origem || undefined,
-      destino: form.destino || undefined,
-      distanciaKm: parseFloat(form.distanciaKm),
-      valorFrete: parseFloat(form.valorFrete),
-      custoTotal: resultado.custoTotal,
-      margemBruta: resultado.margemBruta,
-      margemPct: resultado.margemPct,
-      detalhes: JSON.stringify({
-        custoCombustivel: resultado.custoCombustivel,
-        pedagios: parseFloat(form.valorPedagios) || 0,
-        diarias: resultado.custoDiarias,
-        manutencao: resultado.custoManutencao,
-        outros: parseFloat(form.outrosCustos) || 0,
-        mediaConsumo: form.mediaConsumoKmL,
-        precoDiesel: form.precoDieselLitro,
-      }),
-      observacoes: form.observacoes || undefined,
+    setCalculando(true);
+    setRotas([]);
+
+    // Clear previous renderers
+    renderersRef.current.forEach(r => r.setMap(null));
+    renderersRef.current = [];
+
+    directionsServiceRef.current.route(
+      {
+        origin: o,
+        destination: d,
+        travelMode: google.maps.TravelMode.DRIVING,
+        provideRouteAlternatives: true,
+        region: "br",
+        unitSystem: google.maps.UnitSystem.METRIC,
+      },
+      (result, status) => {
+        setCalculando(false);
+        if (status !== "OK" || !result) {
+          toast.error("Não foi possível calcular a rota. Verifique os endereços.");
+          return;
+        }
+
+        const routeInfos: RotaInfo[] = result.routes.slice(0, 3).map((route, idx) => {
+          const leg = route.legs[0];
+          const distKm = (leg.distance?.value || 0) / 1000;
+          const durSec = leg.duration?.value || 0;
+
+          // Check for tolls in warnings and step instructions
+          const hasTolls = !!(
+            route.warnings?.some(w =>
+              w.toLowerCase().includes("toll") || w.toLowerCase().includes("pedágio")
+            ) ||
+            leg.steps?.some(s =>
+              s.instructions?.toLowerCase().includes("toll") ||
+              s.instructions?.toLowerCase().includes("pedágio")
+            )
+          );
+
+          return {
+            index: idx,
+            summary: route.summary || `Rota ${idx + 1}`,
+            distanceKm: Math.round(distKm * 10) / 10,
+            durationSec: durSec,
+            hasTolls,
+            warnings: route.warnings || [],
+          };
+        });
+
+        setRotas(routeInfos);
+        setRotaSelecionada(0);
+        setOrigem(o);
+        setDestino(d);
+
+        // Render all routes on map
+        routeInfos.forEach((_, idx) => {
+          const renderer = new google.maps.DirectionsRenderer({
+            map: mapRef.current!,
+            directions: result,
+            routeIndex: idx,
+            polylineOptions: {
+              strokeColor: ROUTE_COLORS[idx] || "#888",
+              strokeWeight: idx === 0 ? 6 : 4,
+              strokeOpacity: idx === 0 ? 1 : 0.5,
+            },
+            suppressMarkers: idx > 0,
+            suppressInfoWindows: idx > 0,
+          });
+          renderersRef.current.push(renderer);
+        });
+      }
+    );
+  }, [origem, destino]);
+
+  // Highlight selected route
+  useEffect(() => {
+    renderersRef.current.forEach((renderer, idx) => {
+      renderer.setOptions({
+        polylineOptions: {
+          strokeColor: ROUTE_COLORS[idx] || "#888",
+          strokeWeight: idx === rotaSelecionada ? 6 : 3,
+          strokeOpacity: idx === rotaSelecionada ? 1 : 0.35,
+        },
+      });
     });
+  }, [rotaSelecionada]);
+
+  const limpar = () => {
+    renderersRef.current.forEach(r => r.setMap(null));
+    renderersRef.current = [];
+    setRotas([]);
+    setOrigem("");
+    setDestino("");
+    setVeiculoId("");
+    setPedagioManual("");
+    setOutrosCustos("");
+    setFreteTotal("");
+    setDiasViagem("1");
+    setPrecoDiesel("");
+    setIdaVolta(false);
+    if (origemInputRef.current) origemInputRef.current.value = "";
+    if (destinoInputRef.current) destinoInputRef.current.value = "";
   };
 
-  const f = (field: keyof SimulacaoForm) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
-    setForm(p => ({ ...p, [field]: e.target.value }));
+  const custoData = custoViagemQuery.data;
+  const rotaAtual = rotas[rotaSelecionada];
+  const distanciaFinal = rotaAtual ? (idaVolta ? rotaAtual.distanceKm * 2 : rotaAtual.distanceKm) : 0;
+  const tempoFinal = rotaAtual ? (idaVolta ? rotaAtual.durationSec * 2 : rotaAtual.durationSec) : 0;
 
   return (
-<div className="space-y-6 max-w-6xl mx-auto">
+    <div className="p-6 space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
-            <Calculator className="h-6 w-6 text-primary" />
+            <Route className="w-6 h-6 text-blue-500" />
             Simulador de Viagem
           </h1>
           <p className="text-muted-foreground text-sm mt-1">
-            Calcule se a viagem compensa antes de aceitar o frete — preencha os dados e veja a margem prevista
+            Calcule rotas reais, custos e rentabilidade antes de aceitar uma viagem
           </p>
         </div>
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" onClick={() => setShowHistorico(true)} className="gap-1">
+            <History className="w-4 h-4" /> Histórico
+          </Button>
+          {rotas.length > 0 && (
+            <Button variant="outline" size="sm" onClick={limpar} className="gap-1">
+              <RotateCcw className="w-4 h-4" /> Limpar
+            </Button>
+          )}
+        </div>
+      </div>
 
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-          {/* Formulário */}
-          <div className="xl:col-span-2 space-y-4">
-            {/* Identificação */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-sm flex items-center gap-2">
-                  <MapPin className="h-4 w-4 text-primary" />
-                  Dados da Viagem
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>Descrição / Referência</Label>
-                    <Input placeholder="Ex: Frete Brasília → SP" value={form.descricao} onChange={f("descricao")} />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Veículo (opcional)</Label>
-                    <Select value={form.veiculoId} onValueChange={v => setForm(p => ({ ...p, veiculoId: v === "__none__" ? "" : v }))}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecione o veículo" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="__none__">Nenhum</SelectItem>
-                        {(veiculos ?? []).map(v => (
-                          <SelectItem key={v.id} value={String(v.id)}>
-                            {v.placa} — {v.modelo ?? v.tipo}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <div className="space-y-2">
-                    <Label>Origem</Label>
-                    <Input placeholder="Cidade de origem" value={form.origem} onChange={f("origem")} />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Destino</Label>
-                    <Input placeholder="Cidade de destino" value={form.destino} onChange={f("destino")} />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Distância Total (km) *</Label>
-                    <Input type="number" placeholder="Ex: 1200" value={form.distanciaKm} onChange={f("distanciaKm")} />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Receita */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-sm flex items-center gap-2">
-                  <TrendingUp className="h-4 w-4 text-green-600" />
-                  Receita
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  <Label>Valor do Frete (R$) *</Label>
-                  <Input type="number" placeholder="Ex: 4500.00" value={form.valorFrete} onChange={f("valorFrete")} />
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Custos */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-sm flex items-center gap-2">
-                  <TrendingDown className="h-4 w-4 text-red-500" />
-                  Custos Estimados
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {/* Combustível */}
-                <div>
-                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3 flex items-center gap-1">
-                    <Fuel className="h-3.5 w-3.5" /> Combustível
-                  </p>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label>Média de Consumo (km/L)</Label>
-                      <Input type="number" step="0.1" value={form.mediaConsumoKmL} onChange={f("mediaConsumoKmL")} />
-                      {form.distanciaKm && form.mediaConsumoKmL && (
-                        <p className="text-xs text-muted-foreground">
-                          ≈ {fmtN(parseFloat(form.distanciaKm) / parseFloat(form.mediaConsumoKmL), 1)} litros necessários
-                        </p>
-                      )}
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Preço do Diesel (R$/L)</Label>
-                      <Input type="number" step="0.01" value={form.precoDieselLitro} onChange={f("precoDieselLitro")} />
-                    </div>
-                  </div>
-                </div>
-
-                <Separator />
-
-                {/* Pedágios e Diárias */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>Pedágios (R$)</Label>
-                    <Input type="number" placeholder="Ex: 350.00" value={form.valorPedagios} onChange={f("valorPedagios")} />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Outros Custos (R$)</Label>
-                    <Input type="number" placeholder="Ex: refeições extras, etc." value={form.outrosCustos} onChange={f("outrosCustos")} />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label className="flex items-center gap-1">
-                      <Clock className="h-3.5 w-3.5" />
-                      Dias de Viagem
-                    </Label>
-                    <Input type="number" min="1" value={form.diasViagem} onChange={f("diasViagem")} />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Diária do Motorista (R$/dia)</Label>
-                    <Input type="number" step="10" value={form.valorDiaria} onChange={f("valorDiaria")} />
-                  </div>
-                </div>
-
-                <Separator />
-
-                {/* Manutenção */}
-                <div className="space-y-2">
-                  <Label className="flex items-center gap-1">
-                    <Wrench className="h-3.5 w-3.5" />
-                    Custo de Manutenção por KM (R$/km)
-                  </Label>
-                  <Input type="number" step="0.01" value={form.custoManutencaoKm} onChange={f("custoManutencaoKm")} />
-                  <p className="text-xs text-muted-foreground">
-                    Custo médio de manutenção por km rodado (pneus, óleo, peças, etc.)
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-
-            <div className="space-y-2">
-              <Label>Observações</Label>
-              <Textarea
-                placeholder="Anotações sobre esta simulação..."
-                value={form.observacoes}
-                onChange={f("observacoes")}
-                rows={2}
+      {/* Formulário de Rota */}
+      <Card>
+        <CardContent className="p-5">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-end">
+            <div className="lg:col-span-4 space-y-1.5">
+              <Label className="flex items-center gap-1.5">
+                <MapPin className="w-3.5 h-3.5 text-green-500" /> Origem
+              </Label>
+              <Input
+                ref={origemInputRef}
+                placeholder="Cidade, endereço ou empresa..."
+                defaultValue={origem}
+                onChange={e => setOrigem(e.target.value)}
+                className="text-base"
               />
             </div>
-
-            <div className="flex gap-3">
-              <Button onClick={handleSimular} className="flex-1" size="lg">
-                <Calculator className="h-4 w-4 mr-2" />
-                Calcular Viabilidade
+            <div className="lg:col-span-1 flex items-center justify-center">
+              <ArrowRight className="w-5 h-5 text-muted-foreground" />
+            </div>
+            <div className="lg:col-span-4 space-y-1.5">
+              <Label className="flex items-center gap-1.5">
+                <MapPin className="w-3.5 h-3.5 text-red-500" /> Destino
+              </Label>
+              <Input
+                ref={destinoInputRef}
+                placeholder="Cidade, endereço ou empresa..."
+                defaultValue={destino}
+                onChange={e => setDestino(e.target.value)}
+                className="text-base"
+              />
+            </div>
+            <div className="lg:col-span-3 flex gap-2">
+              <Button
+                onClick={calcularRotas}
+                disabled={calculando}
+                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white gap-2"
+              >
+                {calculando ? (
+                  <span className="flex items-center gap-2">
+                    <span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />
+                    Calculando...
+                  </span>
+                ) : (
+                  <>
+                    <Navigation className="w-4 h-4" /> Calcular Rotas
+                  </>
+                )}
               </Button>
-              {simulado && (
-                <Button onClick={handleSalvar} variant="outline" size="lg" disabled={salvando}>
-                  <Save className="h-4 w-4 mr-2" />
-                  {salvando ? "Salvando..." : "Salvar no Histórico"}
-                </Button>
-              )}
             </div>
           </div>
 
-          {/* Resultado */}
-          <div className="space-y-4">
-            {simulado ? (
-              <>
-                {/* Veredito */}
-                <Card className={`border-2 ${resultado.viavel ? "border-green-400 bg-green-500/5" : "border-red-400 bg-red-500/5"}`}>
-                  <CardContent className="p-5 text-center space-y-2">
-                    {resultado.viavel ? (
-                      <>
-                        <CheckCircle2 className="h-10 w-10 text-green-500 mx-auto" />
-                        <p className="text-lg font-bold text-green-700">Viagem Viável</p>
-                        <p className="text-sm text-green-600">Margem acima de 15% — frete compensador</p>
-                      </>
-                    ) : (
-                      <>
-                        <AlertTriangle className="h-10 w-10 text-red-500 mx-auto" />
-                        <p className="text-lg font-bold text-red-700">Atenção!</p>
-                        <p className="text-sm text-red-600">Margem abaixo de 15% — revise os valores</p>
-                      </>
-                    )}
-                    <div className="mt-3 p-3 rounded-lg bg-white/50 border">
-                      <p className="text-3xl font-bold" style={{ color: resultado.viavel ? "#16a34a" : "#dc2626" }}>
-                        {fmtN(resultado.margemPct, 1)}%
-                      </p>
-                      <p className="text-xs text-muted-foreground">Margem de Lucro</p>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Resumo financeiro */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-sm flex items-center gap-2">
-                      <BarChart3 className="h-4 w-4" />
-                      Resumo Financeiro
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    <div className="flex justify-between items-center py-1">
-                      <span className="text-sm text-green-600 font-medium">Receita (Frete)</span>
-                      <span className="font-bold text-green-600">{fmt(parseFloat(form.valorFrete) || 0)}</span>
-                    </div>
-                    <Separator />
-                    <div className="space-y-2 text-sm">
-                      <div className="flex justify-between">
-                        <span className="flex items-center gap-1 text-muted-foreground"><Fuel className="h-3.5 w-3.5" /> Combustível</span>
-                        <span className="text-red-600">- {fmt(resultado.custoCombustivel)}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Pedágios</span>
-                        <span className="text-red-600">- {fmt(parseFloat(form.valorPedagios) || 0)}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="flex items-center gap-1 text-muted-foreground"><Clock className="h-3.5 w-3.5" /> Diárias</span>
-                        <span className="text-red-600">- {fmt(resultado.custoDiarias)}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="flex items-center gap-1 text-muted-foreground"><Wrench className="h-3.5 w-3.5" /> Manutenção</span>
-                        <span className="text-red-600">- {fmt(resultado.custoManutencao)}</span>
-                      </div>
-                      {parseFloat(form.outrosCustos) > 0 && (
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">Outros</span>
-                          <span className="text-red-600">- {fmt(parseFloat(form.outrosCustos))}</span>
-                        </div>
-                      )}
-                    </div>
-                    <Separator />
-                    <div className="flex justify-between items-center py-1">
-                      <span className="text-sm font-semibold">Custo Total</span>
-                      <span className="font-bold text-red-600">{fmt(resultado.custoTotal)}</span>
-                    </div>
-                    <div className="flex justify-between items-center py-1 rounded-lg bg-muted/30 px-2">
-                      <span className="text-sm font-semibold">Margem Bruta</span>
-                      <span className={`font-bold text-lg ${resultado.margemBruta >= 0 ? "text-green-600" : "text-red-600"}`}>
-                        {fmt(resultado.margemBruta)}
-                      </span>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Indicadores por KM */}
-                <Card>
-                  <CardContent className="p-4 space-y-3">
-                    <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Por Quilômetro</p>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="text-center p-3 rounded-lg bg-green-500/10">
-                        <p className="text-lg font-bold text-green-600">R$ {fmtN(resultado.receitaPorKm, 2)}</p>
-                        <p className="text-xs text-muted-foreground">Receita/km</p>
-                      </div>
-                      <div className="text-center p-3 rounded-lg bg-red-500/10">
-                        <p className="text-lg font-bold text-red-600">R$ {fmtN(resultado.custoPorKm, 2)}</p>
-                        <p className="text-xs text-muted-foreground">Custo/km</p>
-                      </div>
-                    </div>
-                    {form.distanciaKm && (
-                      <div className="text-center text-xs text-muted-foreground">
-                        {fmtN(resultado.litros, 1)} litros de diesel para {Number(form.distanciaKm).toLocaleString("pt-BR")} km
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              </>
-            ) : (
-              <Card className="border-dashed">
-                <CardContent className="p-8 text-center space-y-3">
-                  <Calculator className="h-12 w-12 text-muted-foreground/40 mx-auto" />
-                  <p className="text-muted-foreground text-sm">
-                    Preencha os dados e clique em <strong>Calcular Viabilidade</strong> para ver o resultado
-                  </p>
-                </CardContent>
-              </Card>
+          {/* Opções */}
+          <div className="flex items-center gap-6 mt-3 pt-3 border-t">
+            <label className="flex items-center gap-2 cursor-pointer text-sm">
+              <input
+                type="checkbox"
+                checked={idaVolta}
+                onChange={e => setIdaVolta(e.target.checked)}
+                className="rounded border-gray-300"
+              />
+              Ida e Volta
+            </label>
+            {custoMedioTanque && custoMedioTanque.diesel.custoMedio > 0 && (
+              <span className="text-xs text-muted-foreground">
+                Custo médio do tanque: <strong className="text-foreground">R$ {custoMedioTanque.diesel.custoMedio.toFixed(3)}/L</strong>
+              </span>
             )}
           </div>
-        </div>
+        </CardContent>
+      </Card>
 
-        {/* Histórico de simulações */}
-        {(historico ?? []).length > 0 && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base flex items-center gap-2">
-                <BarChart3 className="h-4 w-4" />
-                Histórico de Simulações
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b text-muted-foreground text-xs">
-                      <th className="text-left py-2 pr-4">Descrição</th>
-                      <th className="text-left py-2 pr-4">Rota</th>
-                      <th className="text-right py-2 pr-4">Distância</th>
-                      <th className="text-right py-2 pr-4">Frete</th>
-                      <th className="text-right py-2 pr-4">Custo</th>
-                      <th className="text-right py-2 pr-4">Margem</th>
-                      <th className="text-center py-2">Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {(historico ?? []).map((s: any) => {
-                      const margem = Number(s.margemPct) || 0;
-                      const viavel = margem >= 15;
-                      return (
-                        <tr key={s.id} className="border-b hover:bg-muted/30 transition-colors">
-                          <td className="py-2 pr-4 font-medium">{s.descricao}</td>
-                          <td className="py-2 pr-4 text-muted-foreground text-xs">
-                            {s.origem && s.destino ? `${s.origem} → ${s.destino}` : s.origem || s.destino || "—"}
-                          </td>
-                          <td className="py-2 pr-4 text-right">{Number(s.distanciaKm).toLocaleString("pt-BR")} km</td>
-                          <td className="py-2 pr-4 text-right text-green-600">{fmt(Number(s.valorFrete))}</td>
-                          <td className="py-2 pr-4 text-right text-red-600">{fmt(Number(s.custoTotal))}</td>
-                          <td className="py-2 pr-4 text-right font-semibold" style={{ color: viavel ? "#16a34a" : "#dc2626" }}>
-                            {fmtN(margem, 1)}%
-                          </td>
-                          <td className="py-2 text-center">
-                            <Badge className={viavel ? "bg-green-500/10 text-green-700 border-green-200" : "bg-red-500/10 text-red-700 border-red-200"}>
-                              {viavel ? "Viável" : "Revisar"}
-                            </Badge>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
+      {/* Mapa */}
+      <Card className="overflow-hidden">
+        <MapView
+          className="h-[400px] lg:h-[500px]"
+          initialCenter={{ lat: -15.77, lng: -47.92 }}
+          initialZoom={4}
+          onMapReady={handleMapReady}
+        />
+      </Card>
+
+      {/* Rotas encontradas */}
+      {rotas.length > 0 && (
+        <div className="space-y-4">
+          <h2 className="text-lg font-semibold flex items-center gap-2">
+            <Route className="w-5 h-5" />
+            {rotas.length} rota{rotas.length > 1 ? "s" : ""} encontrada{rotas.length > 1 ? "s" : ""}
+            <span className="text-sm font-normal text-muted-foreground ml-2">
+              {origem} → {destino}
+            </span>
+          </h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {rotas.map((rota, idx) => (
+              <Card
+                key={idx}
+                className={`cursor-pointer transition-all ${
+                  rotaSelecionada === idx
+                    ? "ring-2 ring-blue-500 shadow-lg"
+                    : "hover:shadow-md opacity-75"
+                }`}
+                onClick={() => setRotaSelecionada(idx)}
+              >
+                <CardContent className="p-4 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div
+                        className="w-3 h-3 rounded-full shrink-0"
+                        style={{ backgroundColor: ROUTE_COLORS[idx] }}
+                      />
+                      <span className="font-semibold text-sm">Rota {idx + 1}</span>
+                    </div>
+                    {rotaSelecionada === idx && (
+                      <Badge className="bg-blue-100 text-blue-700 text-xs">Selecionada</Badge>
+                    )}
+                  </div>
+
+                  <p className="text-xs text-muted-foreground truncate" title={rota.summary}>
+                    via {rota.summary}
+                  </p>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="flex items-center gap-1.5">
+                      <Navigation className="w-3.5 h-3.5 text-blue-500 shrink-0" />
+                      <div>
+                        <p className="text-xs text-muted-foreground">Distância</p>
+                        <p className="font-bold text-sm">
+                          {fmtKm(idaVolta ? rota.distanceKm * 2 : rota.distanceKm)}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <Clock className="w-3.5 h-3.5 text-orange-500 shrink-0" />
+                      <div>
+                        <p className="text-xs text-muted-foreground">Tempo</p>
+                        <p className="font-bold text-sm">
+                          {fmtTempo(idaVolta ? rota.durationSec * 2 : rota.durationSec)}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className={`flex items-center gap-1 text-xs p-1.5 rounded ${
+                    rota.hasTolls
+                      ? "text-yellow-600 bg-yellow-50 dark:bg-yellow-950/30"
+                      : "text-green-600 bg-green-50 dark:bg-green-950/30"
+                  }`}>
+                    {rota.hasTolls ? (
+                      <><AlertTriangle className="w-3 h-3" /> Rota com pedágio</>
+                    ) : (
+                      <><Navigation className="w-3 h-3" /> Sem pedágio detectado</>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Cálculo de custos */}
+      {rotas.length > 0 && (
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Calculator className="w-4 h-4" />
+              Cálculo de Custos — Rota {rotaSelecionada + 1} {idaVolta ? "(Ida e Volta)" : ""}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+              <div className="space-y-1.5">
+                <Label>Veículo *</Label>
+                <Select value={veiculoId} onValueChange={setVeiculoId}>
+                  <SelectTrigger><SelectValue placeholder="Selecionar..." /></SelectTrigger>
+                  <SelectContent>
+                    {veiculos.map((v: any) => (
+                      <SelectItem key={v.id} value={String(v.id)}>
+                        {v.placa} {v.modelo ? `— ${v.modelo}` : ""}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
-            </CardContent>
-          </Card>
-        )}
-      </div>
-);
+              <div className="space-y-1.5">
+                <Label>Valor do Frete (R$)</Label>
+                <Input
+                  type="number" step="0.01" placeholder="0,00"
+                  value={freteTotal} onChange={e => setFreteTotal(e.target.value)}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Dias de Viagem</Label>
+                <Input
+                  type="number" min="1"
+                  value={diasViagem} onChange={e => setDiasViagem(e.target.value)}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Preço Diesel (R$/L)</Label>
+                <Input
+                  type="number" step="0.001"
+                  placeholder={custoMedioTanque?.diesel.custoMedio ? `Tanque: ${custoMedioTanque.diesel.custoMedio.toFixed(3)}` : "0,000"}
+                  value={precoDiesel} onChange={e => setPrecoDiesel(e.target.value)}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Pedágio (R$)</Label>
+                <Input
+                  type="number" step="0.01" placeholder="Manual"
+                  value={pedagioManual} onChange={e => setPedagioManual(e.target.value)}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Outros Custos (R$)</Label>
+                <Input
+                  type="number" step="0.01" placeholder="0,00"
+                  value={outrosCustos} onChange={e => setOutrosCustos(e.target.value)}
+                />
+              </div>
+            </div>
+
+            {/* Resultado do cálculo */}
+            {custoData && veiculoId && (
+              <div className="mt-4 space-y-4">
+                {/* KPIs */}
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+                  <div className="p-3 rounded-lg bg-blue-500/10 text-center">
+                    <Navigation className="w-4 h-4 mx-auto mb-1 text-blue-500" />
+                    <p className="text-xs text-muted-foreground">Distância</p>
+                    <p className="text-lg font-bold text-blue-600">{fmtKm(distanciaFinal)}</p>
+                  </div>
+                  <div className="p-3 rounded-lg bg-orange-500/10 text-center">
+                    <Clock className="w-4 h-4 mx-auto mb-1 text-orange-500" />
+                    <p className="text-xs text-muted-foreground">Tempo Est.</p>
+                    <p className="text-lg font-bold text-orange-600">{fmtTempo(tempoFinal)}</p>
+                  </div>
+                  <div className="p-3 rounded-lg bg-yellow-500/10 text-center">
+                    <Fuel className="w-4 h-4 mx-auto mb-1 text-yellow-600" />
+                    <p className="text-xs text-muted-foreground">Litros</p>
+                    <p className="text-lg font-bold text-yellow-600">{custoData.litrosNecessarios} L</p>
+                  </div>
+                  <div className="p-3 rounded-lg bg-red-500/10 text-center">
+                    <DollarSign className="w-4 h-4 mx-auto mb-1 text-red-500" />
+                    <p className="text-xs text-muted-foreground">Custo Total</p>
+                    <p className="text-lg font-bold text-red-600">{fmt(custoData.custoTotal)}</p>
+                  </div>
+                  <div className="p-3 rounded-lg bg-green-500/10 text-center">
+                    <TrendingUp className="w-4 h-4 mx-auto mb-1 text-green-500" />
+                    <p className="text-xs text-muted-foreground">Lucro Est.</p>
+                    <p className={`text-lg font-bold ${custoData.lucroEstimado >= 0 ? "text-green-600" : "text-red-600"}`}>
+                      {fmt(custoData.lucroEstimado)}
+                    </p>
+                  </div>
+                  <div className="p-3 rounded-lg text-center" style={{
+                    backgroundColor: custoData.classificacao === "otimo" ? "rgba(34,197,94,0.1)" :
+                      custoData.classificacao === "bom" ? "rgba(59,130,246,0.1)" :
+                      custoData.classificacao === "atencao" ? "rgba(245,158,11,0.1)" : "rgba(239,68,68,0.1)"
+                  }}>
+                    <Truck className="w-4 h-4 mx-auto mb-1" />
+                    <p className="text-xs text-muted-foreground">Margem</p>
+                    <p className="text-lg font-bold">{custoData.margemPercent}%</p>
+                    <Badge className={`text-xs ${
+                      custoData.classificacao === "otimo" ? "bg-green-100 text-green-700" :
+                      custoData.classificacao === "bom" ? "bg-blue-100 text-blue-700" :
+                      custoData.classificacao === "atencao" ? "bg-yellow-100 text-yellow-700" : "bg-red-100 text-red-700"
+                    }`}>
+                      {custoData.classificacao === "otimo" ? "Ótimo" :
+                       custoData.classificacao === "bom" ? "Bom" :
+                       custoData.classificacao === "atencao" ? "Atenção" : "Prejuízo"}
+                    </Badge>
+                  </div>
+                </div>
+
+                {/* Detalhamento */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="p-4 bg-muted/50 rounded-lg space-y-2">
+                    <p className="text-sm font-semibold">Detalhamento de Custos</p>
+                    <div className="space-y-1.5 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Combustível ({custoData.litrosNecessarios}L x R$ {custoData.precoDieselUsado?.toFixed(3)})</span>
+                        <span className="font-medium">{fmt(custoData.custoCombustivel)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Diárias Motorista ({diasViagem} dia{Number(diasViagem) > 1 ? "s" : ""})</span>
+                        <span className="font-medium">{fmt(custoData.custoDiariasMotorista)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Diárias Ajudantes</span>
+                        <span className="font-medium">{fmt(custoData.custoDiariasAjudantes)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Pedágio (manual)</span>
+                        <span className="font-medium">{fmt(custoData.pedagioEstimado)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Outros custos</span>
+                        <span className="font-medium">{fmt(custoData.outrosCustos)}</span>
+                      </div>
+                      <div className="flex justify-between pt-2 border-t font-bold">
+                        <span>Total de Custos</span>
+                        <span className="text-red-600">{fmt(custoData.custoTotal)}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="p-4 bg-muted/50 rounded-lg space-y-2">
+                    <p className="text-sm font-semibold">Resumo Financeiro</p>
+                    <div className="space-y-1.5 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Frete</span>
+                        <span className="font-medium text-green-600">{fmt(custoData.freteTotal)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">(-) Custos</span>
+                        <span className="font-medium text-red-600">{fmt(custoData.custoTotal)}</span>
+                      </div>
+                      <div className="flex justify-between pt-2 border-t font-bold">
+                        <span>Lucro Estimado</span>
+                        <span className={custoData.lucroEstimado >= 0 ? "text-green-600" : "text-red-600"}>
+                          {fmt(custoData.lucroEstimado)}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Margem</span>
+                        <span className="font-bold">{custoData.margemPercent}%</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Consumo médio veículo</span>
+                        <span>{custoData.mediaConsumoVeiculo} km/L</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Custo por km</span>
+                        <span className="font-medium">
+                          {distanciaFinal > 0 ? fmt(custoData.custoTotal / distanciaFinal) : "—"}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Receita por km</span>
+                        <span className="font-medium">
+                          {distanciaFinal > 0 ? fmt(custoData.freteTotal / distanciaFinal) : "—"}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Botão salvar */}
+                <div className="flex justify-end">
+                  <Button
+                    onClick={() => setShowSalvar(true)}
+                    className="gap-2 bg-green-600 hover:bg-green-700 text-white"
+                  >
+                    <Save className="w-4 h-4" /> Salvar Simulação
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {!veiculoId && rotas.length > 0 && (
+              <div className="text-center py-6 text-muted-foreground text-sm">
+                <Truck className="w-10 h-10 mx-auto mb-2 opacity-30" />
+                <p>Selecione um veículo acima para calcular os custos da viagem</p>
+                <p className="text-xs mt-1">O cálculo usa o consumo médio cadastrado do veículo</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Dialog Salvar */}
+      <Dialog open={showSalvar} onOpenChange={setShowSalvar}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Salvar Simulação</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div className="space-y-1.5">
+              <Label>Descrição *</Label>
+              <Input
+                placeholder="Ex: Frete SP → RJ - Carga de aço"
+                value={descricaoSalvar}
+                onChange={e => setDescricaoSalvar(e.target.value)}
+              />
+            </div>
+            <div className="text-sm text-muted-foreground p-3 bg-muted rounded-lg">
+              <p><strong>{origem}</strong> → <strong>{destino}</strong></p>
+              <p className="mt-1">{fmtKm(distanciaFinal)} | Custo: {custoData ? fmt(custoData.custoTotal) : "—"} | Lucro: {custoData ? fmt(custoData.lucroEstimado) : "—"}</p>
+            </div>
+          </div>
+          <div className="flex justify-end gap-2 mt-2">
+            <Button variant="outline" onClick={() => setShowSalvar(false)}>Cancelar</Button>
+            <Button
+              disabled={!descricaoSalvar || salvarMutation.isPending}
+              onClick={() => {
+                if (!custoData) return;
+                salvarMutation.mutate({
+                  empresaId: EMPRESA_ID,
+                  veiculoId: Number(veiculoId) || undefined,
+                  descricao: descricaoSalvar,
+                  origem,
+                  destino,
+                  distanciaKm: distanciaFinal,
+                  valorFrete: Number(freteTotal) || 0,
+                  custoTotal: custoData.custoTotal,
+                  margemBruta: custoData.lucroEstimado,
+                  margemPct: custoData.margemPercent,
+                  detalhes: JSON.stringify({
+                    rotaIndex: rotaSelecionada,
+                    rotaSummary: rotaAtual?.summary,
+                    tempoEstimado: tempoFinal,
+                    litros: custoData.litrosNecessarios,
+                    idaVolta,
+                    hasTolls: rotaAtual?.hasTolls,
+                  }),
+                  observacoes: undefined,
+                });
+              }}
+              className="bg-green-600 hover:bg-green-700 text-white"
+            >
+              {salvarMutation.isPending ? "Salvando..." : "Salvar"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog Histórico */}
+      <Dialog open={showHistorico} onOpenChange={setShowHistorico}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <History className="w-5 h-5" /> Simulações Salvas
+            </DialogTitle>
+          </DialogHeader>
+          {simulacoes.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">
+              <History className="w-8 h-8 mx-auto mb-2 opacity-30" />
+              <p>Nenhuma simulação salva ainda</p>
+              <p className="text-xs mt-1">Calcule uma rota e salve para ver aqui</p>
+            </div>
+          ) : (
+            <div className="overflow-y-auto max-h-96 space-y-2">
+              {simulacoes.map((s: any) => (
+                <div key={s.id} className="p-3 border rounded-lg hover:bg-muted/30 transition-colors">
+                  <div className="flex items-center justify-between">
+                    <p className="font-medium text-sm">{s.descricao}</p>
+                    <Badge className={`text-xs ${
+                      Number(s.margemPct) >= 30 ? "bg-green-100 text-green-700" :
+                      Number(s.margemPct) >= 15 ? "bg-blue-100 text-blue-700" :
+                      Number(s.margemPct) >= 0 ? "bg-yellow-100 text-yellow-700" : "bg-red-100 text-red-700"
+                    }`}>
+                      {Number(s.margemPct).toFixed(1)}%
+                    </Badge>
+                  </div>
+                  <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1.5 text-xs text-muted-foreground">
+                    {s.origem && s.destino && <span className="font-medium">{s.origem} → {s.destino}</span>}
+                    <span>{fmtKm(Number(s.distanciaKm))}</span>
+                    <span>Frete: {fmt(Number(s.valorFrete))}</span>
+                    <span>Custo: {fmt(Number(s.custoTotal))}</span>
+                    <span className={Number(s.margemBruta) >= 0 ? "text-green-600" : "text-red-600"}>
+                      Lucro: {fmt(Number(s.margemBruta))}
+                    </span>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {new Date(s.createdAt).toLocaleDateString("pt-BR")} {s.createdBy ? `por ${s.createdBy}` : ""}
+                  </p>
+                </div>
+              ))}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
 }

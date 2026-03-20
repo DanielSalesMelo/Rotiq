@@ -139,3 +139,12 @@
 
 ## Bugs reportados (20/03/2026 — sessão 4)
 - [x] Menu lateral: ao clicar em alguns itens, o scroll do menu volta para o topo em vez de manter a posição
+
+## Novas features (20/03/2026 — sessão 5)
+- [x] Simulador de Viagem: Google Maps com autocomplete de cidades, 3 rotas alternativas, KM, tempo, custo combustível, pedágio manual
+- [x] Simulador de Viagem: mapa visual com rotas traçadas
+- [x] Simulador de Viagem: integrar dados do veículo (consumo médio) do cadastro
+- [ ] Viagens: adicionar autocomplete de origem/destino e dados de rota (KM, tempo) na criação de viagem
+- [x] Estoque Combustível: custo médio ponderado do tanque interno (registrar compras com preço e calcular média)
+- [x] Estoque Combustível: histórico de compras com data, fornecedor, litros, valor unitário, valor total
+- [x] Abastecimentos: adicionar lista dos principais postos de combustível do Brasil (Ipiranga, BR, Shell, Ale, etc.) no campo de posto externo

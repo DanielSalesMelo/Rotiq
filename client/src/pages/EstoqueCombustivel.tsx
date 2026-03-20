@@ -7,14 +7,19 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { Fuel, Plus, TrendingUp, TrendingDown, Droplets, AlertTriangle } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Fuel, Plus, TrendingUp, TrendingDown, Droplets, AlertTriangle, DollarSign, BarChart3, ShoppingCart } from "lucide-react";
 import { toast } from "sonner";
 
 const EMPRESA_ID = 1;
 const CAPACIDADE_DIESEL = 10000;
 const CAPACIDADE_ARLA = 2000;
 
-function GaugeTanque({ litros, capacidade, tipo }: { litros: number; capacidade: number; tipo: string }) {
+function fmt(v: number) {
+  return v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+}
+
+function GaugeTanque({ litros, capacidade, tipo, custoMedio }: { litros: number; capacidade: number; tipo: string; custoMedio?: number }) {
   const pct = Math.min(100, Math.max(0, (litros / capacidade) * 100));
   const radius = 70;
   const circumference = 2 * Math.PI * radius;
@@ -46,8 +51,106 @@ function GaugeTanque({ litros, capacidade, tipo }: { litros: number; capacidade:
         <p className="text-lg font-semibold">{litros.toLocaleString("pt-BR", { minimumFractionDigits: 0 })} L</p>
         <p className="text-xs text-muted-foreground">de {capacidade.toLocaleString("pt-BR")} L</p>
         <Badge className={`mt-1 text-xs ${statusColor}`}>{status}</Badge>
+        {custoMedio !== undefined && custoMedio > 0 && (
+          <p className="text-xs text-muted-foreground mt-1">
+            Custo médio: <span className="font-semibold text-foreground">R$ {custoMedio.toFixed(3)}/L</span>
+          </p>
+        )}
       </div>
     </div>
+  );
+}
+
+function CustoMedioCard({ titulo, dados }: {
+  titulo: string;
+  dados: {
+    custoMedio: number;
+    totalComprado: number;
+    totalInvestido: number;
+    ultimaCompra: { data: string; valorUnitario: number; fornecedor: string | null } | null;
+    historicoCompras: { data: string; quantidade: number; valorUnitario: number; valorTotal: number; custoMedio: number; fornecedor: string | null }[];
+  } | undefined;
+}) {
+  if (!dados || dados.totalComprado === 0) {
+    return (
+      <Card className="border-dashed">
+        <CardContent className="p-6 text-center">
+          <ShoppingCart className="w-8 h-8 mx-auto mb-2 text-muted-foreground/30" />
+          <p className="text-sm text-muted-foreground">Nenhuma compra de {titulo} registrada</p>
+          <p className="text-xs text-muted-foreground mt-1">Registre uma entrada com valor para calcular o custo médio</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card>
+      <CardHeader className="pb-3">
+        <CardTitle className="text-sm flex items-center gap-2">
+          <DollarSign className="h-4 w-4 text-green-600" />
+          Custo Médio — {titulo}
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {/* KPIs */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div className="p-3 rounded-lg bg-green-500/10 text-center">
+            <p className="text-xs text-muted-foreground">Custo Médio/L</p>
+            <p className="text-lg font-bold text-green-600">R$ {dados.custoMedio.toFixed(3)}</p>
+          </div>
+          <div className="p-3 rounded-lg bg-blue-500/10 text-center">
+            <p className="text-xs text-muted-foreground">Total Comprado</p>
+            <p className="text-lg font-bold text-blue-600">{dados.totalComprado.toLocaleString("pt-BR")} L</p>
+          </div>
+          <div className="p-3 rounded-lg bg-orange-500/10 text-center">
+            <p className="text-xs text-muted-foreground">Total Investido</p>
+            <p className="text-lg font-bold text-orange-600">{fmt(dados.totalInvestido)}</p>
+          </div>
+          <div className="p-3 rounded-lg bg-purple-500/10 text-center">
+            <p className="text-xs text-muted-foreground">Última Compra</p>
+            <p className="text-lg font-bold text-purple-600">
+              {dados.ultimaCompra ? `R$ ${dados.ultimaCompra.valorUnitario.toFixed(3)}` : "—"}
+            </p>
+            {dados.ultimaCompra?.fornecedor && (
+              <p className="text-xs text-muted-foreground truncate">{dados.ultimaCompra.fornecedor}</p>
+            )}
+          </div>
+        </div>
+
+        {/* Histórico de compras */}
+        {dados.historicoCompras.length > 0 && (
+          <div>
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Histórico de Compras (últimas {dados.historicoCompras.length})</p>
+            <div className="overflow-x-auto max-h-48 overflow-y-auto">
+              <table className="w-full text-xs">
+                <thead className="sticky top-0 bg-background">
+                  <tr className="border-b text-muted-foreground">
+                    <th className="text-left py-1.5 pr-3">Data</th>
+                    <th className="text-right py-1.5 pr-3">Qtd (L)</th>
+                    <th className="text-right py-1.5 pr-3">R$/L</th>
+                    <th className="text-right py-1.5 pr-3">Total</th>
+                    <th className="text-right py-1.5 pr-3">Custo Médio</th>
+                    <th className="text-left py-1.5">Fornecedor</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {[...dados.historicoCompras].reverse().map((c, i) => (
+                    <tr key={i} className="border-b hover:bg-muted/30">
+                      <td className="py-1.5 pr-3">{new Date(c.data).toLocaleDateString("pt-BR")}</td>
+                      <td className="py-1.5 pr-3 text-right font-medium">{c.quantidade.toLocaleString("pt-BR")}</td>
+                      <td className="py-1.5 pr-3 text-right">R$ {c.valorUnitario.toFixed(3)}</td>
+                      <td className="py-1.5 pr-3 text-right">{fmt(c.valorTotal)}</td>
+                      <td className="py-1.5 pr-3 text-right font-semibold text-green-600">R$ {c.custoMedio.toFixed(3)}</td>
+                      <td className="py-1.5 text-muted-foreground truncate max-w-[120px]">{c.fornecedor || "—"}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 }
 
@@ -67,6 +170,9 @@ export default function EstoqueCombustivel() {
   const { data: saldo = { diesel: 0, arla: 0 }, refetch: refetchSaldo } =
     trpc.frota.tanque.saldoAtual.useQuery({ empresaId: EMPRESA_ID });
 
+  const { data: custoMedio, refetch: refetchCusto } =
+    trpc.frota.tanque.custoMedio.useQuery({ empresaId: EMPRESA_ID });
+
   const { data: historico = [], refetch: refetchHistorico } =
     trpc.frota.tanque.list.useQuery({ empresaId: EMPRESA_ID, limit: 100 });
 
@@ -77,6 +183,7 @@ export default function EstoqueCombustivel() {
       setForm({ tipo: "diesel", operacao: "entrada", data: new Date().toISOString().split("T")[0], quantidade: "", valorUnitario: "", fornecedor: "", notaFiscal: "", observacoes: "" });
       refetchSaldo();
       refetchHistorico();
+      refetchCusto();
     },
     onError: (e) => toast.error(e.message),
   });
@@ -106,20 +213,24 @@ export default function EstoqueCombustivel() {
   const dieselPct = Math.min(100, (saldo.diesel / CAPACIDADE_DIESEL) * 100);
   const arlaPct = Math.min(100, (saldo.arla / CAPACIDADE_ARLA) * 100);
 
+  // Valor do estoque atual baseado no custo médio
+  const valorEstoqueDiesel = custoMedio ? saldo.diesel * custoMedio.diesel.custoMedio : 0;
+  const valorEstoqueArla = custoMedio ? saldo.arla * custoMedio.arla.custoMedio : 0;
+
   return (
-<div className="p-6 space-y-6">
+    <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
             <Fuel className="w-6 h-6 text-orange-500" />
             Estoque de Combustível
           </h1>
-          <p className="text-muted-foreground text-sm mt-1">Controle do tanque interno</p>
+          <p className="text-muted-foreground text-sm mt-1">Controle do tanque interno — saldo, custo médio e movimentações</p>
         </div>
         <Dialog open={modalOpen} onOpenChange={setModalOpen}>
           <DialogTrigger asChild>
             <Button className="bg-orange-500 hover:bg-orange-600 text-white gap-2">
-              <Plus className="w-4 h-4" /> Adicionar Combustível
+              <Plus className="w-4 h-4" /> Registrar Movimentação
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-lg">
@@ -156,8 +267,11 @@ export default function EstoqueCombustivel() {
                 <Input type="number" placeholder="0,000" value={form.quantidade} onChange={e => setForm(f => ({ ...f, quantidade: e.target.value }))} />
               </div>
               <div className="space-y-1">
-                <Label>Valor Unitário (R$/L)</Label>
-                <Input type="number" placeholder="0,000" value={form.valorUnitario} onChange={e => setForm(f => ({ ...f, valorUnitario: e.target.value }))} />
+                <Label>Valor Unitário (R$/L) {form.operacao === "entrada" ? "*" : ""}</Label>
+                <Input type="number" step="0.001" placeholder="0,000" value={form.valorUnitario} onChange={e => setForm(f => ({ ...f, valorUnitario: e.target.value }))} />
+                {form.operacao === "entrada" && (
+                  <p className="text-xs text-muted-foreground">Informe o preço por litro para calcular o custo médio</p>
+                )}
               </div>
               <div className="space-y-1">
                 <Label>Nota Fiscal</Label>
@@ -172,9 +286,16 @@ export default function EstoqueCombustivel() {
                 <Input placeholder="Observações opcionais" value={form.observacoes} onChange={e => setForm(f => ({ ...f, observacoes: e.target.value }))} />
               </div>
               {form.quantidade && form.valorUnitario && (
-                <div className="col-span-2 p-3 bg-muted rounded-lg text-sm">
-                  <span className="font-medium">Valor Total: </span>
-                  {(Number(form.quantidade) * Number(form.valorUnitario)).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+                <div className="col-span-2 p-3 bg-muted rounded-lg text-sm flex justify-between">
+                  <span>
+                    <span className="font-medium">Valor Total: </span>
+                    {(Number(form.quantidade) * Number(form.valorUnitario)).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+                  </span>
+                  {custoMedio && form.operacao === "entrada" && (
+                    <span className="text-muted-foreground">
+                      Custo médio atual: R$ {form.tipo === "diesel" ? custoMedio.diesel.custoMedio.toFixed(3) : custoMedio.arla.custoMedio.toFixed(3)}/L
+                    </span>
+                  )}
                 </div>
               )}
             </div>
@@ -188,6 +309,39 @@ export default function EstoqueCombustivel() {
         </Dialog>
       </div>
 
+      {/* Valor do estoque */}
+      {(valorEstoqueDiesel > 0 || valorEstoqueArla > 0) && (
+        <Card className="border-green-200 bg-green-500/5">
+          <CardContent className="p-4 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <DollarSign className="h-5 w-5 text-green-600" />
+              <div>
+                <p className="text-sm font-medium">Valor Estimado do Estoque Atual</p>
+                <p className="text-xs text-muted-foreground">Baseado no custo médio ponderado de cada tipo</p>
+              </div>
+            </div>
+            <div className="flex gap-6 text-right">
+              {valorEstoqueDiesel > 0 && (
+                <div>
+                  <p className="text-xs text-muted-foreground">Diesel</p>
+                  <p className="text-lg font-bold text-green-600">{fmt(valorEstoqueDiesel)}</p>
+                </div>
+              )}
+              {valorEstoqueArla > 0 && (
+                <div>
+                  <p className="text-xs text-muted-foreground">ARLA</p>
+                  <p className="text-lg font-bold text-green-600">{fmt(valorEstoqueArla)}</p>
+                </div>
+              )}
+              <div>
+                <p className="text-xs text-muted-foreground">Total</p>
+                <p className="text-xl font-bold text-green-700">{fmt(valorEstoqueDiesel + valorEstoqueArla)}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Gauges */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card>
@@ -195,7 +349,7 @@ export default function EstoqueCombustivel() {
             <CardTitle className="text-base">Diesel</CardTitle>
           </CardHeader>
           <CardContent className="flex flex-col md:flex-row items-center gap-6">
-            <GaugeTanque litros={saldo.diesel} capacidade={CAPACIDADE_DIESEL} tipo="Diesel" />
+            <GaugeTanque litros={saldo.diesel} capacidade={CAPACIDADE_DIESEL} tipo="Diesel" custoMedio={custoMedio?.diesel.custoMedio} />
             <div className="grid grid-cols-2 gap-3 flex-1 w-full">
               <div className="p-3 bg-green-50 dark:bg-green-950/30 rounded-lg">
                 <p className="text-xs text-muted-foreground">Disponível</p>
@@ -222,7 +376,7 @@ export default function EstoqueCombustivel() {
             <CardTitle className="text-base">ARLA 32</CardTitle>
           </CardHeader>
           <CardContent className="flex flex-col md:flex-row items-center gap-6">
-            <GaugeTanque litros={saldo.arla} capacidade={CAPACIDADE_ARLA} tipo="ARLA 32" />
+            <GaugeTanque litros={saldo.arla} capacidade={CAPACIDADE_ARLA} tipo="ARLA 32" custoMedio={custoMedio?.arla.custoMedio} />
             <div className="grid grid-cols-2 gap-3 flex-1 w-full">
               <div className="p-3 bg-green-50 dark:bg-green-950/30 rounded-lg">
                 <p className="text-xs text-muted-foreground">Disponível</p>
@@ -255,10 +409,19 @@ export default function EstoqueCombustivel() {
         </div>
       )}
 
+      {/* Custo Médio Ponderado */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <CustoMedioCard titulo="Diesel" dados={custoMedio?.diesel} />
+        <CustoMedioCard titulo="ARLA 32" dados={custoMedio?.arla} />
+      </div>
+
       {/* Histórico */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Histórico de Movimentações</CardTitle>
+          <CardTitle className="text-base flex items-center gap-2">
+            <BarChart3 className="h-4 w-4" />
+            Histórico de Movimentações
+          </CardTitle>
         </CardHeader>
         <CardContent>
           {historico.length === 0 ? (
@@ -308,5 +471,5 @@ export default function EstoqueCombustivel() {
         </CardContent>
       </Card>
     </div>
-);
+  );
 }

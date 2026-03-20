@@ -143,7 +143,36 @@ function AbastecimentoForm({ veiculos, motoristas, onSave, onClose }: {
         </div>
         <div className="space-y-1.5">
           <Label>Local / Posto</Label>
-          <Input value={form.local} onChange={e => setForm(f => ({ ...f, local: e.target.value }))} placeholder="Nome do posto..." />
+          {form.tipoAbastecimento === "externo" ? (
+            <Select value={form.local || "__custom__"} onValueChange={v => setForm(f => ({ ...f, local: v === "__custom__" ? "" : v }))}>
+              <SelectTrigger><SelectValue placeholder="Selecione o posto..." /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__custom__">Outro (digitar)</SelectItem>
+                <SelectItem value="Ipiranga">Ipiranga</SelectItem>
+                <SelectItem value="BR Petrobras">BR Petrobras</SelectItem>
+                <SelectItem value="Shell">Shell</SelectItem>
+                <SelectItem value="Ale">Ale</SelectItem>
+                <SelectItem value="Raízen">Raízen</SelectItem>
+                <SelectItem value="Rodoil">Rodoil</SelectItem>
+                <SelectItem value="Charrua">Charrua</SelectItem>
+                <SelectItem value="Cosan">Cosan</SelectItem>
+                <SelectItem value="Dislub Equador">Dislub Equador</SelectItem>
+                <SelectItem value="Gran Petro">Gran Petro</SelectItem>
+                <SelectItem value="Rede Sim">Rede Sim</SelectItem>
+                <SelectItem value="Total Energies">Total Energies</SelectItem>
+                <SelectItem value="Sabbá">Sabbá</SelectItem>
+                <SelectItem value="Potencial">Potencial</SelectItem>
+                <SelectItem value="Petrosul">Petrosul</SelectItem>
+                <SelectItem value="Taurus">Taurus</SelectItem>
+                <SelectItem value="Bandeira Branca">Bandeira Branca</SelectItem>
+              </SelectContent>
+            </Select>
+          ) : (
+            <Input value={form.local} onChange={e => setForm(f => ({ ...f, local: e.target.value }))} placeholder="Tanque interno" />
+          )}
+          {form.tipoAbastecimento === "externo" && form.local === "" && (
+            <Input className="mt-1" value={form.local} onChange={e => setForm(f => ({ ...f, local: e.target.value }))} placeholder="Digite o nome do posto..." />
+          )}
         </div>
         <div className="space-y-1.5">
           <Label>Tipo</Label>

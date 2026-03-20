@@ -72,6 +72,7 @@ export default function Dashboard() {
   const { data: resumo, isLoading } = trpc.dashboard.resumo.useQuery({ empresaId: EMPRESA_ID });
   const { data: finDash } = trpc.financeiro.dashboard.useQuery({ empresaId: EMPRESA_ID });
   const { data: tanque } = trpc.frota.tanque.saldoAtual.useQuery({ empresaId: EMPRESA_ID });
+  const { data: custoMedioTanque } = trpc.frota.tanque.custoMedio.useQuery({ empresaId: EMPRESA_ID });
 
   const totalAlertas = resumo ? (
     resumo.alertas.contasVencendo7dias +
@@ -165,22 +166,42 @@ export default function Dashboard() {
           />
           <Card>
             <CardContent className="p-5">
-              <p className="text-sm text-muted-foreground font-medium mb-3">Saldo do Tanque</p>
+              <p className="text-sm text-muted-foreground font-medium mb-3">Tanque Interno</p>
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <div className="h-2 w-2 rounded-full bg-blue-500" />
                     <span className="text-sm">Diesel</span>
                   </div>
-                  <span className="font-bold text-sm">{tanque ? `${Number(tanque.diesel).toFixed(0)}L` : "..."}</span>
+                  <div className="text-right">
+                    <span className="font-bold text-sm">{tanque ? `${Number(tanque.diesel).toFixed(0)}L` : "..."}</span>
+                    {custoMedioTanque && custoMedioTanque.diesel.custoMedio > 0 && (
+                      <p className="text-xs text-muted-foreground">R$ {custoMedioTanque.diesel.custoMedio.toFixed(3)}/L</p>
+                    )}
+                  </div>
                 </div>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <div className="h-2 w-2 rounded-full bg-green-500" />
                     <span className="text-sm">ARLA</span>
                   </div>
-                  <span className="font-bold text-sm">{tanque ? `${Number(tanque.arla).toFixed(0)}L` : "..."}</span>
+                  <div className="text-right">
+                    <span className="font-bold text-sm">{tanque ? `${Number(tanque.arla).toFixed(0)}L` : "..."}</span>
+                    {custoMedioTanque && custoMedioTanque.arla.custoMedio > 0 && (
+                      <p className="text-xs text-muted-foreground">R$ {custoMedioTanque.arla.custoMedio.toFixed(3)}/L</p>
+                    )}
+                  </div>
                 </div>
+                {custoMedioTanque && custoMedioTanque.diesel.custoMedio > 0 && tanque && (
+                  <div className="pt-2 mt-2 border-t">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-muted-foreground">Valor em estoque</span>
+                      <span className="font-bold text-foreground">
+                        {formatCurrency(Number(tanque.diesel) * custoMedioTanque.diesel.custoMedio + Number(tanque.arla) * custoMedioTanque.arla.custoMedio)}
+                      </span>
+                    </div>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>

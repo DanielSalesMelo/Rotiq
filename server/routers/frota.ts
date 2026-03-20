@@ -326,6 +326,68 @@ export const frotaRouter = router({
           return { id: (result as any).insertId };
         }, "tanque.create");
       }),
+
+    // Custo médio ponderado do tanque
+    custoMedio: protectedProcedure
+      .input(z.object({ empresaId: z.number() }))
+      .query(async ({ input }) => {
+        return safeDb(async () => {
+          const db = requireDb(await getDb(), "tanque.custoMedio");
+          // Buscar todas as entradas (compras) com valor unitário
+          const entradas = await db.select()
+            .from(controleTanque)
+            .where(and(
+              eq(controleTanque.empresaId, input.empresaId),
+              eq(controleTanque.operacao, "entrada"),
+              isNull(controleTanque.deletedAt),
+              isNotNull(controleTanque.valorUnitario)
+            ))
+            .orderBy(controleTanque.data);
+
+          // Calcular custo médio ponderado por tipo
+          const calcMedia = (tipo: "diesel" | "arla") => {
+            const items = entradas.filter(e => e.tipo === tipo);
+            let saldoQtd = 0;
+            let saldoValor = 0;
+            const historico: { data: string; quantidade: number; valorUnitario: number; valorTotal: number; custoMedio: number; fornecedor: string | null }[] = [];
+
+            for (const item of items) {
+              const qtd = Number(item.quantidade) || 0;
+              const valUnit = Number(item.valorUnitario) || 0;
+              const valTotal = qtd * valUnit;
+              saldoQtd += qtd;
+              saldoValor += valTotal;
+              const custoMedioAtual = saldoQtd > 0 ? saldoValor / saldoQtd : 0;
+              historico.push({
+                data: String(item.data),
+                quantidade: qtd,
+                valorUnitario: valUnit,
+                valorTotal: valTotal,
+                custoMedio: Math.round(custoMedioAtual * 1000) / 1000,
+                fornecedor: item.fornecedor,
+              });
+            }
+
+            // Descontar saídas do saldo (mas não altera custo médio)
+            return {
+              custoMedio: saldoQtd > 0 ? Math.round((saldoValor / saldoQtd) * 1000) / 1000 : 0,
+              totalComprado: Math.round(saldoQtd * 100) / 100,
+              totalInvestido: Math.round(saldoValor * 100) / 100,
+              ultimaCompra: items.length > 0 ? {
+                data: String(items[items.length - 1].data),
+                valorUnitario: Number(items[items.length - 1].valorUnitario) || 0,
+                fornecedor: items[items.length - 1].fornecedor,
+              } : null,
+              historicoCompras: historico.slice(-20), // últimas 20 compras
+            };
+          };
+
+          return {
+            diesel: calcMedia("diesel"),
+            arla: calcMedia("arla"),
+          };
+        }, "tanque.custoMedio");
+      }),
   }),
 
   // ─── CALCULADORA DE VIAGEM ────────────────────────────────────────────────
