@@ -1,7 +1,7 @@
 import { protectedProcedure, router } from "../_core/trpc";
 import { getDb } from "../db";
 import { abastecimentos, manutencoes, controleTanque, veiculos, funcionarios } from "../../drizzle/schema";
-import { eq, and, isNull, isNotNull, desc, gte, sql } from "drizzle-orm";
+import { eq, and, isNull, isNotNull, desc, gte, lte, sql } from "drizzle-orm";
 import { z } from "zod";
 import { safeDb, requireDb } from "../helpers/errorHandler";
 
@@ -18,7 +18,13 @@ export const frotaRouter = router({
       .input(z.object({
         empresaId: z.number(),
         veiculoId: z.number().optional(),
-        limit: z.number().default(50),
+        motoristaId: z.number().optional(),
+        tipoCombustivel: z.enum(["diesel", "arla", "gasolina", "etanol", "gas", "outro"]).optional(),
+        tipoAbastecimento: z.enum(["interno", "externo"]).optional(),
+        dataInicio: z.string().optional(),
+        dataFim: z.string().optional(),
+        busca: z.string().optional(),
+        limit: z.number().default(100),
       }))
       .query(async ({ input }) => {
         return safeDb(async () => {
@@ -28,6 +34,11 @@ export const frotaRouter = router({
               eq(abastecimentos.empresaId, input.empresaId),
               isNull(abastecimentos.deletedAt),
               input.veiculoId ? eq(abastecimentos.veiculoId, input.veiculoId) : undefined,
+              input.motoristaId ? eq(abastecimentos.motoristaId, input.motoristaId) : undefined,
+              input.tipoCombustivel ? eq(abastecimentos.tipoCombustivel, input.tipoCombustivel) : undefined,
+              input.tipoAbastecimento ? eq(abastecimentos.tipoAbastecimento, input.tipoAbastecimento) : undefined,
+              input.dataInicio ? gte(abastecimentos.data, new Date(input.dataInicio)) : undefined,
+              input.dataFim ? lte(abastecimentos.data, new Date(input.dataFim + "T23:59:59")) : undefined,
             ))
             .orderBy(desc(abastecimentos.data))
             .limit(input.limit);
@@ -149,7 +160,11 @@ export const frotaRouter = router({
       .input(z.object({
         empresaId: z.number(),
         veiculoId: z.number().optional(),
-        limit: z.number().default(50),
+        tipo: z.enum(["preventiva", "corretiva", "revisao", "pneu", "eletrica", "funilaria", "outro"]).optional(),
+        dataInicio: z.string().optional(),
+        dataFim: z.string().optional(),
+        busca: z.string().optional(),
+        limit: z.number().default(100),
       }))
       .query(async ({ input }) => {
         return safeDb(async () => {
@@ -159,6 +174,9 @@ export const frotaRouter = router({
               eq(manutencoes.empresaId, input.empresaId),
               isNull(manutencoes.deletedAt),
               input.veiculoId ? eq(manutencoes.veiculoId, input.veiculoId) : undefined,
+              input.tipo ? eq(manutencoes.tipo, input.tipo) : undefined,
+              input.dataInicio ? gte(manutencoes.data, new Date(input.dataInicio)) : undefined,
+              input.dataFim ? lte(manutencoes.data, new Date(input.dataFim + "T23:59:59")) : undefined,
             ))
             .orderBy(desc(manutencoes.data))
             .limit(input.limit);

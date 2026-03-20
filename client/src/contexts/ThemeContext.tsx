@@ -1,10 +1,10 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 
-type Theme = "light" | "dark";
+export type Theme = "light" | "dark" | "gray";
 
 interface ThemeContextType {
   theme: Theme;
-  toggleTheme?: () => void;
+  setTheme: (t: Theme) => void;
   switchable: boolean;
 }
 
@@ -18,38 +18,30 @@ interface ThemeProviderProps {
 
 export function ThemeProvider({
   children,
-  defaultTheme = "light",
-  switchable = false,
+  defaultTheme = "dark",
+  switchable = true,
 }: ThemeProviderProps) {
-  const [theme, setTheme] = useState<Theme>(() => {
+  const [theme, setThemeState] = useState<Theme>(() => {
     if (switchable) {
-      const stored = localStorage.getItem("theme");
-      return (stored as Theme) || defaultTheme;
+      const stored = localStorage.getItem("rotiq-theme") as Theme | null;
+      if (stored === "light" || stored === "dark" || stored === "gray") return stored;
     }
     return defaultTheme;
   });
 
   useEffect(() => {
     const root = document.documentElement;
-    if (theme === "dark") {
-      root.classList.add("dark");
-    } else {
-      root.classList.remove("dark");
-    }
-
-    if (switchable) {
-      localStorage.setItem("theme", theme);
-    }
+    root.classList.remove("dark", "gray");
+    if (theme === "dark") root.classList.add("dark");
+    if (theme === "gray") root.classList.add("gray");
+    if (switchable) localStorage.setItem("rotiq-theme", theme);
   }, [theme, switchable]);
 
-  const toggleTheme = switchable
-    ? () => {
-        setTheme(prev => (prev === "light" ? "dark" : "light"));
-      }
-    : undefined;
+  const setTheme = (t: Theme) => setThemeState(t);
 
+  // legacy toggleTheme compat
   return (
-    <ThemeContext.Provider value={{ theme, toggleTheme, switchable }}>
+    <ThemeContext.Provider value={{ theme, setTheme, switchable }}>
       {children}
     </ThemeContext.Provider>
   );
@@ -57,8 +49,6 @@ export function ThemeProvider({
 
 export function useTheme() {
   const context = useContext(ThemeContext);
-  if (!context) {
-    throw new Error("useTheme must be used within ThemeProvider");
-  }
+  if (!context) throw new Error("useTheme must be used within ThemeProvider");
   return context;
 }

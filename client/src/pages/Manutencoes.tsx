@@ -9,8 +9,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { useState } from "react";
-import { Plus, Wrench } from "lucide-react";
+import { useState, useMemo } from "react";
+import { Plus, Wrench, Filter, X } from "lucide-react";
 import { toast } from "sonner";
 
 const EMPRESA_ID = 1;
@@ -79,7 +79,7 @@ function ManutencaoForm({ veiculos, onSave, onClose }: {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="space-y-1.5">
           <Label>Veículo *</Label>
           <Select value={form.veiculoId} onValueChange={v => setForm(f => ({ ...f, veiculoId: v }))}>
@@ -108,7 +108,7 @@ function ManutencaoForm({ veiculos, onSave, onClose }: {
           <Label>Oficina / Empresa</Label>
           <Input value={form.empresa} onChange={e => setForm(f => ({ ...f, empresa: e.target.value }))} placeholder="Nome da oficina..." />
         </div>
-        <div className="col-span-2 space-y-1.5">
+        <div className="col-span-full space-y-1.5">
           <Label>Descrição do Serviço *</Label>
           <Textarea value={form.descricao} onChange={e => setForm(f => ({ ...f, descricao: e.target.value }))} rows={2} required />
         </div>
@@ -128,6 +128,10 @@ function ManutencaoForm({ veiculos, onSave, onClose }: {
           <Label>Próxima Manutenção (Data)</Label>
           <Input type="date" value={form.proximaManutencaoData} onChange={e => setForm(f => ({ ...f, proximaManutencaoData: e.target.value }))} />
         </div>
+        <div className="col-span-full space-y-1.5">
+          <Label>Observações</Label>
+          <Textarea value={form.observacoes} onChange={e => setForm(f => ({ ...f, observacoes: e.target.value }))} rows={2} />
+        </div>
       </div>
       <div className="flex justify-end gap-2 pt-2">
         <Button type="button" variant="outline" onClick={onClose}>Cancelar</Button>
@@ -139,9 +143,17 @@ function ManutencaoForm({ veiculos, onSave, onClose }: {
 
 export default function Manutencoes() {
   const [open, setOpen] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
   const utils = trpc.useUtils();
 
-  const { data: lista = [], isLoading } = trpc.frota.manutencoes.list.useQuery({ empresaId: EMPRESA_ID, limit: 100 });
+  // Filtros
+  const [filtroVeiculo, setFiltroVeiculo] = useState("todos");
+  const [filtroTipo, setFiltroTipo] = useState("todos");
+  const [filtroDataInicio, setFiltroDataInicio] = useState("");
+  const [filtroDataFim, setFiltroDataFim] = useState("");
+  const [filtroOficina, setFiltroOficina] = useState("");
+
+  const { data: lista = [], isLoading } = trpc.frota.manutencoes.list.useQuery({ empresaId: EMPRESA_ID, limit: 500 });
   const { data: veiculos = [] } = trpc.veiculos.list.useQuery({ empresaId: EMPRESA_ID });
 
   const createMut = trpc.frota.manutencoes.create.useMutation({
@@ -149,46 +161,148 @@ export default function Manutencoes() {
     onError: (e) => toast.error(e.message),
   });
 
-  const veiculoMap = Object.fromEntries(veiculos.map(v => [v.id, v.placa]));
+  const veiculoMap = Object.fromEntries(veiculos.map((v: any) => [v.id, v.placa]));
 
+  // Aplicar filtros
+  const listaFiltrada = useMemo(() => {
+    return lista.filter((m: any) => {
+      if (filtroVeiculo !== "todos" && String(m.veiculoId) !== filtroVeiculo) return false;
+      if (filtroTipo !== "todos" && m.tipo !== filtroTipo) return false;
+      if (filtroDataInicio && new Date(m.data) < new Date(filtroDataInicio)) return false;
+      if (filtroDataFim && new Date(m.data) > new Date(filtroDataFim + "T23:59:59")) return false;
+      if (filtroOficina && !(m.empresa ?? "").toLowerCase().includes(filtroOficina.toLowerCase())) return false;
+      return true;
+    });
+  }, [lista, filtroVeiculo, filtroTipo, filtroDataInicio, filtroDataFim, filtroOficina]);
+
+  const totalFiltrado = listaFiltrada.reduce((acc: number, m: any) => acc + (Number(m.valor) || 0), 0);
   const totalMes = lista
-    .filter(m => new Date(m.data).getMonth() === new Date().getMonth())
-    .reduce((acc, m) => acc + (Number(m.valor) || 0), 0);
+    .filter((m: any) => new Date(m.data).getMonth() === new Date().getMonth() && new Date(m.data).getFullYear() === new Date().getFullYear())
+    .reduce((acc: number, m: any) => acc + (Number(m.valor) || 0), 0);
+
+  const filtrosAtivos = [filtroVeiculo !== "todos", filtroTipo !== "todos", !!filtroDataInicio, !!filtroDataFim, !!filtroOficina].filter(Boolean).length;
+
+  function limparFiltros() {
+    setFiltroVeiculo("todos");
+    setFiltroTipo("todos");
+    setFiltroDataInicio("");
+    setFiltroDataFim("");
+    setFiltroOficina("");
+  }
 
   return (
     <DashboardLayout>
       <div className="space-y-5">
-        <div className="flex items-center justify-between gap-4">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
-            <h1 className="text-2xl font-bold">Manutenções</h1>
-            <p className="text-sm text-muted-foreground">{lista.length} registros</p>
+            <h1 className="text-2xl font-bold flex items-center gap-2">
+              <Wrench className="h-6 w-6 text-primary" />
+              Manutenções
+            </h1>
+            <p className="text-sm text-muted-foreground">
+              {listaFiltrada.length} de {lista.length} registros
+              {filtrosAtivos > 0 && <span className="ml-1 text-primary">({filtrosAtivos} filtro{filtrosAtivos > 1 ? "s" : ""} ativo{filtrosAtivos > 1 ? "s" : ""})</span>}
+            </p>
           </div>
-          <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-              <Button><Plus className="h-4 w-4 mr-2" />Nova Manutenção</Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
-              <DialogHeader><DialogTitle>Registrar Manutenção</DialogTitle></DialogHeader>
-              <ManutencaoForm veiculos={veiculos} onSave={d => createMut.mutate(d)} onClose={() => setOpen(false)} />
-            </DialogContent>
-          </Dialog>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowFilters(!showFilters)}
+              className={filtrosAtivos > 0 ? "border-primary text-primary" : ""}
+            >
+              <Filter className="h-4 w-4 mr-1.5" />
+              Filtros
+              {filtrosAtivos > 0 && <Badge className="ml-1.5 h-4 w-4 p-0 text-xs flex items-center justify-center bg-primary text-primary-foreground">{filtrosAtivos}</Badge>}
+            </Button>
+            <Dialog open={open} onOpenChange={setOpen}>
+              <DialogTrigger asChild>
+                <Button size="sm"><Plus className="h-4 w-4 mr-1.5" />Nova Manutenção</Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+                <DialogHeader><DialogTitle>Registrar Manutenção</DialogTitle></DialogHeader>
+                <ManutencaoForm veiculos={veiculos} onSave={d => createMut.mutate(d)} onClose={() => setOpen(false)} />
+              </DialogContent>
+            </Dialog>
+          </div>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+        {/* Painel de filtros */}
+        {showFilters && (
+          <Card className="border-primary/20 bg-primary/5">
+            <CardContent className="p-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                <div className="space-y-1">
+                  <Label className="text-xs">Veículo</Label>
+                  <Select value={filtroVeiculo} onValueChange={setFiltroVeiculo}>
+                    <SelectTrigger className="h-8 text-sm"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="todos">Todos os veículos</SelectItem>
+                      {veiculos.map((v: any) => <SelectItem key={v.id} value={String(v.id)}>{v.placa}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">Tipo</Label>
+                  <Select value={filtroTipo} onValueChange={setFiltroTipo}>
+                    <SelectTrigger className="h-8 text-sm"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="todos">Todos os tipos</SelectItem>
+                      {Object.entries(TIPO_LABELS).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">Oficina</Label>
+                  <Input
+                    className="h-8 text-sm"
+                    placeholder="Buscar por oficina..."
+                    value={filtroOficina}
+                    onChange={e => setFiltroOficina(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">Data início</Label>
+                  <Input className="h-8 text-sm" type="date" value={filtroDataInicio} onChange={e => setFiltroDataInicio(e.target.value)} />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">Data fim</Label>
+                  <Input className="h-8 text-sm" type="date" value={filtroDataFim} onChange={e => setFiltroDataFim(e.target.value)} />
+                </div>
+                <div className="flex items-end">
+                  {filtrosAtivos > 0 && (
+                    <Button variant="ghost" size="sm" onClick={limparFiltros} className="h-8 text-xs text-muted-foreground">
+                      <X className="h-3 w-3 mr-1" />Limpar filtros
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* KPIs */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <Card><CardContent className="p-4">
             <p className="text-xs text-muted-foreground">Gasto no mês</p>
             <p className="text-xl font-bold mt-1">{formatCurrency(totalMes)}</p>
           </CardContent></Card>
           <Card><CardContent className="p-4">
             <p className="text-xs text-muted-foreground">Total histórico</p>
-            <p className="text-xl font-bold mt-1">{formatCurrency(lista.reduce((acc, m) => acc + (Number(m.valor) || 0), 0))}</p>
+            <p className="text-xl font-bold mt-1">{formatCurrency(lista.reduce((acc: number, m: any) => acc + (Number(m.valor) || 0), 0))}</p>
           </CardContent></Card>
           <Card><CardContent className="p-4">
-            <p className="text-xs text-muted-foreground">Total de registros</p>
-            <p className="text-xl font-bold mt-1">{lista.length}</p>
+            <p className="text-xs text-muted-foreground">Registros filtrados</p>
+            <p className="text-xl font-bold mt-1">{listaFiltrada.length}</p>
+          </CardContent></Card>
+          <Card><CardContent className="p-4">
+            <p className="text-xs text-muted-foreground">Total filtrado</p>
+            <p className="text-xl font-bold mt-1 text-primary">{formatCurrency(totalFiltrado)}</p>
           </CardContent></Card>
         </div>
 
+        {/* Tabela */}
         <Card>
           <CardContent className="p-0">
             <div className="overflow-x-auto">
@@ -198,31 +312,33 @@ export default function Manutencoes() {
                     <TableHead>Data</TableHead>
                     <TableHead>Veículo</TableHead>
                     <TableHead>Tipo</TableHead>
-                    <TableHead>Descrição</TableHead>
-                    <TableHead>Oficina</TableHead>
+                    <TableHead className="hidden md:table-cell">Descrição</TableHead>
+                    <TableHead className="hidden sm:table-cell">Oficina</TableHead>
                     <TableHead className="text-right">Valor</TableHead>
-                    <TableHead>KM</TableHead>
+                    <TableHead className="hidden lg:table-cell">KM</TableHead>
+                    <TableHead className="hidden lg:table-cell">Próx. KM</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {isLoading ? (
-                    <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">Carregando...</TableCell></TableRow>
-                  ) : lista.length === 0 ? (
-                    <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                    <TableRow><TableCell colSpan={8} className="text-center py-8 text-muted-foreground">Carregando...</TableCell></TableRow>
+                  ) : listaFiltrada.length === 0 ? (
+                    <TableRow><TableCell colSpan={8} className="text-center py-12 text-muted-foreground">
                       <Wrench className="h-8 w-8 mx-auto mb-2 opacity-30" />
-                      Nenhuma manutenção registrada
+                      {filtrosAtivos > 0 ? "Nenhum resultado para os filtros selecionados" : "Nenhuma manutenção registrada"}
                     </TableCell></TableRow>
-                  ) : lista.map(m => (
+                  ) : listaFiltrada.map((m: any) => (
                     <TableRow key={m.id}>
-                      <TableCell className="text-sm">{new Date(m.data).toLocaleDateString("pt-BR")}</TableCell>
+                      <TableCell className="text-sm whitespace-nowrap">{new Date(m.data).toLocaleDateString("pt-BR")}</TableCell>
                       <TableCell className="font-medium text-sm">{veiculoMap[m.veiculoId] ?? m.veiculoId}</TableCell>
                       <TableCell>
                         <Badge className={`text-xs ${TIPO_COLORS[m.tipo] ?? ""}`}>{TIPO_LABELS[m.tipo] ?? m.tipo}</Badge>
                       </TableCell>
-                      <TableCell className="text-sm max-w-48 truncate">{m.descricao}</TableCell>
-                      <TableCell className="text-sm text-muted-foreground">{m.empresa ?? "—"}</TableCell>
+                      <TableCell className="text-sm max-w-48 truncate hidden md:table-cell">{m.descricao}</TableCell>
+                      <TableCell className="text-sm text-muted-foreground hidden sm:table-cell">{m.empresa ?? "—"}</TableCell>
                       <TableCell className="text-right text-sm font-medium">{formatCurrency(m.valor)}</TableCell>
-                      <TableCell className="text-sm">{m.kmAtual ? Number(m.kmAtual).toLocaleString("pt-BR") : "—"}</TableCell>
+                      <TableCell className="text-sm hidden lg:table-cell">{m.kmAtual ? Number(m.kmAtual).toLocaleString("pt-BR") : "—"}</TableCell>
+                      <TableCell className="text-sm hidden lg:table-cell">{m.proximaManutencaoKm ? Number(m.proximaManutencaoKm).toLocaleString("pt-BR") : "—"}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>

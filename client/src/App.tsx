@@ -15,6 +15,9 @@ import Adiantamentos from "./pages/Adiantamentos";
 import Viagens from "./pages/Viagens";
 import Checklist from "./pages/Checklist";
 import Empresa from "./pages/Empresa";
+import Custos from "./pages/Custos";
+import Despachante from "./pages/Despachante";
+import Usuarios from "./pages/Usuarios";
 
 function Router() {
   return (
@@ -41,6 +44,13 @@ function Router() {
       <Route path="/financeiro/adiantamentos" component={Adiantamentos} />
       <Route path="/adiantamentos" component={Adiantamentos} />
 
+      {/* Custos e Despachante */}
+      <Route path="/custos" component={Custos} />
+      <Route path="/despachante" component={Despachante} />
+
+      {/* Usuários */}
+      <Route path="/usuarios" component={Usuarios} />
+
       {/* Configurações */}
       <Route path="/empresa" component={Empresa} />
 
@@ -54,7 +64,7 @@ function Router() {
 function App() {
   return (
     <ErrorBoundary>
-      <ThemeProvider defaultTheme="dark">
+      <ThemeProvider defaultTheme="dark" switchable={true}>
         <TooltipProvider>
           <Toaster />
           <Router />

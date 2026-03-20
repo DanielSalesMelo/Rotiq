@@ -8,8 +8,8 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { useState } from "react";
-import { Plus, Fuel, Droplets } from "lucide-react";
+import { useState, useMemo } from "react";
+import { Plus, Fuel, Droplets, Filter, X } from "lucide-react";
 import { toast } from "sonner";
 
 const EMPRESA_ID = 1;
@@ -167,9 +167,28 @@ function AbastecimentoForm({ veiculos, motoristas, onSave, onClose }: {
 
 export default function Abastecimentos() {
   const [open, setOpen] = useState(false);
+  const [filtros, setFiltros] = useState({
+    veiculoId: "",
+    motoristaId: "",
+    tipoCombustivel: "",
+    tipoAbastecimento: "",
+    dataInicio: "",
+    dataFim: "",
+  });
   const utils = trpc.useUtils();
 
-  const { data: lista = [], isLoading } = trpc.frota.abastecimentos.list.useQuery({ empresaId: EMPRESA_ID, limit: 100 });
+  const queryInput = useMemo(() => ({
+    empresaId: EMPRESA_ID,
+    veiculoId: filtros.veiculoId ? Number(filtros.veiculoId) : undefined,
+    motoristaId: filtros.motoristaId ? Number(filtros.motoristaId) : undefined,
+    tipoCombustivel: filtros.tipoCombustivel as any || undefined,
+    tipoAbastecimento: filtros.tipoAbastecimento as any || undefined,
+    dataInicio: filtros.dataInicio || undefined,
+    dataFim: filtros.dataFim || undefined,
+    limit: 200,
+  }), [filtros]);
+
+  const { data: lista = [], isLoading } = trpc.frota.abastecimentos.list.useQuery(queryInput);
   const { data: veiculos = [] } = trpc.veiculos.list.useQuery({ empresaId: EMPRESA_ID });
   const { data: motoristas = [] } = trpc.funcionarios.listMotoristas.useQuery({ empresaId: EMPRESA_ID });
   const { data: tanque } = trpc.frota.tanque.saldoAtual.useQuery({ empresaId: EMPRESA_ID });
@@ -181,10 +200,17 @@ export default function Abastecimentos() {
 
   const veiculoMap = Object.fromEntries(veiculos.map(v => [v.id, v.placa]));
   const motoristaMap = Object.fromEntries(motoristas.map(m => [m.id, m.nome]));
+  const filtrosAtivos = Object.values(filtros).filter(Boolean).length;
 
   const totalMes = lista
     .filter(a => new Date(a.data).getMonth() === new Date().getMonth())
     .reduce((acc, a) => acc + (Number(a.valorTotal) || 0), 0);
+  const totalFiltrado = lista.reduce((acc, a) => acc + (Number(a.valorTotal) || 0), 0);
+  const totalLitros = lista.reduce((acc, a) => acc + (Number(a.quantidade) || 0), 0);
+
+  function limparFiltros() {
+    setFiltros({ veiculoId: "", motoristaId: "", tipoCombustivel: "", tipoAbastecimento: "", dataInicio: "", dataFim: "" });
+  }
 
   return (
     <DashboardLayout>
@@ -215,23 +241,98 @@ export default function Abastecimentos() {
           </Card>
           <Card>
             <CardContent className="p-4">
-              <p className="text-xs text-muted-foreground">Saldo Diesel (tanque)</p>
-              <p className="text-xl font-bold mt-1">{tanque ? `${Number(tanque.diesel).toFixed(0)}L` : "..."}</p>
+              <p className="text-xs text-muted-foreground">Total filtrado</p>
+              <p className="text-xl font-bold mt-1">{formatCurrency(totalFiltrado)}</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4">
-              <p className="text-xs text-muted-foreground">Saldo ARLA (tanque)</p>
-              <p className="text-xl font-bold mt-1">{tanque ? `${Number(tanque.arla).toFixed(0)}L` : "..."}</p>
+              <p className="text-xs text-muted-foreground">Litros filtrados</p>
+              <p className="text-xl font-bold mt-1">{totalLitros.toLocaleString("pt-BR", { maximumFractionDigits: 0 })} L</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4">
-              <p className="text-xs text-muted-foreground">Total de registros</p>
+              <p className="text-xs text-muted-foreground">Registros filtrados</p>
               <p className="text-xl font-bold mt-1">{lista.length}</p>
             </CardContent>
           </Card>
         </div>
+
+        {/* Filtros */}
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm flex items-center gap-2">
+              <Filter className="h-4 w-4" />
+              Filtros
+              {filtrosAtivos > 0 && (
+                <Badge className="text-xs bg-primary/10 text-primary">{filtrosAtivos} ativo(s)</Badge>
+              )}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+              <div className="space-y-1">
+                <Label className="text-xs">Veículo</Label>
+                <Select value={filtros.veiculoId || "todos"} onValueChange={v => setFiltros(f => ({ ...f, veiculoId: v === "todos" ? "" : v }))}>
+                  <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="Todos" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="todos">Todos</SelectItem>
+                    {veiculos.map(v => <SelectItem key={v.id} value={String(v.id)}>{v.placa}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">Motorista</Label>
+                <Select value={filtros.motoristaId || "todos"} onValueChange={v => setFiltros(f => ({ ...f, motoristaId: v === "todos" ? "" : v }))}>
+                  <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="Todos" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="todos">Todos</SelectItem>
+                    {motoristas.map(m => <SelectItem key={m.id} value={String(m.id)}>{m.nome}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">Combustível</Label>
+                <Select value={filtros.tipoCombustivel || "todos"} onValueChange={v => setFiltros(f => ({ ...f, tipoCombustivel: v === "todos" ? "" : v }))}>
+                  <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="Todos" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="todos">Todos</SelectItem>
+                    <SelectItem value="diesel">Diesel</SelectItem>
+                    <SelectItem value="arla">ARLA 32</SelectItem>
+                    <SelectItem value="gasolina">Gasolina</SelectItem>
+                    <SelectItem value="etanol">Etanol</SelectItem>
+                    <SelectItem value="gas">GLP/GNV</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">Tipo</Label>
+                <Select value={filtros.tipoAbastecimento || "todos"} onValueChange={v => setFiltros(f => ({ ...f, tipoAbastecimento: v === "todos" ? "" : v }))}>
+                  <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="Todos" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="todos">Todos</SelectItem>
+                    <SelectItem value="interno">Interno</SelectItem>
+                    <SelectItem value="externo">Externo</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">Data Início</Label>
+                <Input type="date" className="h-8 text-xs" value={filtros.dataInicio} onChange={e => setFiltros(f => ({ ...f, dataInicio: e.target.value }))} />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">Data Fim</Label>
+                <Input type="date" className="h-8 text-xs" value={filtros.dataFim} onChange={e => setFiltros(f => ({ ...f, dataFim: e.target.value }))} />
+              </div>
+            </div>
+            {filtrosAtivos > 0 && (
+              <Button variant="ghost" size="sm" className="mt-3 text-xs text-muted-foreground" onClick={limparFiltros}>
+                <X className="h-3 w-3 mr-1" />Limpar filtros
+              </Button>
+            )}
+          </CardContent>
+        </Card>
 
         {/* Tabela */}
         <Card>

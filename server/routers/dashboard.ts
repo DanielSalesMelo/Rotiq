@@ -1,4 +1,5 @@
 import { protectedProcedure, router } from "../_core/trpc";
+import { users } from "../../drizzle/schema";
 import { getDb } from "../db";
 import { veiculos, funcionarios, abastecimentos, manutencoes, viagens, contasPagar, contasReceber, adiantamentos, checklists, empresas } from "../../drizzle/schema";
 import { eq, and, isNull, desc, sql, gte, lte } from "drizzle-orm";
@@ -138,6 +139,36 @@ export const dashboardRouter = router({
           crlvVencendo: Number(crlvVencendo[0]?.count) || 0,
         },
       };
+    }),
+
+  // Gerenciamento de usuários
+  listUsers: protectedProcedure
+    .input(z.object({ empresaId: z.number().optional() }))
+    .query(async () => {
+      const db = await getDb();
+      if (!db) return [];
+      return db.select().from(users).orderBy(users.createdAt);
+    }),
+
+  updateUserRole: protectedProcedure
+    .input(z.object({
+      userId: z.number(),
+      role: z.enum(["user", "admin", "master_admin", "monitor", "dispatcher"]),
+    }))
+    .mutation(async ({ input, ctx }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Banco indisponível");
+      const currentRole = (ctx.user as any)?.role;
+      if (currentRole !== "admin" && currentRole !== "master_admin") {
+        throw new Error("Sem permissão para alterar níveis de acesso");
+      }
+      if (input.role === "master_admin" && currentRole !== "master_admin") {
+        throw new Error("Apenas master_admin pode promover outros a master_admin");
+      }
+      await db.update(users)
+        .set({ role: input.role })
+        .where(eq(users.id, input.userId));
+      return { success: true };
     }),
 
   // Lista de empresas

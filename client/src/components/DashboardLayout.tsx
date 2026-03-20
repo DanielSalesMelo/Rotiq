@@ -43,7 +43,13 @@ import {
   ChevronRight,
   BarChart3,
   Calculator,
+  Sun,
+  Moon,
+  Monitor,
+  UserCog,
+  Send,
 } from "lucide-react";
+import { useTheme, type Theme } from "@/contexts/ThemeContext";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
 import { DashboardLayoutSkeleton } from './DashboardLayoutSkeleton';
@@ -54,6 +60,7 @@ const menuGroups = [
     label: "Principal",
     items: [
       { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
+      { icon: Send, label: "Despachante", path: "/despachante" },
     ],
   },
   {
@@ -85,6 +92,7 @@ const menuGroups = [
     label: "Configurações",
     items: [
       { icon: Building2, label: "Empresa", path: "/empresa" },
+      { icon: UserCog, label: "Usuários", path: "/usuarios" },
     ],
   },
 ];
@@ -166,6 +174,7 @@ function DashboardLayoutContent({
   const [isResizing, setIsResizing] = useState(false);
   const sidebarRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
+  const { theme, setTheme } = useTheme();
 
   const activeItem = menuGroups.flatMap(g => g.items).find(item => {
     if (item.path === "/") return location === "/";
@@ -258,7 +267,57 @@ function DashboardLayoutContent({
           </SidebarContent>
 
           {/* Footer */}
-          <SidebarFooter className="p-3 border-t border-sidebar-border">
+          <SidebarFooter className="p-3 border-t border-sidebar-border space-y-2">
+            {/* Seletor de tema */}
+            {!isCollapsed && (
+              <div className="flex items-center gap-1 rounded-lg bg-sidebar-accent/50 p-1">
+                <button
+                  onClick={() => setTheme("light")}
+                  title="Tema Claro"
+                  className={`flex-1 flex items-center justify-center gap-1 rounded-md py-1.5 text-xs transition-colors ${
+                    theme === "light"
+                      ? "bg-sidebar-accent text-sidebar-foreground font-medium"
+                      : "text-sidebar-foreground/50 hover:text-sidebar-foreground"
+                  }`}
+                >
+                  <Sun className="h-3 w-3" />
+                  <span>Claro</span>
+                </button>
+                <button
+                  onClick={() => setTheme("gray")}
+                  title="Tema Cinza"
+                  className={`flex-1 flex items-center justify-center gap-1 rounded-md py-1.5 text-xs transition-colors ${
+                    theme === "gray"
+                      ? "bg-sidebar-accent text-sidebar-foreground font-medium"
+                      : "text-sidebar-foreground/50 hover:text-sidebar-foreground"
+                  }`}
+                >
+                  <Monitor className="h-3 w-3" />
+                  <span>Cinza</span>
+                </button>
+                <button
+                  onClick={() => setTheme("dark")}
+                  title="Tema Escuro"
+                  className={`flex-1 flex items-center justify-center gap-1 rounded-md py-1.5 text-xs transition-colors ${
+                    theme === "dark"
+                      ? "bg-sidebar-accent text-sidebar-foreground font-medium"
+                      : "text-sidebar-foreground/50 hover:text-sidebar-foreground"
+                  }`}
+                >
+                  <Moon className="h-3 w-3" />
+                  <span>Escuro</span>
+                </button>
+              </div>
+            )}
+            {isCollapsed && (
+              <button
+                onClick={() => setTheme(theme === "dark" ? "light" : theme === "light" ? "gray" : "dark")}
+                title="Alternar tema"
+                className="w-full flex items-center justify-center rounded-lg py-2 hover:bg-sidebar-accent transition-colors text-sidebar-foreground/60 hover:text-sidebar-foreground"
+              >
+                {theme === "dark" ? <Moon className="h-4 w-4" /> : theme === "light" ? <Sun className="h-4 w-4" /> : <Monitor className="h-4 w-4" />}
+              </button>
+            )}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button className="flex items-center gap-3 rounded-lg px-2 py-2 hover:bg-sidebar-accent transition-colors w-full text-left focus:outline-none">

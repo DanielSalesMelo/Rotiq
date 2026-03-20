@@ -81,4 +81,17 @@
 - [x] Criar página Empresa (configurações da empresa)
 - [x] Criar página Adiantamentos completa
 - [x] Criar página Checklist digital (35 itens)
-- [ ] Criar página Gerenciamento de Usuários (permissões por empresa)
+- [x] Criar página Gerenciamento de Usuários (permissões por empresa)
+- [x] Custos Operacionais — item de menu não clicável (falta rota e página)
+- [x] Filtros em Abastecimentos: por data (período), veículo, motorista, tipo (diesel/arla/gasolina)
+- [x] Filtros em Manutenções: por data, veículo, empresa/oficina, tipo de serviço
+- [ ] Filtros em Viagens: por data, motorista, veículo, destino, status
+- [ ] Filtros em Financeiro (Contas): por data, status (pago/pendente), categoria
+- [x] Criar página Custos Operacionais com gráficos e filtros por veículo/período
+- [x] Painel do Despachante — tela dedicada para registrar saída/chegada, motorista, ajudantes, KM
+- [x] Página Custos Operacionais (/custos) — criar página e rota
+- [x] Filtros em Manutenções — adicionar painel de filtros na tela
+- [ ] Contas a Receber — página separada da Contas a Pagar
+- [x] Gerenciamento de Usuários — dar/revogar acesso por nível de permissão
+- [x] Seletor de tema: claro, escuro e cinza (salvo por usuário, persiste entre sessões)
+- [x] Responsividade completa: mobile, tablet e desktop em todas as páginas
