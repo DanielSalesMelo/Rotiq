@@ -36,9 +36,10 @@ function formatCurrency(v: any) {
   return Number(v).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 }
 
-function AbastecimentoForm({ veiculos, motoristas, onSave, onClose }: {
+function AbastecimentoForm({ veiculos, motoristas, veiculosEmViagem, onSave, onClose }: {
   veiculos: any[];
   motoristas: any[];
+  veiculosEmViagem: any[];
   onSave: (d: any) => void;
   onClose: () => void;
 }) {
@@ -56,6 +57,27 @@ function AbastecimentoForm({ veiculos, motoristas, onSave, onClose }: {
     observacoes: "",
     notaFiscal: "",
   });
+
+  // IDs dos veículos em viagem
+  const idsEmViagem = useMemo(() => new Set(veiculosEmViagem.map(v => v.veiculoId)), [veiculosEmViagem]);
+
+  // Filtrar veículos: interno = na base (não estão em viagem), externo = em viagem
+  const veiculosFiltrados = useMemo(() => {
+    if (form.tipoAbastecimento === "externo") {
+      return veiculos.filter(v => idsEmViagem.has(v.id));
+    }
+    return veiculos.filter(v => !idsEmViagem.has(v.id));
+  }, [veiculos, idsEmViagem, form.tipoAbastecimento]);
+
+  // Auto-preencher motorista quando seleciona veículo em viagem
+  function handleVeiculoChange(veiculoId: string) {
+    const vEmViagem = veiculosEmViagem.find(v => v.veiculoId === Number(veiculoId));
+    setForm(f => ({
+      ...f,
+      veiculoId,
+      motoristaId: vEmViagem?.motoristaId ? String(vEmViagem.motoristaId) : f.motoristaId,
+    }));
+  }
 
   function calcTotal() {
     const q = parseFloat(form.quantidade);
@@ -89,11 +111,12 @@ function AbastecimentoForm({ veiculos, motoristas, onSave, onClose }: {
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-1.5">
-          <Label>Veículo *</Label>
-          <Select value={form.veiculoId} onValueChange={v => setForm(f => ({ ...f, veiculoId: v }))}>
+          <Label>Veículo * {form.tipoAbastecimento === "externo" ? <span className="text-xs text-muted-foreground">(em viagem)</span> : <span className="text-xs text-muted-foreground">(na base)</span>}</Label>
+          <Select value={form.veiculoId} onValueChange={handleVeiculoChange}>
             <SelectTrigger><SelectValue placeholder="Selecionar..." /></SelectTrigger>
             <SelectContent>
-              {veiculos.map(v => <SelectItem key={v.id} value={String(v.id)}>{v.placa}</SelectItem>)}
+              {veiculosFiltrados.length === 0 && <SelectItem value="none" disabled>Nenhum veículo {form.tipoAbastecimento === "externo" ? "em viagem" : "na base"}</SelectItem>}
+              {veiculosFiltrados.map(v => <SelectItem key={v.id} value={String(v.id)}>{v.placa}</SelectItem>)}
             </SelectContent>
           </Select>
         </div>
@@ -232,6 +255,7 @@ export default function Abastecimentos() {
   const { data: veiculos = [] } = trpc.veiculos.list.useQuery({ empresaId: EMPRESA_ID });
   const { data: motoristas = [] } = trpc.funcionarios.listMotoristas.useQuery({ empresaId: EMPRESA_ID });
   const { data: tanque } = trpc.frota.tanque.saldoAtual.useQuery({ empresaId: EMPRESA_ID });
+  const { data: veiculosEmViagem = [] } = trpc.viagens.veiculosEmViagem.useQuery({ empresaId: EMPRESA_ID });
 
   const createMut = trpc.frota.abastecimentos.create.useMutation({
     onSuccess: () => { utils.frota.abastecimentos.list.invalidate(); setOpen(false); toast.success("Abastecimento registrado!"); },
@@ -265,7 +289,7 @@ export default function Abastecimentos() {
             </DialogTrigger>
             <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
               <DialogHeader><DialogTitle>Registrar Abastecimento</DialogTitle></DialogHeader>
-              <AbastecimentoForm veiculos={veiculos} motoristas={motoristas} onSave={d => createMut.mutate(d)} onClose={() => setOpen(false)} />
+              <AbastecimentoForm veiculos={veiculos} motoristas={motoristas} veiculosEmViagem={veiculosEmViagem} onSave={d => createMut.mutate(d)} onClose={() => setOpen(false)} />
             </DialogContent>
           </Dialog>
         </div>

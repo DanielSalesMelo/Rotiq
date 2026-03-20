@@ -227,6 +227,31 @@ export const viagensRouter = router({
       }, "viagens.addDespesa");
     }),
 
+  // Veículos em viagem (status em_andamento) com motorista vinculado
+  veiculosEmViagem: protectedProcedure
+    .input(z.object({ empresaId: z.number() }))
+    .query(async ({ input }) => {
+      return safeDb(async () => {
+        const db = requireDb(await getDb(), "viagens.veiculosEmViagem");
+        const rows = await db.select({
+          veiculoId: viagens.veiculoId,
+          motoristaId: viagens.motoristaId,
+          veiculoPlaca: veiculos.placa,
+          motoristaNome: funcionarios.nome,
+          origem: viagens.origem,
+          destino: viagens.destino,
+        }).from(viagens)
+          .leftJoin(veiculos, eq(viagens.veiculoId, veiculos.id))
+          .leftJoin(funcionarios, eq(viagens.motoristaId, funcionarios.id))
+          .where(and(
+            eq(viagens.empresaId, input.empresaId),
+            eq(viagens.status, "em_andamento"),
+            isNull(viagens.deletedAt),
+          ));
+        return rows;
+      }, "viagens.veiculosEmViagem");
+    }),
+
   // Resumo financeiro para dashboard
   resumoFinanceiro: protectedProcedure
     .input(z.object({ empresaId: z.number() }))
