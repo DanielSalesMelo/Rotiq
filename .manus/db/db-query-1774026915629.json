@@ -1,0 +1,9 @@
+{
+  "query": "ALTER TABLE viagens ADD COLUMN tipo ENUM('entrega', 'viagem') NOT NULL DEFAULT 'viagem' AFTER empresaId;\nALTER TABLE viagens ADD COLUMN tipoCarga TEXT AFTER descricaoCarga;\nALTER TABLE viagens ADD COLUMN teveProblema BOOLEAN DEFAULT FALSE AFTER observacoes;\nALTER TABLE viagens ADD COLUMN voltouComCarga BOOLEAN DEFAULT FALSE AFTER teveProblema;\nALTER TABLE viagens ADD COLUMN observacoesChegada TEXT AFTER voltouComCarga;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2p5XLKLvFgibmRt.root --database WQ2q64r9ZdMRQ3rHt9WnPA --execute ALTER TABLE viagens ADD COLUMN tipo ENUM('entrega', 'viagem') NOT NULL DEFAULT 'viagem' AFTER empresaId;\nALTER TABLE viagens ADD COLUMN tipoCarga TEXT AFTER descricaoCarga;\nALTER TABLE viagens ADD COLUMN teveProblema BOOLEAN DEFAULT FALSE AFTER observacoes;\nALTER TABLE viagens ADD COLUMN voltouComCarga BOOLEAN DEFAULT FALSE AFTER teveProblema;\nALTER TABLE viagens ADD COLUMN observacoesChegada TEXT AFTER voltouComCarga;",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 7834
+}

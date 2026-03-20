@@ -8,6 +8,7 @@ import { safeDb, requireDb } from "../helpers/errorHandler";
 // Apenas veículo é obrigatório para criar uma viagem — resto pode ser preenchido depois
 const viagemInput = z.object({
   empresaId: z.number(),
+  tipo: z.enum(["entrega", "viagem"]).optional(),
   veiculoId: z.number(),
   cavaloPrincipalId: z.number().nullable().optional(),
   motoristaId: z.number().nullable().optional(),
@@ -32,6 +33,10 @@ const viagemInput = z.object({
   mediaConsumo: z.string().nullable().optional(),
   status: z.enum(["planejada", "em_andamento", "concluida", "cancelada"]).optional(),
   observacoes: z.string().optional(),
+  teveProblema: z.boolean().optional(),
+  voltouComCarga: z.boolean().optional(),
+  observacoesChegada: z.string().optional(),
+  tipoCarga: z.string().optional(),
 });
 
 export const viagensRouter = router({
@@ -39,6 +44,7 @@ export const viagensRouter = router({
     .input(z.object({
       empresaId: z.number(),
       status: z.enum(["planejada", "em_andamento", "concluida", "cancelada"]).optional(),
+      tipo: z.enum(["entrega", "viagem"]).optional(),
       limit: z.number().default(50),
     }))
     .query(async ({ input }) => {
@@ -46,12 +52,18 @@ export const viagensRouter = router({
         const db = requireDb(await getDb(), "viagens.list");
         const rows = await db.select({
           id: viagens.id,
+          tipo: viagens.tipo,
           status: viagens.status,
           origem: viagens.origem,
           destino: viagens.destino,
           dataSaida: viagens.dataSaida,
           dataChegada: viagens.dataChegada,
+          kmSaida: viagens.kmSaida,
+          kmChegada: viagens.kmChegada,
           kmRodado: viagens.kmRodado,
+          tipoCarga: viagens.tipoCarga,
+          teveProblema: viagens.teveProblema,
+          voltouComCarga: viagens.voltouComCarga,
           freteTotal: viagens.freteTotal,
           totalDespesas: viagens.totalDespesas,
           saldoViagem: viagens.saldoViagem,
@@ -70,6 +82,7 @@ export const viagensRouter = router({
             eq(viagens.empresaId, input.empresaId),
             isNull(viagens.deletedAt),
             input.status ? eq(viagens.status, input.status) : undefined,
+            input.tipo ? eq(viagens.tipo, input.tipo) : undefined,
           ))
           .orderBy(desc(viagens.dataSaida))
           .limit(input.limit);

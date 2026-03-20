@@ -178,6 +178,7 @@ export const manutencoes = mysqlTable("manutencoes", {
 export const viagens = mysqlTable("viagens", {
   id: int("id").autoincrement().primaryKey(),
   empresaId: int("empresaId").notNull(),
+  tipo: mysqlEnum("tipo", ["entrega", "viagem"]).default("viagem").notNull(),
   veiculoId: int("veiculoId").notNull(),
   cavaloPrincipalId: int("cavaloPrincipalId"), // se for carreta, o cavalo que puxou
   motoristaId: int("motoristaId"),
@@ -195,6 +196,7 @@ export const viagens = mysqlTable("viagens", {
   kmRodado: int("kmRodado"),
   // Carga
   descricaoCarga: text("descricaoCarga"),
+  tipoCarga: text("tipoCarga"),
   pesoCarga: decimal("pesoCarga", { precision: 8, scale: 2 }),
   // Financeiro da viagem
   freteTotalIda: decimal("freteTotalIda", { precision: 10, scale: 2 }),
@@ -208,6 +210,9 @@ export const viagens = mysqlTable("viagens", {
   // Status
   status: mysqlEnum("status", ["planejada", "em_andamento", "concluida", "cancelada"]).default("planejada").notNull(),
   observacoes: text("observacoes"),
+  teveProblema: boolean("teveProblema").default(false),
+  voltouComCarga: boolean("voltouComCarga").default(false),
+  observacoesChegada: text("observacoesChegada"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
   deletedAt: timestamp("deletedAt"),

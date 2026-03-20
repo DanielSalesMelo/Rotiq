@@ -95,3 +95,25 @@
 - [x] Gerenciamento de Usuários — dar/revogar acesso por nível de permissão
 - [x] Seletor de tema: claro, escuro e cinza (salvo por usuário, persiste entre sessões)
 - [x] Responsividade completa: mobile, tablet e desktop em todas as páginas
+- [ ] Bug: ícone duplo/sobreposto no item Despachante do menu
+- [ ] Bug: menu lateral desorganizado — seções e itens fora de ordem
+- [ ] Bug: Despachante não abre ao clicar
+- [ ] Bug: Despachante — erro "Select.Item must have a non-empty value" ao abrir a página
+
+## Funcionalidades do Sistema Antigo (FrotaSegura) a Implementar
+
+- [ ] Reorganizar menu: seções DESPACHANTE, OPERACIONAL, FROTA, GESTÃO, SISTEMA, MASTER
+- [ ] Criar página Saída de Entrega (/despachante/entrega) - entrega local, sai e volta no mesmo dia
+- [ ] Criar página Saída de Viagem (/despachante/viagem) - viagens longas
+- [ ] Criar página Retorno de Veículo (/despachante/retorno) com checklist de inspeção
+- [ ] Criar página Plano de Manutenção (/plano-manutencao)
+- [ ] Criar página Estoque de Combustível (/gestao/estoque-combustivel)
+- [ ] Criar página Multas (/gestao/multas)
+- [ ] Criar página Acidentes (/gestao/acidentes)
+- [ ] Criar página Acertos (/gestao/acertos)
+- [ ] Criar página Relatos (/gestao/relatos)
+- [ ] Criar página Documentos (/gestao/documentos)
+- [ ] Criar página Alertas (/gestao/alertas)
+- [ ] Criar página Calendário (/gestao/calendario)
+- [ ] Criar página Relatórios com abas Viagens/Abastecimentos/Manutenções (/relatorios)
+- [ ] Adicionar campo ARLA (litros) no formulário de Abastecimento
