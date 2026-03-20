@@ -7,23 +7,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarGroup,
-  SidebarGroupLabel,
-  SidebarHeader,
-  SidebarInset,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarProvider,
-  SidebarTrigger,
-  useSidebar,
-} from "@/components/ui/sidebar";
 import { getLoginUrl } from "@/const";
-import { useIsMobile } from "@/hooks/useMobile";
 import {
   LayoutDashboard,
   Truck,
@@ -34,7 +18,8 @@ import {
   ClipboardCheck,
   MapPin,
   LogOut,
-  PanelLeft,
+  Menu,
+  X,
   TrendingUp,
   TrendingDown,
   Wallet,
@@ -56,10 +41,13 @@ import {
   Shield,
   Settings,
   Star,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { useTheme } from "@/contexts/ThemeContext";
+import { useState } from "react";
 import { useLocation } from "wouter";
-import { DashboardLayoutSkeleton } from './DashboardLayoutSkeleton';
+import { DashboardLayoutSkeleton } from "./DashboardLayoutSkeleton";
 import { Button } from "./ui/button";
 
 const menuGroups = [
@@ -132,11 +120,7 @@ const menuGroups = [
   },
 ];
 
-export default function DashboardLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { loading, user } = useAuth();
 
   if (loading) return <DashboardLayoutSkeleton />;
@@ -145,25 +129,13 @@ export default function DashboardLayout({
     return (
       <div className="flex items-center justify-center min-h-screen bg-background">
         <div className="flex flex-col items-center gap-8 p-8 max-w-md w-full">
-          <div className="flex flex-col items-center gap-4">
-            <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-xl bg-primary flex items-center justify-center">
-                <Truck className="h-5 w-5 text-primary-foreground" />
-              </div>
-              <span className="text-2xl font-bold tracking-tight">Rotiq</span>
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-xl bg-primary flex items-center justify-center">
+              <Truck className="h-5 w-5 text-primary-foreground" />
             </div>
-            <h1 className="text-xl font-semibold text-center text-foreground">
-              Acesse sua conta para continuar
-            </h1>
-            <p className="text-sm text-muted-foreground text-center">
-              Sistema de Gestão de Frota e Logística
-            </p>
+            <span className="text-2xl font-bold tracking-tight">Rotiq</span>
           </div>
-          <Button
-            onClick={() => { window.location.href = getLoginUrl(); }}
-            size="lg"
-            className="w-full"
-          >
+          <Button onClick={() => { window.location.href = getLoginUrl(); }} size="lg" className="w-full">
             Entrar
           </Button>
         </div>
@@ -171,179 +143,202 @@ export default function DashboardLayout({
     );
   }
 
-  return (
-    <SidebarProvider>
-      <DashboardLayoutContent>
-        {children}
-      </DashboardLayoutContent>
-    </SidebarProvider>
-  );
+  return <AppShell>{children}</AppShell>;
 }
 
-function DashboardLayoutContent({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+function AppShell({ children }: { children: React.ReactNode }) {
   const { user, logout } = useAuth();
   const [location, setLocation] = useLocation();
-  const { state, toggleSidebar } = useSidebar();
-  const isCollapsed = state === "collapsed";
-  const isMobile = useIsMobile();
+  const [collapsed, setCollapsed] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
   const { theme, setTheme } = useTheme();
 
-  const activeItem = menuGroups.flatMap(g => g.items).find(item => {
-    if (item.path === "/") return location === "/";
-    return location === item.path || location.startsWith(item.path + "/");
-  });
-
   const initials = user?.name
-    ? user.name.split(" ").map(n => n[0]).slice(0, 2).join("").toUpperCase()
+    ? user.name.split(" ").map((n) => n[0]).slice(0, 2).join("").toUpperCase()
     : "U";
 
-  return (
-    <>
-      <Sidebar collapsible="icon">
-        {/* Header */}
-        <SidebarHeader className="border-b border-sidebar-border">
-          <div className="flex h-14 items-center px-3 gap-3">
-            <button
-              onClick={toggleSidebar}
-              className="h-8 w-8 flex items-center justify-center hover:bg-sidebar-accent rounded-lg transition-colors shrink-0"
-            >
-              <PanelLeft className="h-4 w-4 text-sidebar-foreground/60" />
-            </button>
-            {!isCollapsed && (
-              <div className="flex items-center gap-2 min-w-0">
-                <div className="h-7 w-7 rounded-lg bg-primary flex items-center justify-center shrink-0">
-                  <Truck className="h-4 w-4 text-primary-foreground" />
-                </div>
-                <span className="font-bold text-sidebar-foreground tracking-tight truncate">
-                  Rotiq
+  const roleLabel =
+    user?.role === "master_admin" ? "Master ADM" :
+    user?.role === "admin" ? "Administrador" :
+    user?.role === "dispatcher" ? "Despachante" :
+    user?.role === "monitor" ? "Monitor" : "Usuário";
+
+  const isActive = (path: string) =>
+    location === path || (path !== "/" && location.startsWith(path + "/"));
+
+  const navigate = (path: string) => {
+    setLocation(path);
+    setMobileOpen(false);
+  };
+
+  const sidebarContent = (
+    <div className="flex flex-col h-full">
+      {/* Logo */}
+      <div className="flex items-center gap-3 px-4 h-14 border-b border-border shrink-0">
+        <div className="h-7 w-7 rounded-lg bg-primary flex items-center justify-center shrink-0">
+          <Truck className="h-4 w-4 text-primary-foreground" />
+        </div>
+        {!collapsed && (
+          <span className="font-bold text-foreground tracking-tight">Rotiq</span>
+        )}
+        {!collapsed && (
+          <button
+            onClick={() => setCollapsed(true)}
+            className="ml-auto p-1 rounded hover:bg-accent transition-colors"
+            title="Recolher menu"
+          >
+            <ChevronLeft className="h-4 w-4 text-muted-foreground" />
+          </button>
+        )}
+      </div>
+
+      {/* Menu items */}
+      <nav className="flex-1 overflow-y-auto py-2">
+        {menuGroups.map((group) => (
+          <div key={group.label} className="mb-1">
+            {!collapsed && (
+              <div className="px-4 pt-3 pb-1">
+                <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/60">
+                  {group.label}
                 </span>
               </div>
             )}
-          </div>
-        </SidebarHeader>
-
-        {/* Menu */}
-        <SidebarContent>
-          {menuGroups.map(group => (
-            <SidebarGroup key={group.label}>
-              {!isCollapsed && (
-                <SidebarGroupLabel>
-                  {group.label}
-                </SidebarGroupLabel>
-              )}
-              <SidebarMenu>
-                {group.items.map(item => {
-                  const isActive = location === item.path || (item.path !== "/" && location.startsWith(item.path + "/"));
-                  return (
-                    <SidebarMenuItem key={item.path}>
-                      <SidebarMenuButton
-                        isActive={isActive}
-                        onClick={() => setLocation(item.path)}
-                        tooltip={item.label}
-                      >
-                        <item.icon />
-                        <span>{item.label}</span>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  );
-                })}
-              </SidebarMenu>
-            </SidebarGroup>
-          ))}
-        </SidebarContent>
-
-        {/* Footer */}
-        <SidebarFooter className="border-t border-sidebar-border">
-          <div className="p-2 space-y-2">
-            {/* Seletor de tema */}
-            {!isCollapsed && (
-              <div className="flex items-center gap-1 rounded-lg bg-sidebar-accent/50 p-1">
-                {[
-                  { key: "light" as const, icon: Sun, label: "Claro" },
-                  { key: "gray" as const, icon: Monitor, label: "Cinza" },
-                  { key: "dark" as const, icon: Moon, label: "Escuro" },
-                ].map(t => (
-                  <button
-                    key={t.key}
-                    onClick={() => setTheme(t.key)}
-                    title={`Tema ${t.label}`}
-                    className={`flex-1 flex items-center justify-center gap-1 rounded-md py-1.5 text-xs transition-colors ${
-                      theme === t.key
-                        ? "bg-sidebar-accent text-sidebar-foreground font-medium"
-                        : "text-sidebar-foreground/50 hover:text-sidebar-foreground"
-                    }`}
-                  >
-                    <t.icon className="h-3 w-3" />
-                    <span>{t.label}</span>
-                  </button>
-                ))}
-              </div>
-            )}
-
-            {/* User */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button className="flex items-center gap-2 w-full rounded-lg p-2 hover:bg-sidebar-accent transition-colors">
-                  <Avatar className="h-7 w-7 shrink-0">
-                    <AvatarFallback className="text-xs bg-primary text-primary-foreground">
-                      {initials}
-                    </AvatarFallback>
-                  </Avatar>
-                  {!isCollapsed && (
-                    <div className="flex-1 min-w-0 text-left">
-                      <p className="text-xs font-medium text-sidebar-foreground truncate">
-                        {user?.name ?? "Usuário"}
-                      </p>
-                      <p className="text-xs text-sidebar-foreground/50 truncate">
-                        {user?.role === "master_admin" ? "Master ADM" :
-                          user?.role === "admin" ? "Administrador" :
-                          user?.role === "dispatcher" ? "Despachante" :
-                          user?.role === "monitor" ? "Monitor" : "Usuário"}
-                      </p>
-                    </div>
-                  )}
+            {collapsed && <div className="h-2" />}
+            {group.items.map((item) => {
+              const active = isActive(item.path);
+              return (
+                <button
+                  key={item.path}
+                  onClick={() => navigate(item.path)}
+                  title={collapsed ? item.label : undefined}
+                  className={`w-full flex items-center gap-3 px-4 py-2 text-sm transition-colors ${
+                    active
+                      ? "bg-primary/10 text-primary font-medium"
+                      : "text-muted-foreground hover:bg-accent hover:text-foreground"
+                  } ${collapsed ? "justify-center px-2" : ""}`}
+                >
+                  <item.icon className={`h-4 w-4 shrink-0 ${active ? "text-primary" : ""}`} />
+                  {!collapsed && <span className="truncate">{item.label}</span>}
                 </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent side="top" align="start" className="w-48">
-                <DropdownMenuItem disabled className="text-xs text-muted-foreground">
-                  {user?.email ?? user?.name}
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={logout} className="text-red-600">
-                  <LogOut className="h-4 w-4 mr-2" />
-                  Sair
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+              );
+            })}
           </div>
-        </SidebarFooter>
-      </Sidebar>
+        ))}
+      </nav>
 
-      <SidebarInset>
-        {/* Top bar */}
-        <header className="h-14 flex items-center gap-3 px-4 border-b border-border bg-background/95 backdrop-blur sticky top-0 z-10">
-          {isMobile && (
-            <SidebarTrigger className="h-8 w-8" />
-          )}
-          <div className="flex-1 min-w-0">
-            {activeItem && (
-              <div className="flex items-center gap-2 text-sm">
-                <activeItem.icon className="h-4 w-4 text-muted-foreground shrink-0" />
-                <span className="font-medium text-foreground truncate">{activeItem.label}</span>
-              </div>
-            )}
+      {/* Footer */}
+      <div className="border-t border-border shrink-0 p-3 space-y-2">
+        {/* Theme switcher */}
+        {!collapsed && (
+          <div className="flex items-center gap-1 rounded-lg bg-muted p-1">
+            {[
+              { key: "light" as const, icon: Sun, label: "Claro" },
+              { key: "gray" as const, icon: Monitor, label: "Cinza" },
+              { key: "dark" as const, icon: Moon, label: "Escuro" },
+            ].map((t) => (
+              <button
+                key={t.key}
+                onClick={() => setTheme(t.key)}
+                className={`flex-1 flex items-center justify-center gap-1 rounded-md py-1.5 text-xs transition-colors ${
+                  theme === t.key
+                    ? "bg-background text-foreground font-medium shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <t.icon className="h-3 w-3" />
+                <span>{t.label}</span>
+              </button>
+            ))}
           </div>
+        )}
+
+        {/* User */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button className={`flex items-center gap-2 w-full rounded-lg p-2 hover:bg-accent transition-colors ${collapsed ? "justify-center" : ""}`}>
+              <Avatar className="h-7 w-7 shrink-0">
+                <AvatarFallback className="text-xs bg-primary text-primary-foreground">
+                  {initials}
+                </AvatarFallback>
+              </Avatar>
+              {!collapsed && (
+                <div className="flex-1 min-w-0 text-left">
+                  <p className="text-xs font-medium text-foreground truncate">{user?.name ?? "Usuário"}</p>
+                  <p className="text-xs text-muted-foreground truncate">{roleLabel}</p>
+                </div>
+              )}
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent side="top" align="start" className="w-48">
+            <DropdownMenuItem disabled className="text-xs text-muted-foreground">
+              {user?.email ?? user?.name}
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={logout} className="text-red-600">
+              <LogOut className="h-4 w-4 mr-2" />
+              Sair
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="flex h-screen bg-background overflow-hidden">
+      {/* Desktop sidebar */}
+      <aside
+        className={`hidden md:flex flex-col border-r border-border bg-card transition-all duration-200 shrink-0 ${
+          collapsed ? "w-14" : "w-60"
+        }`}
+      >
+        {collapsed && (
+          <button
+            onClick={() => setCollapsed(false)}
+            className="absolute left-10 top-4 z-50 p-1 rounded-full bg-primary text-primary-foreground shadow-md"
+            title="Expandir menu"
+          >
+            <ChevronRight className="h-3 w-3" />
+          </button>
+        )}
+        {sidebarContent}
+      </aside>
+
+      {/* Mobile overlay */}
+      {mobileOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/50 md:hidden"
+          onClick={() => setMobileOpen(false)}
+        />
+      )}
+
+      {/* Mobile sidebar */}
+      <aside
+        className={`fixed inset-y-0 left-0 z-50 w-60 flex flex-col border-r border-border bg-card transition-transform duration-200 md:hidden ${
+          mobileOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+        {sidebarContent}
+      </aside>
+
+      {/* Main content */}
+      <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
+        {/* Top bar */}
+        <header className="h-14 flex items-center gap-3 px-4 border-b border-border bg-background shrink-0">
+          <button
+            className="md:hidden p-2 rounded-lg hover:bg-accent transition-colors"
+            onClick={() => setMobileOpen(true)}
+          >
+            <Menu className="h-5 w-5" />
+          </button>
+          <div className="flex-1" />
         </header>
 
-        {/* Content */}
-        <main className="flex-1 p-4 md:p-6 overflow-auto">
+        {/* Page content */}
+        <main className="flex-1 overflow-auto p-4 md:p-6">
           {children}
         </main>
-      </SidebarInset>
-    </>
+      </div>
+    </div>
   );
 }
