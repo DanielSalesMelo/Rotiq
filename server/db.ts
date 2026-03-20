@@ -52,13 +52,14 @@ export async function upsertUser(user: InsertUser): Promise<void> {
       values.lastSignedIn = user.lastSignedIn;
       updateSet.lastSignedIn = user.lastSignedIn;
     }
-    if (user.role !== undefined) {
-      values.role = user.role;
-      updateSet.role = user.role;
-    } else if (user.openId === ENV.ownerOpenId) {
-      values.role = 'master_admin';
-      // Never downgrade the owner
+    // Set role only on INSERT (new user), never overwrite existing role on UPDATE
+    // This preserves roles manually set via Painel Master
+    if (user.openId === ENV.ownerOpenId) {
+      values.role = 'master_admin'; // Owner always starts as master_admin
+    } else if (user.role !== undefined) {
+      values.role = user.role; // Only set on initial insert, not on update
     }
+    // Note: updateSet intentionally does NOT include role — never overwrite on login
 
     if (!values.lastSignedIn) {
       values.lastSignedIn = new Date();
