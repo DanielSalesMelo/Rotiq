@@ -160,3 +160,4 @@
 - [ ] Modo de teste: criar contas de demonstração com usuário/senha, tempo limitado e dados fictícios para prospects
 - [x] Abastecimento: filtrar veículos por status (interno=na base, externo=em viagem) e auto-preencher motorista vinculado
 - [x] Painel Master: admin master pode promover outro usuário a admin master
+- [x] Simulador de Viagem: mover mapa para abaixo dos dados de simulação

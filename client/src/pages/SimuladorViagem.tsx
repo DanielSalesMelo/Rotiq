@@ -357,16 +357,6 @@ export default function SimuladorViagem() {
         </CardContent>
       </Card>
 
-      {/* Mapa */}
-      <Card className="overflow-hidden">
-        <MapView
-          className="h-[400px] lg:h-[500px]"
-          initialCenter={{ lat: -15.77, lng: -47.92 }}
-          initialZoom={4}
-          onMapReady={handleMapReady}
-        />
-      </Card>
-
       {/* Rotas encontradas */}
       {rotas.length > 0 && (
         <div className="space-y-4">
@@ -655,6 +645,16 @@ export default function SimuladorViagem() {
           </CardContent>
         </Card>
       )}
+
+      {/* Mapa */}
+      <Card className="overflow-hidden">
+        <MapView
+          className="h-[400px] lg:h-[500px]"
+          initialCenter={{ lat: -15.77, lng: -47.92 }}
+          initialZoom={4}
+          onMapReady={handleMapReady}
+        />
+      </Card>
 
       {/* Dialog Salvar */}
       <Dialog open={showSalvar} onOpenChange={setShowSalvar}>
