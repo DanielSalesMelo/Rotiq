@@ -15,7 +15,12 @@ const EMPRESA_ID = 1;
 
 export default function PainelMaster() {
   const { user } = useAuth();
-  const [abaAtiva, setAbaAtiva] = useState<"visao-geral" | "empresas" | "logs" | "config">("visao-geral");
+  const [abaAtiva, setAbaAtiva] = useState<"visao-geral" | "empresas" | "admins" | "logs" | "config">("visao-geral");
+  const { data: allUsers = [] } = trpc.dashboard.listUsers.useQuery({ empresaId: EMPRESA_ID });
+  const updateRoleMut = trpc.dashboard.updateUserRole.useMutation({
+    onSuccess: () => { toast.success("Permissão atualizada!"); },
+    onError: (e: any) => toast.error(e.message),
+  });
 
   const { data: veiculos = [] } = trpc.veiculos.list.useQuery({ empresaId: EMPRESA_ID });
   const { data: motoristas = [] } = trpc.funcionarios.listMotoristas.useQuery({ empresaId: EMPRESA_ID });
@@ -99,6 +104,7 @@ export default function PainelMaster() {
         {([
           { key: "visao-geral", label: "Visão Geral", icon: <Activity className="w-4 h-4" /> },
           { key: "empresas", label: "Empresas", icon: <Building2 className="w-4 h-4" /> },
+          { key: "admins", label: "Administradores", icon: <Shield className="w-4 h-4" /> },
           { key: "logs", label: "Logs de Atividade", icon: <Settings className="w-4 h-4" /> },
           { key: "config", label: "Configurações", icon: <Settings className="w-4 h-4" /> },
         ] as const).map(aba => (
@@ -256,6 +262,62 @@ export default function PainelMaster() {
                   </tbody>
                 </table>
               </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Administradores */}
+      {abaAtiva === "admins" && (
+        <div className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2"><Shield className="w-5 h-5" /> Gestão de Administradores</CardTitle>
+              <p className="text-sm text-muted-foreground">Promova ou remova permissões de administrador master para outros usuários do sistema.</p>
+            </CardHeader>
+            <CardContent>
+              {allUsers.length === 0 ? (
+                <p className="text-sm text-muted-foreground">Nenhum usuário cadastrado.</p>
+              ) : (
+                <div className="space-y-3">
+                  {allUsers.map((u: any) => (
+                    <div key={u.id} className="flex items-center justify-between p-3 rounded-lg border">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-sm font-bold">
+                          {(u.name || u.openId || "?").substring(0, 2).toUpperCase()}
+                        </div>
+                        <div>
+                          <p className="font-medium">{u.name || u.openId}</p>
+                          <p className="text-xs text-muted-foreground">{u.openId}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge className={u.role === "master_admin" ? "bg-red-100 text-red-700 border border-red-300" : u.role === "admin" ? "bg-orange-100 text-orange-700 border border-orange-300" : "bg-gray-100 text-gray-700 border border-gray-300"}>
+                          {u.role === "master_admin" ? "Master Admin" : u.role === "admin" ? "Admin" : u.role === "monitor" ? "Monitor" : u.role === "dispatcher" ? "Despachante" : "Usuário"}
+                        </Badge>
+                        {u.id !== (user as any)?.id && u.role !== "master_admin" && (
+                          <Button size="sm" variant="outline" onClick={() => {
+                            if (confirm(`Promover ${u.name || u.openId} a Administrador Master?`)) {
+                              updateRoleMut.mutate({ userId: u.id, role: "master_admin" });
+                            }
+                          }}>
+                            <Crown className="w-3 h-3 mr-1" /> Promover a Master
+                          </Button>
+                        )}
+                        {u.id !== (user as any)?.id && u.role === "master_admin" && (
+                          <Button size="sm" variant="outline" className="text-red-600" onClick={() => {
+                            if (confirm(`Remover permissão Master Admin de ${u.name || u.openId}?`)) {
+                              updateRoleMut.mutate({ userId: u.id, role: "admin" });
+                            }
+                          }}>
+                            Remover Master
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
