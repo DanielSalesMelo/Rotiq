@@ -1,16 +1,30 @@
-FROM node:18
+# Build stage
+FROM node:18 AS builder
 
 WORKDIR /app
 
-# Copia package.json do backend e instala dependências
-COPY backend/package*.json ./
-RUN npm install --production
+# Copia package.json do backend e instala dependências (inclui devDeps para build)
+COPY backend/package*.json ./backend/
+WORKDIR /app/backend
+RUN npm ci
 
-# Copia todo o backend
+# Copia todo o backend e roda build
 COPY backend/ ./
+RUN npm run build
 
-# Ajuste a porta se seu app usar outra porta
+# Production stage
+FROM node:18-slim AS runner
+WORKDIR /app
+
+# Copia apenas o necessário do builder
+COPY --from=builder /app/backend/package*.json ./backend/
+COPY --from=builder /app/backend/dist ./backend/dist
+# Instala apenas production deps
+WORKDIR /app/backend
+RUN npm ci --production
+
+# Expor porta (o app deve usar process.env.PORT)
 EXPOSE 3000
 
-# Se o backend usa "npm start", troque por ["npm","start"]
-CMD ["node", "index.js"]
+# Start (assume que build gera dist/index.js)
+CMD ["node", "dist/index.js"]
