@@ -36,6 +36,7 @@ import PlanoManutencao from "./pages/PlanoManutencao";
 import PainelMaster from "./pages/PainelMaster";
 import Permissoes from "./pages/Permissoes";
 import Chat from "./pages/Chat";
+import Login from "./pages/Login";
 
 function DashboardRoutes() {
   return (
@@ -101,6 +102,9 @@ function Router() {
     <Switch>
       {/* Landing page sem sidebar */}
       <Route path="/" component={Home} />
+
+      {/* Login page */}
+      <Route path="/login" component={Login} />
 
       {/* 404 explícito */}
       <Route path="/404" component={NotFound} />

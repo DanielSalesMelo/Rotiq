@@ -7,7 +7,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { getLoginUrl } from "@/const";
+import { useLocation } from "wouter";
 import {
   LayoutDashboard, Truck, Users, Fuel, Wrench, DollarSign,
   ClipboardCheck, MapPin, LogOut, Menu, TrendingUp, TrendingDown,
@@ -265,7 +265,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </div>
             <span className="text-2xl font-bold tracking-tight">Rotiq</span>
           </div>
-          <Button onClick={() => { window.location.href = getLoginUrl(); }} size="lg" className="w-full">
+          <Button onClick={() => { setLocation("/login"); }} size="lg" className="w-full">
             Entrar
           </Button>
         </div>

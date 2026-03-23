@@ -1,6 +1,6 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
-import { getLoginUrl } from "@/const";
+
 import { Truck, BarChart3, Users, Fuel, Wrench, Shield, ArrowRight } from "lucide-react";
 import { useEffect } from "react";
 import { useLocation } from "wouter";
@@ -35,7 +35,7 @@ export default function Home() {
           </div>
           <span className="text-xl font-bold tracking-tight">Rotiq</span>
         </div>
-        <Button onClick={() => { window.location.href = getLoginUrl(); }}>
+        <Button onClick={() => { setLocation("/login"); }}>
           Entrar <ArrowRight className="ml-2 h-4 w-4" />
         </Button>
       </header>
@@ -54,7 +54,7 @@ export default function Home() {
             Controle veículos, motoristas, abastecimentos, manutenções e finanças em um único lugar. 
             Substitua suas planilhas por um sistema moderno e integrado.
           </p>
-          <Button size="lg" onClick={() => { window.location.href = getLoginUrl(); }} className="text-base px-8">
+          <Button size="lg" onClick={() => { setLocation("/login"); }} className="text-base px-8">
             Acessar o sistema <ArrowRight className="ml-2 h-5 w-5" />
           </Button>
         </div>
