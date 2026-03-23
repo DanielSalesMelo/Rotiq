@@ -1,2 +1,9 @@
 [build]
-root = "server"
+builder = "node"
+root = "backend"
+
+[build.env]
+NODE_VERSION = "18"
+
+[deploy]
+start = "node index.js"
