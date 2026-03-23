@@ -1,0 +1,14 @@
+FROM node:18
+
+WORKDIR /app
+
+# Copia apenas o backend
+COPY backend/package*.json ./
+RUN npm install
+
+# Copia o restante do backend
+COPY backend/ ./
+
+EXPOSE 3000
+
+CMD ["node", "index.js"]
