@@ -47,7 +47,7 @@
 - [ ] Checklist independente para carreta acoplada
 
 ## Validação e Erros
-- [ ] Helper centralizado de tratamento de erros (mapear erros MySQL para mensagens amigáveis)
+- [x] Helper centralizado de tratamento de erros (mapear erros PostgreSQL para mensagens amigáveis)
 - [ ] Validação mínima em todos os routers (só campos essenciais obrigatórios)
 - [ ] Mensagens de erro amigáveis no frontend (sem mensagens técnicas de banco)
 - [ ] Log de erros internos para diagnóstico sem expor ao usuário

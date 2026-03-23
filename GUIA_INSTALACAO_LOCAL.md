@@ -5,11 +5,11 @@
 | Software | Versão Mínima | Download |
 |----------|--------------|----------|
 | Node.js | 22 LTS | https://nodejs.org/ |
-| MySQL | 8.0+ | https://dev.mysql.com/downloads/ |
+| PostgreSQL | 14+ | https://www.postgresql.org/download/ |
 | pnpm | 9+ | Instalado automaticamente pelo script |
 | VS Code | Qualquer | https://code.visualstudio.com/ |
 
-**Alternativa ao MySQL:** Pode usar XAMPP (https://www.apachefriends.org/) que já inclui MySQL e phpMyAdmin.
+**Alternativa ao PostgreSQL:** Pode usar Docker: `docker run -d -p 5432:5432 -e POSTGRES_PASSWORD=root postgres:16`
 
 ---
 
@@ -25,7 +25,7 @@ Extraia o ZIP do projeto para uma pasta, por exemplo: `C:\Projetos\Rotiq`
 
 Dê duplo clique em `criar-banco.bat` e siga as instruções na tela.
 
-**Opção B — Manualmente via phpMyAdmin ou MySQL CLI:**
+**Opção B — Manualmente via psql CLI:**
 
 ```sql
 CREATE DATABASE rotiq CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
@@ -56,7 +56,7 @@ copy .env.exemplo .env
 Edite o arquivo `.env` com o Notepad ou VS Code e preencha:
 
 ```env
-DATABASE_URL=mysql://root:sua_senha@localhost:3306/rotiq
+DATABASE_URL=postgresql://postgres:sua_senha@localhost:5432/rotiq
 JWT_SECRET=gere_uma_chave_aleatoria_aqui
 OWNER_OPEN_ID=admin
 OWNER_NAME=Administrador
@@ -166,10 +166,10 @@ Requer modificação no código do servidor para implementar autenticação loca
 ## Solução de Problemas
 
 **Erro "ECONNREFUSED" ao iniciar:**
-O MySQL não está rodando. Inicie o serviço MySQL ou o XAMPP.
+O PostgreSQL não está rodando. Inicie o serviço PostgreSQL.
 
 **Erro "Access denied for user":**
-Verifique o usuário e senha do MySQL no arquivo `.env`.
+Verifique o usuário e senha do PostgreSQL no arquivo `.env`.
 
 **Erro "Unknown database 'rotiq'":**
 Execute o `criar-banco.bat` primeiro.

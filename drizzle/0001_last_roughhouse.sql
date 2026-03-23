@@ -1,5 +1,1 @@
-ALTER TABLE `viagens` ADD `tipo` enum('entrega','viagem') DEFAULT 'viagem' NOT NULL;--> statement-breakpoint
-ALTER TABLE `viagens` ADD `tipoCarga` text;--> statement-breakpoint
-ALTER TABLE `viagens` ADD `teveProblema` boolean DEFAULT false;--> statement-breakpoint
-ALTER TABLE `viagens` ADD `voltouComCarga` boolean DEFAULT false;--> statement-breakpoint
-ALTER TABLE `viagens` ADD `observacoesChegada` text;
+ALTER TABLE "viagens" ADD COLUMN "tipo" text DEFAULT 'viagem' NOT NULL;ALTER TABLE "viagens" ADD COLUMN "tipoCarga" text;ALTER TABLE "viagens" ADD COLUMN "teveProblema" boolean DEFAULT FALSE;ALTER TABLE "viagens" ADD COLUMN "voltouComCarga" boolean DEFAULT FALSE;ALTER TABLE "viagens" ADD COLUMN "observacoesChegada" text;

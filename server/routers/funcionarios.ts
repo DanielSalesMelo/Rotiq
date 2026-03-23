@@ -152,8 +152,8 @@ export const funcionariosRouter = router({
           vencimentoMopp: parseDate(input.vencimentoMopp),
           vencimentoAso: parseDate(input.vencimentoAso),
           ativo: true,
-        });
-        return { id: (result as any).insertId };
+        }).returning({ id: funcionarios.id });
+        return { id: result.id };
       }, "funcionarios.create");
     }),
 

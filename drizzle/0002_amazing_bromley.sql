@@ -1,1 +1,1 @@
-ALTER TABLE `viagens` ADD `notaFiscal` varchar(50);
+ALTER TABLE "viagens" ADD COLUMN "notaFiscal" varchar(50);

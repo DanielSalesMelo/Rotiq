@@ -104,14 +104,14 @@ export const chatRouter = router({
           conversationId: input.conversationId,
           senderId: userId,
           content: input.content,
-        });
+        }).returning({ id: chatMessages.id });
 
         // Atualizar data da última mensagem na conversa
         await db.update(chatConversations)
           .set({ lastMessageAt: new Date() })
           .where(eq(chatConversations.id, input.conversationId));
 
-        return { id: (result as any).insertId };
+        return { id: result.id };
       }, "chat.sendMessage");
     }),
 
@@ -126,25 +126,26 @@ export const chatRouter = router({
         // Tentar encontrar conversa existente entre os dois
         const existing = await db.execute(sql`
           SELECT c.id FROM chat_conversations c
-          JOIN chat_members m1 ON c.id = m1.conversationId
-          JOIN chat_members m2 ON c.id = m2.conversationId
-          WHERE c.isGroup = false 
-          AND c.empresaId = ${input.empresaId}
-          AND m1.userId = ${userId}
-          AND m2.userId = ${input.targetUserId}
+          JOIN chat_members m1 ON c.id = m1."conversationId"
+          JOIN chat_members m2 ON c.id = m2."conversationId"
+          WHERE c."isGroup" = false 
+          AND c."empresaId" = ${input.empresaId}
+          AND m1."userId" = ${userId}
+          AND m2."userId" = ${input.targetUserId}
           LIMIT 1
         `);
 
-        if ((existing as any)[0]?.length > 0) {
-          return { id: (existing as any)[0][0].id };
+        const existingRows = ((existing as any).rows ?? []) as any[];
+        if (existingRows.length > 0) {
+          return { id: existingRows[0].id };
         }
 
         // Se não existir, criar nova
         const [convResult] = await db.insert(chatConversations).values({
           empresaId: input.empresaId,
           isGroup: false,
-        });
-        const convId = (convResult as any).insertId;
+        }).returning({ id: chatConversations.id });
+        const convId = convResult.id;
 
         // Adicionar os dois membros
         await db.insert(chatMembers).values([

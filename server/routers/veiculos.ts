@@ -95,8 +95,8 @@ export const veiculosRouter = router({
           vencimentoCrlv: parseDate(input.vencimentoCrlv),
           vencimentoSeguro: parseDate(input.vencimentoSeguro),
           ativo: true,
-        });
-        return { id: (result as any).insertId };
+        }).returning({ id: veiculos.id });
+        return { id: result.id };
       }, "veiculos.create");
     }),
 
@@ -155,13 +155,13 @@ export const veiculosRouter = router({
         // Busca o maior KM entre viagens, abastecimentos e odômetro do veículo
         const rows = await db.execute(sql`
           SELECT GREATEST(
-            COALESCE((SELECT MAX(kmChegada) FROM viagens WHERE veiculoId = ${input.veiculoId} AND kmChegada IS NOT NULL), 0),
-            COALESCE((SELECT MAX(kmSaida) FROM viagens WHERE veiculoId = ${input.veiculoId} AND kmSaida IS NOT NULL), 0),
-            COALESCE((SELECT MAX(kmAtual) FROM abastecimentos WHERE veiculoId = ${input.veiculoId} AND kmAtual IS NOT NULL), 0),
-            COALESCE((SELECT kmAtual FROM veiculos WHERE id = ${input.veiculoId}), 0)
-          ) as ultimoKm
+            COALESCE((SELECT MAX("kmChegada") FROM viagens WHERE "veiculoId" = ${input.veiculoId} AND "kmChegada" IS NOT NULL), 0),
+            COALESCE((SELECT MAX("kmSaida") FROM viagens WHERE "veiculoId" = ${input.veiculoId} AND "kmSaida" IS NOT NULL), 0),
+            COALESCE((SELECT MAX("kmAtual") FROM abastecimentos WHERE "veiculoId" = ${input.veiculoId} AND "kmAtual" IS NOT NULL), 0),
+            COALESCE((SELECT "kmAtual" FROM veiculos WHERE id = ${input.veiculoId}), 0)
+          ) as "ultimoKm"
         `);
-        const r = ((rows as unknown as [any[]])[0] ?? [])[0] ?? {};
+        const r = ((rows as any).rows?.[0] ?? (rows as any)[0] ?? {}) as any;
         const km = Number(r.ultimoKm) || null;
         return { kmAtual: km };
       }, "veiculos.getUltimoKm");

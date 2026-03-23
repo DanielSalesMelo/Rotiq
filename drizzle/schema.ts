@@ -3,33 +3,61 @@ import {
   boolean,
   date,
   decimal,
-  int,
-  mysqlEnum,
-  mysqlTable,
+  integer,
+  pgEnum,
+  pgTable,
+  serial,
   text,
   timestamp,
   varchar,
-} from "drizzle-orm/mysql-core";
+} from "drizzle-orm/pg-core";
+
+// ─── ENUMS ────────────────────────────────────────────────────────────────────
+export const userRoleEnum = pgEnum("user_role", ["user", "admin", "master_admin", "monitor", "dispatcher"]);
+export const funcaoEnum = pgEnum("funcao", ["motorista", "ajudante", "despachante", "gerente", "admin", "outro"]);
+export const tipoContratoEnum = pgEnum("tipo_contrato", ["clt", "freelancer", "terceirizado", "estagiario"]);
+export const tipoCobrancaEnum = pgEnum("tipo_cobranca", ["diaria", "mensal", "por_viagem"]);
+export const tipoContaEnum = pgEnum("tipo_conta", ["corrente", "poupanca", "pix"]);
+export const tipoVeiculoEnum = pgEnum("tipo_veiculo", ["van", "toco", "truck", "cavalo", "carreta", "empilhadeira", "paletera", "outro"]);
+export const tipoCombustivelEnum = pgEnum("tipo_combustivel", ["diesel", "arla", "gasolina", "etanol", "gas", "outro"]);
+export const tipoAbastecimentoEnum = pgEnum("tipo_abastecimento", ["interno", "externo"]);
+export const tipoManutencaoEnum = pgEnum("tipo_manutencao", ["preventiva", "corretiva", "revisao", "pneu", "eletrica", "funilaria", "outro"]);
+export const tipoViagemEnum = pgEnum("tipo_viagem", ["entrega", "viagem"]);
+export const statusViagemEnum = pgEnum("status_viagem", ["planejada", "em_andamento", "concluida", "cancelada"]);
+export const tipoDespesaEnum = pgEnum("tipo_despesa", ["combustivel", "pedagio", "borracharia", "estacionamento", "oficina", "telefone", "descarga", "diaria", "alimentacao", "outro"]);
+export const turnoEnum = pgEnum("turno", ["manha", "tarde", "noite"]);
+export const tipoChecklistEnum = pgEnum("tipo_checklist", ["saida", "retorno"]);
+export const itemChecklistEnum = pgEnum("item_checklist", ["conforme", "nao_conforme", "na"]);
+export const categoriaContaPagarEnum = pgEnum("categoria_conta_pagar", ["combustivel", "manutencao", "salario", "freelancer", "pedagio", "seguro", "ipva", "licenciamento", "pneu", "outro"]);
+export const statusContaPagarEnum = pgEnum("status_conta_pagar", ["pendente", "pago", "vencido", "cancelado"]);
+export const categoriaContaReceberEnum = pgEnum("categoria_conta_receber", ["frete", "cte", "devolucao", "outro"]);
+export const statusContaReceberEnum = pgEnum("status_conta_receber", ["pendente", "recebido", "vencido", "cancelado"]);
+export const formaPagamentoEnum = pgEnum("forma_pagamento", ["dinheiro", "pix", "transferencia", "cartao"]);
+export const statusAdiantamentoEnum = pgEnum("status_adiantamento", ["pendente", "acertado", "cancelado"]);
+export const tipoTanqueEnum = pgEnum("tipo_tanque", ["diesel", "arla"]);
+export const operacaoTanqueEnum = pgEnum("operacao_tanque", ["entrada", "saida"]);
+export const statusAcidenteEnum = pgEnum("status_acidente", ["aberto", "em_reparo", "resolvido"]);
+export const chatRoleEnum = pgEnum("chat_role", ["admin", "member"]);
+export const chatMessageTypeEnum = pgEnum("chat_message_type", ["text", "image", "file"]);
 
 // ─── USERS (auth) ─────────────────────────────────────────────────────────────
-export const users = mysqlTable("users", {
-  id: int("id").autoincrement().primaryKey(),
+export const users = pgTable("users", {
+  id: serial("id").primaryKey(),
   openId: varchar("openId", { length: 64 }).notNull().unique(),
   name: text("name"),
   email: varchar("email", { length: 320 }),
   loginMethod: varchar("loginMethod", { length: 64 }),
-  role: mysqlEnum("role", ["user", "admin", "master_admin", "monitor", "dispatcher"]).default("user").notNull(),
+  role: userRoleEnum("role").default("user").notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
   lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull(),
 });
-
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
 
 // ─── EMPRESAS (multi-tenant) ──────────────────────────────────────────────────
-export const empresas = mysqlTable("empresas", {
-  id: int("id").autoincrement().primaryKey(),
+export const empresas = pgTable("empresas", {
+  id: serial("id").primaryKey(),
   nome: varchar("nome", { length: 255 }).notNull(),
   cnpj: varchar("cnpj", { length: 18 }),
   telefone: varchar("telefone", { length: 20 }),
@@ -39,23 +67,23 @@ export const empresas = mysqlTable("empresas", {
   estado: varchar("estado", { length: 2 }),
   ativo: boolean("ativo").default(true).notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
   deletedAt: timestamp("deletedAt"),
-  deletedBy: int("deletedBy"),
+  deletedBy: integer("deletedBy"),
   deleteReason: text("deleteReason"),
 });
 
 // ─── FUNCIONÁRIOS (RH) ────────────────────────────────────────────────────────
-export const funcionarios = mysqlTable("funcionarios", {
-  id: int("id").autoincrement().primaryKey(),
-  empresaId: int("empresaId").notNull(),
+export const funcionarios = pgTable("funcionarios", {
+  id: serial("id").primaryKey(),
+  empresaId: integer("empresaId").notNull(),
   nome: varchar("nome", { length: 255 }).notNull(),
   cpf: varchar("cpf", { length: 14 }),
   rg: varchar("rg", { length: 20 }),
   telefone: varchar("telefone", { length: 20 }),
   email: varchar("email", { length: 320 }),
-  funcao: mysqlEnum("funcao", ["motorista", "ajudante", "despachante", "gerente", "admin", "outro"]).notNull(),
-  tipoContrato: mysqlEnum("tipoContrato", ["clt", "freelancer", "terceirizado", "estagiario"]).notNull(),
+  funcao: funcaoEnum("funcao").notNull(),
+  tipoContrato: tipoContratoEnum("tipoContrato").notNull(),
   // Dados CLT
   salario: decimal("salario", { precision: 10, scale: 2 }),
   dataAdmissao: date("dataAdmissao"),
@@ -63,137 +91,137 @@ export const funcionarios = mysqlTable("funcionarios", {
   // Dados Freelancer/Temporário
   valorDiaria: decimal("valorDiaria", { precision: 10, scale: 2 }),
   valorMensal: decimal("valorMensal", { precision: 10, scale: 2 }),
-  tipoCobranca: mysqlEnum("tipoCobranca", ["diaria", "mensal", "por_viagem"]),
+  tipoCobranca: tipoCobrancaEnum("tipoCobranca"),
   dataInicioContrato: date("dataInicioContrato"),
   dataFimContrato: date("dataFimContrato"),
-  diaPagamento: int("diaPagamento"), // dia do mês para pagar
+  diaPagamento: integer("diaPagamento"), // dia do mes para pagar
   // Dados Motorista
   cnh: varchar("cnh", { length: 20 }),
   categoriaCnh: varchar("categoriaCnh", { length: 5 }),
   vencimentoCnh: date("vencimentoCnh"),
   mopp: boolean("mopp").default(false),
   vencimentoMopp: date("vencimentoMopp"),
-  vencimentoAso: date("vencimentoAso"), // exame médico
-  // Dados bancários (freelancer)
+  vencimentoAso: date("vencimentoAso"), // exame medico
+  // Dados bancarios (freelancer)
   banco: varchar("banco", { length: 100 }),
   agencia: varchar("agencia", { length: 10 }),
   conta: varchar("conta", { length: 20 }),
-  tipoConta: mysqlEnum("tipoConta", ["corrente", "poupanca", "pix"]),
+  tipoConta: tipoContaEnum("tipoConta"),
   chavePix: varchar("chavePix", { length: 255 }),
-  // Observações
+  // Observacoes
   observacoes: text("observacoes"),
   foto: text("foto"),
   ativo: boolean("ativo").default(true).notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
   deletedAt: timestamp("deletedAt"),
-  deletedBy: int("deletedBy"),
+  deletedBy: integer("deletedBy"),
   deleteReason: text("deleteReason"),
 });
 
-// ─── VEÍCULOS ─────────────────────────────────────────────────────────────────
-export const veiculos = mysqlTable("veiculos", {
-  id: int("id").autoincrement().primaryKey(),
-  empresaId: int("empresaId").notNull(),
+// ─── VEICULOS ─────────────────────────────────────────────────────────────────
+export const veiculos = pgTable("veiculos", {
+  id: serial("id").primaryKey(),
+  empresaId: integer("empresaId").notNull(),
   placa: varchar("placa", { length: 10 }).notNull(),
-  tipo: mysqlEnum("tipo", ["van", "toco", "truck", "cavalo", "carreta", "empilhadeira", "paletera", "outro"]).notNull(),
+  tipo: tipoVeiculoEnum("tipo").notNull(),
   // Cavalo/Carreta: relacionamento
-  cavaloPrincipalId: int("cavaloPrincipalId"), // para carreta: qual cavalo está acoplado
-  // Dados do veículo
+  cavaloPrincipalId: integer("cavaloPrincipalId"), // para carreta: qual cavalo esta acoplado
+  // Dados do veiculo
   marca: varchar("marca", { length: 100 }),
   modelo: varchar("modelo", { length: 100 }),
-  ano: int("ano"),
+  ano: integer("ano"),
   cor: varchar("cor", { length: 50 }),
   renavam: varchar("renavam", { length: 20 }),
   chassi: varchar("chassi", { length: 30 }),
   capacidadeCarga: decimal("capacidadeCarga", { precision: 8, scale: 2 }), // em toneladas
-  // Motorista e ajudante padrão
-  motoristaId: int("motoristaId"),
-  ajudanteId: int("ajudanteId"),
+  // Motorista e ajudante padrao
+  motoristaId: integer("motoristaId"),
+  ajudanteId: integer("ajudanteId"),
   // KM e consumo
-  kmAtual: int("kmAtual"),
+  kmAtual: integer("kmAtual"),
   mediaConsumo: decimal("mediaConsumo", { precision: 5, scale: 2 }), // km/l
-  // Documentação
+  // Documentacao
   vencimentoCrlv: date("vencimentoCrlv"),
   vencimentoSeguro: date("vencimentoSeguro"),
-  // Classificação (estrelas do Excel)
-  classificacao: int("classificacao").default(0), // 0-5 estrelas
+  // Classificacao (estrelas do Excel)
+  classificacao: integer("classificacao").default(0), // 0-5 estrelas
   observacoes: text("observacoes"),
   ativo: boolean("ativo").default(true).notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
   deletedAt: timestamp("deletedAt"),
-  deletedBy: int("deletedBy"),
+  deletedBy: integer("deletedBy"),
   deleteReason: text("deleteReason"),
 });
 
 // ─── ABASTECIMENTOS ───────────────────────────────────────────────────────────
-export const abastecimentos = mysqlTable("abastecimentos", {
-  id: int("id").autoincrement().primaryKey(),
-  empresaId: int("empresaId").notNull(),
-  veiculoId: int("veiculoId").notNull(),
-  motoristaId: int("motoristaId"),
+export const abastecimentos = pgTable("abastecimentos", {
+  id: serial("id").primaryKey(),
+  empresaId: integer("empresaId").notNull(),
+  veiculoId: integer("veiculoId").notNull(),
+  motoristaId: integer("motoristaId"),
   data: date("data").notNull(),
-  tipoCombustivel: mysqlEnum("tipoCombustivel", ["diesel", "arla", "gasolina", "etanol", "gas", "outro"]).notNull(),
+  tipoCombustivel: tipoCombustivelEnum("tipoCombustivel").notNull(),
   quantidade: decimal("quantidade", { precision: 8, scale: 3 }).notNull(),
   valorUnitario: decimal("valorUnitario", { precision: 8, scale: 3 }),
   valorTotal: decimal("valorTotal", { precision: 10, scale: 2 }),
-  kmAtual: int("kmAtual"),
-  kmRodado: int("kmRodado"),
+  kmAtual: integer("kmAtual"),
+  kmRodado: integer("kmRodado"),
   mediaConsumo: decimal("mediaConsumo", { precision: 5, scale: 2 }),
   local: varchar("local", { length: 255 }), // posto/cidade
-  tipoAbastecimento: mysqlEnum("tipoAbastecimento", ["interno", "externo"]).default("interno"),
+  tipoAbastecimento: tipoAbastecimentoEnum("tipoAbastecimento").default("interno"),
   notaFiscal: varchar("notaFiscal", { length: 50 }),
   observacoes: text("observacoes"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
   deletedAt: timestamp("deletedAt"),
-  deletedBy: int("deletedBy"),
+  deletedBy: integer("deletedBy"),
   deleteReason: text("deleteReason"),
 });
 
-// ─── MANUTENÇÕES ──────────────────────────────────────────────────────────────
-export const manutencoes = mysqlTable("manutencoes", {
-  id: int("id").autoincrement().primaryKey(),
-  empresaId: int("empresaId").notNull(),
-  veiculoId: int("veiculoId").notNull(),
+// ─── MANUTENCOES ──────────────────────────────────────────────────────────────
+export const manutencoes = pgTable("manutencoes", {
+  id: serial("id").primaryKey(),
+  empresaId: integer("empresaId").notNull(),
+  veiculoId: integer("veiculoId").notNull(),
   data: date("data").notNull(),
-  tipo: mysqlEnum("tipo", ["preventiva", "corretiva", "revisao", "pneu", "eletrica", "funilaria", "outro"]).notNull(),
+  tipo: tipoManutencaoEnum("tipo").notNull(),
   descricao: text("descricao").notNull(),
   empresa: varchar("empresa", { length: 255 }), // oficina/empresa
   valor: decimal("valor", { precision: 10, scale: 2 }),
-  kmAtual: int("kmAtual"),
-  proximaManutencaoKm: int("proximaManutencaoKm"),
+  kmAtual: integer("kmAtual"),
+  proximaManutencaoKm: integer("proximaManutencaoKm"),
   proximaManutencaoData: date("proximaManutencaoData"),
   notaFiscal: varchar("notaFiscal", { length: 50 }),
   observacoes: text("observacoes"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
   deletedAt: timestamp("deletedAt"),
-  deletedBy: int("deletedBy"),
+  deletedBy: integer("deletedBy"),
   deleteReason: text("deleteReason"),
 });
 
 // ─── VIAGENS ──────────────────────────────────────────────────────────────────
-export const viagens = mysqlTable("viagens", {
-  id: int("id").autoincrement().primaryKey(),
-  empresaId: int("empresaId").notNull(),
-  tipo: mysqlEnum("tipo", ["entrega", "viagem"]).default("viagem").notNull(),
-  veiculoId: int("veiculoId").notNull(),
-  cavaloPrincipalId: int("cavaloPrincipalId"), // se for carreta, o cavalo que puxou
-  motoristaId: int("motoristaId"),
-  ajudante1Id: int("ajudante1Id"),
-  ajudante2Id: int("ajudante2Id"),
-  ajudante3Id: int("ajudante3Id"),
+export const viagens = pgTable("viagens", {
+  id: serial("id").primaryKey(),
+  empresaId: integer("empresaId").notNull(),
+  tipo: tipoViagemEnum("tipo").default("viagem").notNull(),
+  veiculoId: integer("veiculoId").notNull(),
+  cavaloPrincipalId: integer("cavaloPrincipalId"), // se for carreta, o cavalo que puxou
+  motoristaId: integer("motoristaId"),
+  ajudante1Id: integer("ajudante1Id"),
+  ajudante2Id: integer("ajudante2Id"),
+  ajudante3Id: integer("ajudante3Id"),
   // Rota
   origem: varchar("origem", { length: 255 }),
   destino: varchar("destino", { length: 255 }),
   // Datas e KM
   dataSaida: timestamp("dataSaida"),
   dataChegada: timestamp("dataChegada"),
-  kmSaida: int("kmSaida"),
-  kmChegada: int("kmChegada"),
-  kmRodado: int("kmRodado"),
+  kmSaida: integer("kmSaida"),
+  kmChegada: integer("kmChegada"),
+  kmRodado: integer("kmRodado"),
   // Carga
   descricaoCarga: text("descricaoCarga"),
   tipoCarga: text("tipoCarga"),
@@ -207,190 +235,190 @@ export const viagens = mysqlTable("viagens", {
   // Despesas da viagem
   totalDespesas: decimal("totalDespesas", { precision: 10, scale: 2 }),
   mediaConsumo: decimal("mediaConsumo", { precision: 5, scale: 2 }),
-  // Documentação
+  // Documentacao
   notaFiscal: varchar("notaFiscal", { length: 50 }),
   // Status
-  status: mysqlEnum("status", ["planejada", "em_andamento", "concluida", "cancelada"]).default("planejada").notNull(),
+  status: statusViagemEnum("status").default("planejada").notNull(),
   observacoes: text("observacoes"),
   teveProblema: boolean("teveProblema").default(false),
   voltouComCarga: boolean("voltouComCarga").default(false),
   observacoesChegada: text("observacoesChegada"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
   deletedAt: timestamp("deletedAt"),
-  deletedBy: int("deletedBy"),
+  deletedBy: integer("deletedBy"),
   deleteReason: text("deleteReason"),
 });
 
 // ─── DESPESAS DE VIAGEM ───────────────────────────────────────────────────────
-export const despesasViagem = mysqlTable("despesas_viagem", {
-  id: int("id").autoincrement().primaryKey(),
-  viagemId: int("viagemId").notNull(),
-  empresaId: int("empresaId").notNull(),
-  tipo: mysqlEnum("tipo", ["combustivel", "pedagio", "borracharia", "estacionamento", "oficina", "telefone", "descarga", "diaria", "alimentacao", "outro"]).notNull(),
+export const despesasViagem = pgTable("despesas_viagem", {
+  id: serial("id").primaryKey(),
+  viagemId: integer("viagemId").notNull(),
+  empresaId: integer("empresaId").notNull(),
+  tipo: tipoDespesaEnum("tipo").notNull(),
   descricao: text("descricao"),
   valor: decimal("valor", { precision: 10, scale: 2 }).notNull(),
   data: date("data"),
   comprovante: text("comprovante"), // URL da foto
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   deletedAt: timestamp("deletedAt"),
-  deletedBy: int("deletedBy"),
+  deletedBy: integer("deletedBy"),
   deleteReason: text("deleteReason"),
 });
 
 // ─── CHECKLIST ────────────────────────────────────────────────────────────────
-export const checklists = mysqlTable("checklists", {
-  id: int("id").autoincrement().primaryKey(),
-  empresaId: int("empresaId").notNull(),
-  veiculoId: int("veiculoId").notNull(),
-  cavaloPrincipalId: int("cavaloPrincipalId"), // checklist independente para carreta
-  motoristaId: int("motoristaId"),
-  turno: mysqlEnum("turno", ["manha", "tarde", "noite"]),
-  tipo: mysqlEnum("tipo", ["saida", "retorno"]).default("retorno").notNull(),
+export const checklists = pgTable("checklists", {
+  id: serial("id").primaryKey(),
+  empresaId: integer("empresaId").notNull(),
+  veiculoId: integer("veiculoId").notNull(),
+  cavaloPrincipalId: integer("cavaloPrincipalId"), // checklist independente para carreta
+  motoristaId: integer("motoristaId"),
+  turno: turnoEnum("turno"),
+  tipo: tipoChecklistEnum("tipo").default("retorno").notNull(),
   // Itens internos
-  cracha: mysqlEnum("cracha", ["conforme", "nao_conforme", "na"]),
-  cnh: mysqlEnum("cnh", ["conforme", "nao_conforme", "na"]),
-  documentosVeiculo: mysqlEnum("documentosVeiculo", ["conforme", "nao_conforme", "na"]),
-  epi: mysqlEnum("epi", ["conforme", "nao_conforme", "na"]),
-  computadorBordo: mysqlEnum("computadorBordo", ["conforme", "nao_conforme", "na"]),
-  cinto: mysqlEnum("cinto", ["conforme", "nao_conforme", "na"]),
-  banco: mysqlEnum("banco", ["conforme", "nao_conforme", "na"]),
-  direcao: mysqlEnum("direcao", ["conforme", "nao_conforme", "na"]),
-  luzesPainel: mysqlEnum("luzesPainel", ["conforme", "nao_conforme", "na"]),
-  tacografo: mysqlEnum("tacografo", ["conforme", "nao_conforme", "na"]),
-  extintor: mysqlEnum("extintor", ["conforme", "nao_conforme", "na"]),
-  portas: mysqlEnum("portas", ["conforme", "nao_conforme", "na"]),
-  limpador: mysqlEnum("limpador", ["conforme", "nao_conforme", "na"]),
-  buzina: mysqlEnum("buzina", ["conforme", "nao_conforme", "na"]),
-  freioDeMao: mysqlEnum("freioDeMao", ["conforme", "nao_conforme", "na"]),
-  alarmeCacamba: mysqlEnum("alarmeCacamba", ["conforme", "nao_conforme", "na"]),
-  cabineLimpa: mysqlEnum("cabineLimpa", ["conforme", "nao_conforme", "na"]),
-  objetosSoltos: mysqlEnum("objetosSoltos", ["conforme", "nao_conforme", "na"]),
+  cracha: itemChecklistEnum("cracha"),
+  cnh: itemChecklistEnum("cnh"),
+  documentosVeiculo: itemChecklistEnum("documentosVeiculo"),
+  epi: itemChecklistEnum("epi"),
+  computadorBordo: itemChecklistEnum("computadorBordo"),
+  cinto: itemChecklistEnum("cinto"),
+  banco: itemChecklistEnum("banco"),
+  direcao: itemChecklistEnum("direcao"),
+  luzesPainel: itemChecklistEnum("luzesPainel"),
+  tacografo: itemChecklistEnum("tacografo"),
+  extintor: itemChecklistEnum("extintor"),
+  portas: itemChecklistEnum("portas"),
+  limpador: itemChecklistEnum("limpador"),
+  buzina: itemChecklistEnum("buzina"),
+  freioDeMao: itemChecklistEnum("freioDeMao"),
+  alarmeCacamba: itemChecklistEnum("alarmeCacamba"),
+  cabineLimpa: itemChecklistEnum("cabineLimpa"),
+  objetosSoltos: itemChecklistEnum("objetosSoltos"),
   // Itens externos
-  pneus: mysqlEnum("pneus", ["conforme", "nao_conforme", "na"]),
-  vazamentos: mysqlEnum("vazamentos", ["conforme", "nao_conforme", "na"]),
-  trianguloCones: mysqlEnum("trianguloCones", ["conforme", "nao_conforme", "na"]),
-  espelhos: mysqlEnum("espelhos", ["conforme", "nao_conforme", "na"]),
-  lonaCarga: mysqlEnum("lonaCarga", ["conforme", "nao_conforme", "na"]),
-  faixasRefletivas: mysqlEnum("faixasRefletivas", ["conforme", "nao_conforme", "na"]),
-  luzesLaterais: mysqlEnum("luzesLaterais", ["conforme", "nao_conforme", "na"]),
-  luzesFreio: mysqlEnum("luzesFreio", ["conforme", "nao_conforme", "na"]),
-  farol: mysqlEnum("farol", ["conforme", "nao_conforme", "na"]),
-  piscaAlerta: mysqlEnum("piscaAlerta", ["conforme", "nao_conforme", "na"]),
-  re: mysqlEnum("re", ["conforme", "nao_conforme", "na"]),
-  setas: mysqlEnum("setas", ["conforme", "nao_conforme", "na"]),
-  macacoEstepe: mysqlEnum("macacoEstepe", ["conforme", "nao_conforme", "na"]),
-  lanternas: mysqlEnum("lanternas", ["conforme", "nao_conforme", "na"]),
+  pneus: itemChecklistEnum("pneus"),
+  vazamentos: itemChecklistEnum("vazamentos"),
+  trianguloCones: itemChecklistEnum("trianguloCones"),
+  espelhos: itemChecklistEnum("espelhos"),
+  lonaCarga: itemChecklistEnum("lonaCarga"),
+  faixasRefletivas: itemChecklistEnum("faixasRefletivas"),
+  luzesLaterais: itemChecklistEnum("luzesLaterais"),
+  luzesFreio: itemChecklistEnum("luzesFreio"),
+  farol: itemChecklistEnum("farol"),
+  piscaAlerta: itemChecklistEnum("piscaAlerta"),
+  re: itemChecklistEnum("re"),
+  setas: itemChecklistEnum("setas"),
+  macacoEstepe: itemChecklistEnum("macacoEstepe"),
+  lanternas: itemChecklistEnum("lanternas"),
   // Resumo
-  itensNaoConformes: int("itensNaoConformes").default(0),
+  itensNaoConformes: integer("itensNaoConformes").default(0),
   observacoes: text("observacoes"),
   assinaturaMotorista: text("assinaturaMotorista"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
   deletedAt: timestamp("deletedAt"),
-  deletedBy: int("deletedBy"),
+  deletedBy: integer("deletedBy"),
   deleteReason: text("deleteReason"),
 });
 
 // ─── FINANCEIRO: CONTAS A PAGAR ───────────────────────────────────────────────
-export const contasPagar = mysqlTable("contas_pagar", {
-  id: int("id").autoincrement().primaryKey(),
-  empresaId: int("empresaId").notNull(),
+export const contasPagar = pgTable("contas_pagar", {
+  id: serial("id").primaryKey(),
+  empresaId: integer("empresaId").notNull(),
   descricao: text("descricao").notNull(),
-  categoria: mysqlEnum("categoria", ["combustivel", "manutencao", "salario", "freelancer", "pedagio", "seguro", "ipva", "licenciamento", "pneu", "outro"]).notNull(),
+  categoria: categoriaContaPagarEnum("categoria").notNull(),
   valor: decimal("valor", { precision: 10, scale: 2 }).notNull(),
   dataVencimento: date("dataVencimento").notNull(),
   dataPagamento: date("dataPagamento"),
-  status: mysqlEnum("status", ["pendente", "pago", "vencido", "cancelado"]).default("pendente").notNull(),
+  status: statusContaPagarEnum("status").default("pendente").notNull(),
   fornecedor: varchar("fornecedor", { length: 255 }),
   notaFiscal: varchar("notaFiscal", { length: 50 }),
-  veiculoId: int("veiculoId"),
-  funcionarioId: int("funcionarioId"),
-  viagemId: int("viagemId"),
+  veiculoId: integer("veiculoId"),
+  funcionarioId: integer("funcionarioId"),
+  viagemId: integer("viagemId"),
   comprovante: text("comprovante"),
   observacoes: text("observacoes"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
   deletedAt: timestamp("deletedAt"),
-  deletedBy: int("deletedBy"),
+  deletedBy: integer("deletedBy"),
   deleteReason: text("deleteReason"),
 });
 
 // ─── FINANCEIRO: CONTAS A RECEBER ─────────────────────────────────────────────
-export const contasReceber = mysqlTable("contas_receber", {
-  id: int("id").autoincrement().primaryKey(),
-  empresaId: int("empresaId").notNull(),
+export const contasReceber = pgTable("contas_receber", {
+  id: serial("id").primaryKey(),
+  empresaId: integer("empresaId").notNull(),
   descricao: text("descricao").notNull(),
-  categoria: mysqlEnum("categoria", ["frete", "cte", "devolucao", "outro"]).notNull(),
+  categoria: categoriaContaReceberEnum("categoria").notNull(),
   valor: decimal("valor", { precision: 10, scale: 2 }).notNull(),
   dataVencimento: date("dataVencimento").notNull(),
   dataRecebimento: date("dataRecebimento"),
-  status: mysqlEnum("status", ["pendente", "recebido", "vencido", "cancelado"]).default("pendente").notNull(),
+  status: statusContaReceberEnum("status").default("pendente").notNull(),
   cliente: varchar("cliente", { length: 255 }),
   notaFiscal: varchar("notaFiscal", { length: 50 }),
   cteNumero: varchar("cteNumero", { length: 50 }),
-  viagemId: int("viagemId"),
+  viagemId: integer("viagemId"),
   observacoes: text("observacoes"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
   deletedAt: timestamp("deletedAt"),
-  deletedBy: int("deletedBy"),
+  deletedBy: integer("deletedBy"),
   deleteReason: text("deleteReason"),
 });
 
 // ─── ADIANTAMENTOS (dinheiro para motorista viajar) ───────────────────────────
-export const adiantamentos = mysqlTable("adiantamentos", {
-  id: int("id").autoincrement().primaryKey(),
-  empresaId: int("empresaId").notNull(),
-  funcionarioId: int("funcionarioId").notNull(),
-  viagemId: int("viagemId"),
+export const adiantamentos = pgTable("adiantamentos", {
+  id: serial("id").primaryKey(),
+  empresaId: integer("empresaId").notNull(),
+  funcionarioId: integer("funcionarioId").notNull(),
+  viagemId: integer("viagemId"),
   valor: decimal("valor", { precision: 10, scale: 2 }).notNull(),
-  formaPagamento: mysqlEnum("formaPagamento", ["dinheiro", "pix", "transferencia", "cartao"]).notNull(),
+  formaPagamento: formaPagamentoEnum("formaPagamento").notNull(),
   data: date("data").notNull(),
-  status: mysqlEnum("status", ["pendente", "acertado", "cancelado"]).default("pendente").notNull(),
+  status: statusAdiantamentoEnum("status").default("pendente").notNull(),
   valorAcertado: decimal("valorAcertado", { precision: 10, scale: 2 }),
   dataAcerto: date("dataAcerto"),
   saldo: decimal("saldo", { precision: 10, scale: 2 }), // positivo = devolveu, negativo = empresa deve
   observacoes: text("observacoes"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
   deletedAt: timestamp("deletedAt"),
-  deletedBy: int("deletedBy"),
+  deletedBy: integer("deletedBy"),
   deleteReason: text("deleteReason"),
 });
 
 // ─── CONTROLE DE TANQUE ───────────────────────────────────────────────────────
-export const controleTanque = mysqlTable("controle_tanque", {
-  id: int("id").autoincrement().primaryKey(),
-  empresaId: int("empresaId").notNull(),
-  tipo: mysqlEnum("tipo", ["diesel", "arla"]).notNull(),
+export const controleTanque = pgTable("controle_tanque", {
+  id: serial("id").primaryKey(),
+  empresaId: integer("empresaId").notNull(),
+  tipo: tipoTanqueEnum("tipo").notNull(),
   data: date("data").notNull(),
-  operacao: mysqlEnum("operacao", ["entrada", "saida"]).notNull(),
+  operacao: operacaoTanqueEnum("operacao").notNull(),
   quantidade: decimal("quantidade", { precision: 8, scale: 3 }).notNull(),
   valorUnitario: decimal("valorUnitario", { precision: 8, scale: 3 }),
   valorTotal: decimal("valorTotal", { precision: 10, scale: 2 }),
   fornecedor: varchar("fornecedor", { length: 255 }),
   notaFiscal: varchar("notaFiscal", { length: 50 }),
-  veiculoId: int("veiculoId"), // para saídas: qual veículo abasteceu
-  motoristaId: int("motoristaId"),
+  veiculoId: integer("veiculoId"), // para saidas: qual veiculo abasteceu
+  motoristaId: integer("motoristaId"),
   saldoAnterior: decimal("saldoAnterior", { precision: 8, scale: 3 }),
   saldoAtual: decimal("saldoAtual", { precision: 8, scale: 3 }),
   observacoes: text("observacoes"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   deletedAt: timestamp("deletedAt"),
-  deletedBy: int("deletedBy"),
+  deletedBy: integer("deletedBy"),
   deleteReason: text("deleteReason"),
 });
 
 // ─── LOG DE AUDITORIA ─────────────────────────────────────────────────────────
-export const auditLog = mysqlTable("audit_log", {
-  id: bigint("id", { mode: "number" }).autoincrement().primaryKey(),
-  empresaId: int("empresaId"),
-  userId: int("userId").notNull(),
+export const auditLog = pgTable("audit_log", {
+  id: bigint("id", { mode: "number" }).generatedAlwaysAsIdentity().primaryKey(),
+  empresaId: integer("empresaId"),
+  userId: integer("userId").notNull(),
   userName: varchar("userName", { length: 255 }),
   acao: varchar("acao", { length: 50 }).notNull(), // CREATE, UPDATE, DELETE, RESTORE
   tabela: varchar("tabela", { length: 100 }).notNull(),
-  registroId: int("registroId").notNull(),
+  registroId: integer("registroId").notNull(),
   dadosAntes: text("dadosAntes"), // JSON
   dadosDepois: text("dadosDepois"), // JSON
   ip: varchar("ip", { length: 45 }),
@@ -399,22 +427,22 @@ export const auditLog = mysqlTable("audit_log", {
 });
 
 // ─── ACIDENTES ────────────────────────────────────────────────────────────────
-export const acidentes = mysqlTable("acidentes", {
-  id: int("id").autoincrement().primaryKey(),
-  empresaId: int("empresaId").notNull(),
-  veiculoId: int("veiculoId").notNull(),
-  motoristaId: int("motoristaId"),
+export const acidentes = pgTable("acidentes", {
+  id: serial("id").primaryKey(),
+  empresaId: integer("empresaId").notNull(),
+  veiculoId: integer("veiculoId").notNull(),
+  motoristaId: integer("motoristaId"),
   data: date("data").notNull(),
   local: varchar("local", { length: 255 }),
   descricao: text("descricao").notNull(),
   boletimOcorrencia: varchar("boletimOcorrencia", { length: 50 }),
   valorDano: decimal("valorDano", { precision: 10, scale: 2 }),
-  status: mysqlEnum("status", ["aberto", "em_reparo", "resolvido"]).default("aberto").notNull(),
+  status: statusAcidenteEnum("status").default("aberto").notNull(),
   observacoes: text("observacoes"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
   deletedAt: timestamp("deletedAt"),
-  deletedBy: int("deletedBy"),
+  deletedBy: integer("deletedBy"),
   deleteReason: text("deleteReason"),
 });
 
@@ -435,32 +463,32 @@ export type AuditLog = typeof auditLog.$inferSelect;
 export type Acidente = typeof acidentes.$inferSelect;
 
 // ─── CHAT INTERNO ────────────────────────────────────────────────────────────
-export const chatConversations = mysqlTable("chat_conversations", {
-  id: int("id").autoincrement().primaryKey(),
-  empresaId: int("empresaId").notNull(),
+export const chatConversations = pgTable("chat_conversations", {
+  id: serial("id").primaryKey(),
+  empresaId: integer("empresaId").notNull(),
   name: varchar("name", { length: 255 }), // opcional para grupos
   isGroup: boolean("isGroup").default(false).notNull(),
   lastMessageAt: timestamp("lastMessageAt").defaultNow().notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
   deletedAt: timestamp("deletedAt"),
 });
 
-export const chatMembers = mysqlTable("chat_members", {
-  id: int("id").autoincrement().primaryKey(),
-  conversationId: int("conversationId").notNull(),
-  userId: int("userId").notNull(),
-  role: mysqlEnum("role", ["admin", "member"]).default("member").notNull(),
+export const chatMembers = pgTable("chat_members", {
+  id: serial("id").primaryKey(),
+  conversationId: integer("conversationId").notNull(),
+  userId: integer("userId").notNull(),
+  role: chatRoleEnum("role").default("member").notNull(),
   joinedAt: timestamp("joinedAt").defaultNow().notNull(),
   lastReadAt: timestamp("lastReadAt").defaultNow().notNull(),
 });
 
-export const chatMessages = mysqlTable("chat_messages", {
-  id: int("id").autoincrement().primaryKey(),
-  conversationId: int("conversationId").notNull(),
-  senderId: int("senderId").notNull(),
+export const chatMessages = pgTable("chat_messages", {
+  id: serial("id").primaryKey(),
+  conversationId: integer("conversationId").notNull(),
+  senderId: integer("senderId").notNull(),
   content: text("content").notNull(),
-  type: mysqlEnum("type", ["text", "image", "file"]).default("text").notNull(),
+  type: chatMessageTypeEnum("type").default("text").notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   deletedAt: timestamp("deletedAt"),
 });
