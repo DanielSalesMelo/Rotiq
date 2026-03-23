@@ -1,7 +1,9 @@
 [build]
 builder = "nixpacks"
-buildCommand = "npm install"
 root = "backend"
+
+[build.nixpacks]
+packages = ["nodejs", "npm"]
 
 [deploy]
 startCommand = "node index.js"
