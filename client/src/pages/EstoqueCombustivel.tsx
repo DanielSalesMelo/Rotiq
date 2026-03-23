@@ -93,22 +93,22 @@ function CustoMedioCard({ titulo, dados }: {
       </CardHeader>
       <CardContent className="space-y-4">
         {/* KPIs */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <div className="p-3 rounded-lg bg-green-500/10 text-center">
-            <p className="text-xs text-muted-foreground">Custo Médio/L</p>
-            <p className="text-lg font-bold text-green-600">R$ {dados.custoMedio.toFixed(3)}</p>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+          <div className="p-3 rounded-lg bg-green-500/10 text-center min-w-0">
+            <p className="text-xs text-muted-foreground truncate">Custo Médio/L</p>
+            <p className="text-sm sm:text-base font-bold text-green-600 truncate">R$ {dados.custoMedio.toFixed(3)}</p>
           </div>
-          <div className="p-3 rounded-lg bg-blue-500/10 text-center">
-            <p className="text-xs text-muted-foreground">Total Comprado</p>
-            <p className="text-lg font-bold text-blue-600">{dados.totalComprado.toLocaleString("pt-BR")} L</p>
+          <div className="p-3 rounded-lg bg-blue-500/10 text-center min-w-0">
+            <p className="text-xs text-muted-foreground truncate">Total Comprado</p>
+            <p className="text-sm sm:text-base font-bold text-blue-600 truncate">{dados.totalComprado.toLocaleString("pt-BR")} L</p>
           </div>
-          <div className="p-3 rounded-lg bg-orange-500/10 text-center">
-            <p className="text-xs text-muted-foreground">Total Investido</p>
-            <p className="text-lg font-bold text-orange-600">{fmt(dados.totalInvestido)}</p>
+          <div className="p-3 rounded-lg bg-orange-500/10 text-center min-w-0">
+            <p className="text-xs text-muted-foreground truncate">Total Investido</p>
+            <p className="text-sm sm:text-base font-bold text-orange-600 truncate">{fmt(dados.totalInvestido)}</p>
           </div>
-          <div className="p-3 rounded-lg bg-purple-500/10 text-center">
-            <p className="text-xs text-muted-foreground">Última Compra</p>
-            <p className="text-lg font-bold text-purple-600">
+          <div className="p-3 rounded-lg bg-purple-500/10 text-center min-w-0">
+            <p className="text-xs text-muted-foreground truncate">Última Compra</p>
+            <p className="text-sm sm:text-base font-bold text-purple-600 truncate">
               {dados.ultimaCompra ? `R$ ${dados.ultimaCompra.valorUnitario.toFixed(3)}` : "—"}
             </p>
             {dados.ultimaCompra?.fornecedor && (

@@ -1,4 +1,5 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
+import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,18 +15,25 @@ import { toast } from "sonner";
 const EMPRESA_ID = 1;
 
 export default function PainelMaster() {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
+  const [, navigate] = useLocation();
+
+  // Todos os hooks DEVEM ser chamados antes de qualquer return condicional
   const [abaAtiva, setAbaAtiva] = useState<"visao-geral" | "empresas" | "admins" | "logs" | "config">("visao-geral");
-  const { data: allUsers = [] } = trpc.dashboard.listUsers.useQuery({ empresaId: EMPRESA_ID });
+  const isMaster = !loading && !!user && (user as any).role === "master_admin";
+  const { data: allUsers = [] } = trpc.dashboard.listUsers.useQuery(
+    { empresaId: EMPRESA_ID },
+    { enabled: isMaster }
+  );
   const updateRoleMut = trpc.dashboard.updateUserRole.useMutation({
     onSuccess: () => { toast.success("Permissão atualizada!"); },
     onError: (e: any) => toast.error(e.message),
   });
 
-  const { data: veiculos = [] } = trpc.veiculos.list.useQuery({ empresaId: EMPRESA_ID });
-  const { data: motoristas = [] } = trpc.funcionarios.listMotoristas.useQuery({ empresaId: EMPRESA_ID });
-  const { data: viagens = [] } = trpc.viagens.list.useQuery({ empresaId: EMPRESA_ID });
-  const { data: manutencoes = [] } = trpc.frota.manutencoes.list.useQuery({ empresaId: EMPRESA_ID });
+  const { data: veiculos = [] } = trpc.veiculos.list.useQuery({ empresaId: EMPRESA_ID }, { enabled: isMaster });
+  const { data: motoristas = [] } = trpc.funcionarios.listMotoristas.useQuery({ empresaId: EMPRESA_ID }, { enabled: isMaster });
+  const { data: viagens = [] } = trpc.viagens.list.useQuery({ empresaId: EMPRESA_ID }, { enabled: isMaster });
+  const { data: manutencoes = [] } = trpc.frota.manutencoes.list.useQuery({ empresaId: EMPRESA_ID }, { enabled: isMaster });
 
   // Empresas (localStorage — multi-tenant simulado)
   const [empresas, setEmpresas] = useState<any[]>(() => {
@@ -48,6 +56,16 @@ export default function PainelMaster() {
 
   const [modalEmpresa, setModalEmpresa] = useState(false);
   const [formEmpresa, setFormEmpresa] = useState({ nome: "", cnpj: "", plano: "basico", maxVeiculos: "10", maxMotoristas: "5" });
+
+  // Guard: somente master_admin pode acessar este módulo
+  useEffect(() => {
+    if (!loading && user && (user as any).role !== "master_admin") {
+      navigate("/dashboard");
+    }
+  }, [user, loading, navigate]);
+
+  if (loading) return null;
+  if (!user || (user as any).role !== "master_admin") return null;
 
   const salvarEmpresa = () => {
     if (!formEmpresa.nome) { toast.error("Informe o nome da empresa"); return; }

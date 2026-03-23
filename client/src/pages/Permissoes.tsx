@@ -1,4 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useLocation } from "wouter";
+import { useAuth } from "@/_core/hooks/useAuth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -71,6 +73,19 @@ const perfisIniciais = [
 type Permissao = { ver: boolean; criar: boolean; editar: boolean; excluir: boolean };
 
 export default function Permissoes() {
+  const { user, loading } = useAuth();
+  const [, navigate] = useLocation();
+
+  // Guard: somente master_admin pode acessar este módulo
+  useEffect(() => {
+    if (!loading && user && (user as any).role !== "master_admin") {
+      navigate("/dashboard");
+    }
+  }, [user, loading, navigate]);
+
+  if (loading) return null;
+  if (!user || (user as any).role !== "master_admin") return null;
+
   const [perfis, setPerfis] = useState<any[]>(() => {
     try {
       const saved = JSON.parse(localStorage.getItem("rotiq_perfis") || "null");
@@ -123,7 +138,7 @@ export default function Permissoes() {
   };
 
   return (
-<div className="p-6 space-y-6">
+    <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
@@ -227,5 +242,5 @@ export default function Permissoes() {
         </Card>
       </div>
     </div>
-);
+  );
 }

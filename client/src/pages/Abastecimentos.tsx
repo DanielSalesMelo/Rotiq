@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Plus, Fuel, Droplets, Filter, X } from "lucide-react";
 import { toast } from "sonner";
 
@@ -79,13 +79,14 @@ function AbastecimentoForm({ veiculos, motoristas, veiculosEmViagem, onSave, onC
     }));
   }
 
-  function calcTotal() {
+  // Calcular valorTotal automaticamente quando quantidade ou valorUnitario mudarem
+  useEffect(() => {
     const q = parseFloat(form.quantidade);
     const v = parseFloat(form.valorUnitario);
-    if (!isNaN(q) && !isNaN(v)) {
+    if (!isNaN(q) && !isNaN(v) && q > 0 && v > 0) {
       setForm(f => ({ ...f, valorTotal: (q * v).toFixed(2) }));
     }
-  }
+  }, [form.quantidade, form.valorUnitario]);
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -148,19 +149,18 @@ function AbastecimentoForm({ veiculos, motoristas, veiculosEmViagem, onSave, onC
         <div className="space-y-1.5">
           <Label>Quantidade (L) *</Label>
           <Input type="number" step="0.01" value={form.quantidade}
-            onChange={e => setForm(f => ({ ...f, quantidade: e.target.value }))}
-            onBlur={calcTotal} required />
+            onChange={e => setForm(f => ({ ...f, quantidade: e.target.value }))} required />
         </div>
         <div className="space-y-1.5">
           <Label>Valor Unitário (R$/L)</Label>
           <Input type="number" step="0.001" value={form.valorUnitario}
-            onChange={e => setForm(f => ({ ...f, valorUnitario: e.target.value }))}
-            onBlur={calcTotal} />
+            onChange={e => setForm(f => ({ ...f, valorUnitario: e.target.value }))} />
         </div>
         <div className="space-y-1.5">
           <Label>Valor Total</Label>
           <Input type="number" step="0.01" value={form.valorTotal}
-            onChange={e => setForm(f => ({ ...f, valorTotal: e.target.value }))} />
+            onChange={e => setForm(f => ({ ...f, valorTotal: e.target.value }))} disabled className="bg-muted" />
+          <p className="text-xs text-muted-foreground mt-1">Calculado automaticamente (quantidade × valor unitário)</p>
         </div>
         <div className="space-y-1.5">
           <Label>KM Atual</Label>

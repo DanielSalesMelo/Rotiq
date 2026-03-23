@@ -162,3 +162,43 @@
 - [x] Painel Master: admin master pode promover outro usuário a admin master
 - [x] Simulador de Viagem: mover mapa para abaixo dos dados de simulação
 - [x] Bug: Painel Master — botão de promover usuário a master admin não funcionava pois owner estava como admin em vez de master_admin (corrigido no db.ts e banco)
+- [ ] Bug: Dashboard — card "Combustível (mês)" mostra R$ 0,00 mesmo com abastecimentos cadastrados
+
+## Bugs reportados (23/03/2026)
+- [ ] Permissões: módulo Master visível para todos, mas deve aparecer apenas para master_admin
+- [ ] Permissões: admin comum consegue acessar Painel Master e Permissões (sem guard de acesso)
+- [ ] Dashboard: card "Combustível (mês)" mostra R$ 0,00 — valorTotal dos abastecimentos está NULL no banco
+
+## Chat Interno (nova feature)
+- [ ] Schema: tabelas chat_conversations, chat_messages, chat_members, chat_permissions
+- [ ] Backend: routers/chat.ts com procedures para criar/listar/enviar mensagens
+- [ ] Backend: validar permissões de conversa (quem pode falar com quem)
+- [ ] Backend: soft delete em mensagens (marcar como deletada, nunca remover do banco)
+- [ ] Frontend: página Chat.tsx com lista de conversas e painel de mensagens
+- [ ] Frontend: criar conversa individual (selecionar usuário)
+- [ ] Frontend: criar grupo (selecionar múltiplos usuários, nomear grupo)
+- [ ] Frontend: controle de permissões em grupo (admin define se membros podem se comunicar)
+- [ ] Frontend: indicador de mensagens não lidas
+- [ ] Frontend: busca em conversas e mensagens
+- [ ] Realtime: integrar com WebSocket ou polling para mensagens em tempo real
+
+
+## Relatórios — Filtros Avançados e Exportação (nova feature)
+- [ ] Relatórios: painel de filtros por período (data inicial/final)
+- [ ] Relatórios: filtro por veículo (select com lista de veículos)
+- [ ] Relatórios: filtro por motorista/responsável
+- [ ] Relatórios: filtro por status (viagens: concluída/cancelada/em andamento)
+- [ ] Relatórios: filtro por categoria (manutenções: preventiva/corretiva/revisão)
+- [ ] Relatórios: indicador de quantos registros correspondem aos filtros
+- [ ] Relatórios: botão "Exportar CSV" — gera arquivo separado por vírgula
+- [ ] Relatórios: botão "Exportar Excel" — gera arquivo .xlsx com formatação e múltiplas abas
+- [ ] Relatórios: exportação mantém filtros aplicados (exporta apenas dados filtrados)
+- [ ] Relatórios: preview dos dados antes de exportar
+- [ ] Backend: endpoint para exportação CSV (retorna arquivo binário)
+- [ ] Backend: endpoint para exportação Excel (retorna arquivo binário)
+
+
+## Bugs de Layout (23/03/2026)
+- [ ] Estoque Combustível: números grandes saindo dos cards KPI (Custo Médio/L, Total Comprado, etc.)
+- [ ] Estoque Combustível: tabela de histórico com colunas apertadas, texto quebrando
+- [ ] Melhorar responsividade dos cards em telas pequenas

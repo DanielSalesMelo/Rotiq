@@ -22,7 +22,14 @@ import { useLocation } from "wouter";
 import { DashboardLayoutSkeleton } from "./DashboardLayoutSkeleton";
 import { Button } from "./ui/button";
 
-const menuGroups = [
+// Grupos de menu com controle de acesso por role
+type MenuGroup = {
+  label: string;
+  requiredRole?: string;
+  items: { icon: any; label: string; path: string }[];
+};
+
+const menuGroups: MenuGroup[] = [
   {
     label: "Principal",
     items: [{ icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" }],
@@ -85,6 +92,7 @@ const menuGroups = [
   },
   {
     label: "Master",
+    requiredRole: "master_admin",
     items: [
       { icon: Star, label: "Painel Master", path: "/master/painel" },
       { icon: Shield, label: "Permissões", path: "/master/permissoes" },
@@ -155,7 +163,7 @@ function Sidebar({
 
       {/* Menu items */}
       <nav ref={navRef} className="flex-1 overflow-y-auto py-2">
-        {menuGroups.map((group) => (
+        {menuGroups.filter(group => !group.requiredRole || user?.role === group.requiredRole).map((group) => (
           <div key={group.label}>
             {!collapsed && (
               <div className="px-4 pt-3 pb-1">

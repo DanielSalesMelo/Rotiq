@@ -1,0 +1,90 @@
+{
+  "query": "SELECT id, empresaId, tipoAbastecimento, valorTotal, data, deletedAt FROM abastecimentos ORDER BY data DESC LIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2p5XLKLvFgibmRt.root --database WQ2q64r9ZdMRQ3rHt9WnPA --execute SELECT id, empresaId, tipoAbastecimento, valorTotal, data, deletedAt FROM abastecimentos ORDER BY data DESC LIMIT 10;",
+  "rows": [
+    {
+      "id": "712",
+      "empresaId": "1",
+      "tipoAbastecimento": "interno",
+      "valorTotal": "NULL",
+      "data": "2026-12-30",
+      "deletedAt": "NULL"
+    },
+    {
+      "id": "1170",
+      "empresaId": "1",
+      "tipoAbastecimento": "interno",
+      "valorTotal": "NULL",
+      "data": "2026-12-26",
+      "deletedAt": "NULL"
+    },
+    {
+      "id": "974",
+      "empresaId": "1",
+      "tipoAbastecimento": "interno",
+      "valorTotal": "NULL",
+      "data": "2026-03-03",
+      "deletedAt": "NULL"
+    },
+    {
+      "id": "786",
+      "empresaId": "1",
+      "tipoAbastecimento": "interno",
+      "valorTotal": "NULL",
+      "data": "2026-03-02",
+      "deletedAt": "NULL"
+    },
+    {
+      "id": "973",
+      "empresaId": "1",
+      "tipoAbastecimento": "interno",
+      "valorTotal": "NULL",
+      "data": "2026-03-01",
+      "deletedAt": "NULL"
+    },
+    {
+      "id": "565",
+      "empresaId": "1",
+      "tipoAbastecimento": "interno",
+      "valorTotal": "NULL",
+      "data": "2026-02-28",
+      "deletedAt": "NULL"
+    },
+    {
+      "id": "331",
+      "empresaId": "1",
+      "tipoAbastecimento": "interno",
+      "valorTotal": "NULL",
+      "data": "2026-02-28",
+      "deletedAt": "NULL"
+    },
+    {
+      "id": "391",
+      "empresaId": "1",
+      "tipoAbastecimento": "interno",
+      "valorTotal": "NULL",
+      "data": "2026-02-28",
+      "deletedAt": "NULL"
+    },
+    {
+      "id": "552",
+      "empresaId": "1",
+      "tipoAbastecimento": "interno",
+      "valorTotal": "NULL",
+      "data": "2026-02-28",
+      "deletedAt": "NULL"
+    },
+    {
+      "id": "271",
+      "empresaId": "1",
+      "tipoAbastecimento": "interno",
+      "valorTotal": "NULL",
+      "data": "2026-02-28",
+      "deletedAt": "NULL"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tempresaId\ttipoAbastecimento\tvalorTotal\tdata\tdeletedAt\n712\t1\tinterno\tNULL\t2026-12-30\tNULL\n1170\t1\tinterno\tNULL\t2026-12-26\tNULL\n974\t1\tinterno\tNULL\t2026-03-03\tNULL\n786\t1\tinterno\tNULL\t2026-03-02\tNULL\n973\t1\tinterno\tNULL\t2026-03-01\tNULL\n565\t1\tinterno\tNULL\t2026-02-28\tNULL\n331\t1\tinterno\tNULL\t2026-02-28\tNULL\n391\t1\tinterno\tNULL\t2026-02-28\tNULL\n552\t1\tinterno\tNULL\t2026-02-28\tNULL\n271\t1\tinterno\tNULL\t2026-02-28\tNULL\n",
+  "stderr": "",
+  "execution_time_ms": 56
+}
