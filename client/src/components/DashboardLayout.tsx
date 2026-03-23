@@ -14,7 +14,7 @@ import {
   Wallet, BarChart3, Sun, Moon, Monitor, UserCog, Send, RotateCcw,
   Navigation, AlertTriangle, FileText, Bell, Calendar, Gauge,
   ClipboardList, BookOpen, Shield, Settings, Star, ChevronLeft,
-  ChevronRight, Calculator,
+  ChevronRight, Calculator, MessageSquare,
 } from "lucide-react";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useRef, useState } from "react";
@@ -76,6 +76,7 @@ const menuGroups: MenuGroup[] = [
   {
     label: "Sistema",
     items: [
+      { icon: MessageSquare, label: "Chat Interno", path: "/chat" },
       { icon: BarChart3, label: "Relatórios", path: "/relatorios" },
       { icon: UserCog, label: "Usuários", path: "/usuarios" },
       { icon: Settings, label: "Configurações", path: "/empresa" },

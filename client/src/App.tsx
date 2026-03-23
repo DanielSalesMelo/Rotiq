@@ -35,6 +35,7 @@ import Acidentes from "./pages/Acidentes";
 import PlanoManutencao from "./pages/PlanoManutencao";
 import PainelMaster from "./pages/PainelMaster";
 import Permissoes from "./pages/Permissoes";
+import Chat from "./pages/Chat";
 
 function DashboardRoutes() {
   return (
@@ -71,6 +72,7 @@ function DashboardRoutes() {
         <Route path="/gestao/calendario" component={Calendario} />
 
         {/* Sistema */}
+        <Route path="/chat" component={Chat} />
         <Route path="/relatorios" component={Relatorios} />
         <Route path="/usuarios" component={Usuarios} />
         <Route path="/empresa" component={Empresa} />

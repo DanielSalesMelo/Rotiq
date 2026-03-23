@@ -433,3 +433,38 @@ export type Adiantamento = typeof adiantamentos.$inferSelect;
 export type ControleTanque = typeof controleTanque.$inferSelect;
 export type AuditLog = typeof auditLog.$inferSelect;
 export type Acidente = typeof acidentes.$inferSelect;
+
+// ─── CHAT INTERNO ────────────────────────────────────────────────────────────
+export const chatConversations = mysqlTable("chat_conversations", {
+  id: int("id").autoincrement().primaryKey(),
+  empresaId: int("empresaId").notNull(),
+  name: varchar("name", { length: 255 }), // opcional para grupos
+  isGroup: boolean("isGroup").default(false).notNull(),
+  lastMessageAt: timestamp("lastMessageAt").defaultNow().notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  deletedAt: timestamp("deletedAt"),
+});
+
+export const chatMembers = mysqlTable("chat_members", {
+  id: int("id").autoincrement().primaryKey(),
+  conversationId: int("conversationId").notNull(),
+  userId: int("userId").notNull(),
+  role: mysqlEnum("role", ["admin", "member"]).default("member").notNull(),
+  joinedAt: timestamp("joinedAt").defaultNow().notNull(),
+  lastReadAt: timestamp("lastReadAt").defaultNow().notNull(),
+});
+
+export const chatMessages = mysqlTable("chat_messages", {
+  id: int("id").autoincrement().primaryKey(),
+  conversationId: int("conversationId").notNull(),
+  senderId: int("senderId").notNull(),
+  content: text("content").notNull(),
+  type: mysqlEnum("type", ["text", "image", "file"]).default("text").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  deletedAt: timestamp("deletedAt"),
+});
+
+export type ChatConversation = typeof chatConversations.$inferSelect;
+export type ChatMember = typeof chatMembers.$inferSelect;
+export type ChatMessage = typeof chatMessages.$inferSelect;

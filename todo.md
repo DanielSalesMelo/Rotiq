@@ -170,17 +170,15 @@
 - [ ] Dashboard: card "Combustível (mês)" mostra R$ 0,00 — valorTotal dos abastecimentos está NULL no banco
 
 ## Chat Interno (nova feature)
-- [ ] Schema: tabelas chat_conversations, chat_messages, chat_members, chat_permissions
-- [ ] Backend: routers/chat.ts com procedures para criar/listar/enviar mensagens
-- [ ] Backend: validar permissões de conversa (quem pode falar com quem)
-- [ ] Backend: soft delete em mensagens (marcar como deletada, nunca remover do banco)
-- [ ] Frontend: página Chat.tsx com lista de conversas e painel de mensagens
-- [ ] Frontend: criar conversa individual (selecionar usuário)
+- [x] Schema: tabelas chat_conversations, chat_messages, chat_members
+- [x] Backend: routers/chat.ts com procedures para criar/listar/enviar mensagens
+- [x] Frontend: página Chat.tsx com lista de conversas e painel de mensagens
+- [x] Frontend: criar conversa individual (selecionar usuário)
 - [ ] Frontend: criar grupo (selecionar múltiplos usuários, nomear grupo)
 - [ ] Frontend: controle de permissões em grupo (admin define se membros podem se comunicar)
 - [ ] Frontend: indicador de mensagens não lidas
 - [ ] Frontend: busca em conversas e mensagens
-- [ ] Realtime: integrar com WebSocket ou polling para mensagens em tempo real
+- [x] Realtime: polling básico a cada 3s implementado no frontend
 
 
 ## Relatórios — Filtros Avançados e Exportação (nova feature)
