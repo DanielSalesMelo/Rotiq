@@ -50,7 +50,7 @@ export const users = pgTable("users", {
   password: varchar("password", { length: 255 }), // Hash bcrypt
   role: userRoleEnum("role").default("user").notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().$onUpdateFn(() => new Date()).notNull(),
   lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull(),
 });
 export type User = typeof users.$inferSelect;
