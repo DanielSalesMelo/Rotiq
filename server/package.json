@@ -1,27 +1,17 @@
 {
   "name": "server",
   "version": "1.0.0",
+  "main": "dist/index.js",
   "type": "module",
-  "main": "routers.ts",
   "scripts": {
-    "start": "node dist/routers.js",
-    "build": "tsc"
+    "build": "tsc",
+    "start": "node dist/index.js"
   },
   "dependencies": {
-    "@trpc/server": "^11.6.0",
-    "bcryptjs": "^2.4.3",
-    "cors": "^2.8.5",
-    "dotenv": "^16.4.5",
-    "drizzle-orm": "^0.44.5",
-    "express": "^4.21.2",
-    "jsonwebtoken": "^9.0.2",
-    "mysql2": "^3.9.7",
-    "pg": "^8.20.0",
-    "zod": "^4.1.12"
+    "drizzle-orm": "*",
+    "pg": "*"
   },
   "devDependencies": {
-    "@types/node": "^25.5.0",
-    "ts-node": "^10.9.2",
-    "typescript": "^6.0.2"
+    "typescript": "*"
   }
 }
