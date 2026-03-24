@@ -2,11 +2,12 @@
   "compilerOptions": {
     "target": "ES2020",
     "module": "ES2020",
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "outDir": "dist",
     "rootDir": ".",
     "esModuleInterop": true,
-    "strict": false
+    "strict": false,
+    "ignoreDeprecations": "6.0"
   },
   "include": ["./**/*.ts"]
 }
