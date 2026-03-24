@@ -6,7 +6,7 @@
     "outDir": "dist",
     "rootDir": ".",
     "esModuleInterop": true,
-    "strict": false,
+    "strict": false,\n    "skipLibCheck": true,
     "ignoreDeprecations": "6.0",
     "types": ["node"]
   },
