@@ -1,9 +1,9 @@
-import { NOT_ADMIN_ERR_MSG, UNAUTHED_ERR_MSG } from '@shared/const';
+import { NOT_ADMIN_ERR_MSG, UNAUTHED_ERR_MSG } from '../shared/const';
 import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
 import jwt from "jsonwebtoken";
 import { getDb } from "../db";
-import { users } from "../../drizzle/schema";
+import { users } from "../drizzle/schema";
 import { eq } from "drizzle-orm";
 import type { CreateExpressContextOptions } from "@trpc/server/adapters/express";
 

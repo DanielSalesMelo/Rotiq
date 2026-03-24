@@ -12,7 +12,8 @@
     "drizzle-orm": "*",
     "mysql2": "*",
     "zod": "*",
-    "@trpc/server": "*"
+    "@trpc/server": "*",
+    "superjson": "^2.2.1"
   },
   "devDependencies": {
     "typescript": "*",
