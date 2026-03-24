@@ -1,17 +1,22 @@
 {
   "name": "server",
   "version": "1.0.0",
-  "main": "dist/index.js",
   "type": "module",
   "scripts": {
     "build": "tsc",
     "start": "node dist/index.js"
   },
   "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.2",
     "drizzle-orm": "*",
-    "pg": "*"
+    "mysql2": "*",
+    "zod": "*",
+    "@trpc/server": "*"
   },
   "devDependencies": {
-    "typescript": "*"
+    "typescript": "*",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/jsonwebtoken": "^9.0.7"
   }
 }

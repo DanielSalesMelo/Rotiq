@@ -1,6 +1,5 @@
 import { systemRouter } from "./_core/systemRouter";
 import { router } from "./_core/trpc";
-import { authRouter } from "./routers/auth";
 import { veiculosRouter } from "./routers/veiculos";
 import { funcionariosRouter } from "./routers/funcionarios";
 import { frotaRouter } from "./routers/frota";
@@ -10,6 +9,7 @@ import { viagensRouter } from "./routers/viagens";
 import { custosRouter } from "./routers/custos";
 import { multasRouter } from "./routers/multas";
 import { chatRouter } from "./routers/chat";
+import { authRouter } from "./routers/auth";
 
 export const appRouter = router({
   system: systemRouter,
