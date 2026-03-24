@@ -4,7 +4,8 @@
   "type": "module",
   "main": "routers.ts",
   "scripts": {
-    "start": "node routers.ts"
+    "start": "node dist/routers.js",
+"build": "tsc"
   },
   "dependencies": {
     "@trpc/server": "^11.6.0",
