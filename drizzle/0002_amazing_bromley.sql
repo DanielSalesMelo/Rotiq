@@ -1,1 +1,0 @@
-ALTER TABLE "viagens" ADD COLUMN "notaFiscal" varchar(50);
