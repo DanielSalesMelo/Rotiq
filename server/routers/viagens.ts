@@ -1,1 +1,1 @@
-export const router = {};
+export const viagensRouter = {};

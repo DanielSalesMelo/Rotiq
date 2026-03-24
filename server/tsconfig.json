@@ -6,16 +6,10 @@
     "outDir": "dist",
     "rootDir": ".",
     "esModuleInterop": true,
-    "strict": false,\n    "skipLibCheck": true,
-    "ignoreDeprecations": "6.0",
+    "strict": false,
+    "skipLibCheck": true,
     "types": ["node"]
   },
   "include": ["./**/*.ts"],
-  "exclude": [
-    "**/*.test.ts",
-    "../drizzle",
-    "../shared",
-    "../node_modules",
-    "node_modules"
-  ]
+  "exclude": ["**/*.test.ts", "node_modules"]
 }
