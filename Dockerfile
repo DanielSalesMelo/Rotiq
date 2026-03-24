@@ -1,19 +1,12 @@
 FROM node:18
 
-WORKDIR /app
+WORKDIR /app/server
 
-# Copia package.json do backend e instala dependências no diretório correto
-COPY backend/package*.json ./backend/
-WORKDIR /app/backend
+COPY server/package*.json ./
 RUN npm ci --production
 
-# Copia todo o backend
-WORKDIR /app
-COPY backend/ ./backend/
+COPY server/ ./
 
-# Expor porta (o app usa process.env.PORT)
 EXPOSE 3000
 
-# Start usando package.json (assume index.js em backend/)
-WORKDIR /app/backend
 CMD ["npm", "start"]
