@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "build": "tsc",
-    "start": "node dist/index.js"
+    "start": "tsx index.ts"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
@@ -13,7 +13,10 @@
     "mysql2": "*",
     "zod": "*",
     "@trpc/server": "*",
-    "superjson": "^2.2.1"
+    "superjson": "^2.2.1",
+    "express": "^4.21.2",
+    "cors": "^2.8.5",
+    "tsx": "^4.19.3"
   },
   "devDependencies": {
     "typescript": "*",
