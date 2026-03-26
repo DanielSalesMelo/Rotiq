@@ -1,46 +1,21 @@
-import { NOT_ADMIN_ERR_MSG, UNAUTHED_ERR_MSG } from '../shared/const.js';
+import { NOT_ADMIN_ERR_MSG, UNAUTHED_ERR_MSG } from '@shared/const';
 import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
-import jwt from "jsonwebtoken";
-import { getDb } from "../db.js";
-import { users } from "../drizzle/schema.js";
-import { eq } from "drizzle-orm";
-import type { CreateExpressContextOptions } from "@trpc/server/adapters/express";
+import type { TrpcContext } from "./context.js";
 
-const JWT_SECRET = process.env.JWT_SECRET || "rotiq-secret-key-123";
-
-export async function createContext(opts: CreateExpressContextOptions) {
-  const { req, res } = opts;
-  const cookieHeader = req.headers.cookie || "";
-  const cookies = Object.fromEntries(cookieHeader.split('; ').map(c => c.split('=')));
-  const token = cookies['manus-enterprise-suite-session'];
-
-  let user = null;
-
-  if (token) {
-    try {
-      const decoded = jwt.verify(token, JWT_SECRET) as any;
-      const db = await getDb();
-      if (db) {
-        const [foundUser] = await db.select().from(users).where(eq(users.id, decoded.id)).limit(1);
-        if (foundUser) {
-          user = foundUser;
-        }
-      }
-    } catch (e) {
-      user = null;
-    }
-  }
-
-  return { req, res, user };
-}
-
-const t = initTRPC.context<Awaited<ReturnType<typeof createContext>>>().create({
+const t = initTRPC.context<TrpcContext>().create({
   transformer: superjson,
 });
 
 export const router = t.router;
 export const publicProcedure = t.procedure;
+
+// Roles do sistema Rotiq:
+// - user: operador básico (adiciona e edita, não deleta)
+// - dispatcher: despachante (cria e gerencia viagens)
+// - monitor: pode mover para lixeira (soft delete), mas não restaurar
+// - admin: acesso total à empresa, pode restaurar da lixeira
+// - master_admin: acesso total a todas as empresas
 
 const requireUser = t.middleware(async opts => {
   const { ctx, next } = opts;
@@ -52,6 +27,7 @@ const requireUser = t.middleware(async opts => {
 
 export const protectedProcedure = t.procedure.use(requireUser);
 
+// Admin ou superior (admin, master_admin)
 export const adminProcedure = t.procedure.use(
   t.middleware(async opts => {
     const { ctx, next } = opts;
@@ -63,6 +39,7 @@ export const adminProcedure = t.procedure.use(
   }),
 );
 
+// Monitor ou superior — pode fazer soft delete
 export const monitorProcedure = t.procedure.use(
   t.middleware(async opts => {
     const { ctx, next } = opts;
@@ -70,26 +47,28 @@ export const monitorProcedure = t.procedure.use(
     if (!ctx.user || !monitorRoles.includes(ctx.user.role)) {
       throw new TRPCError({
         code: "FORBIDDEN",
-        message: "Acesso negado.",
+        message: "Acesso negado. Apenas monitores e administradores podem realizar esta ação.",
       });
     }
     return next({ ctx: { ...ctx, user: ctx.user } });
   }),
 );
 
+// Master admin apenas
 export const masterAdminProcedure = t.procedure.use(
   t.middleware(async opts => {
     const { ctx, next } = opts;
     if (!ctx.user || ctx.user.role !== "master_admin") {
       throw new TRPCError({
         code: "FORBIDDEN",
-        message: "Acesso negado.",
+        message: "Acesso negado. Apenas o administrador master pode realizar esta ação.",
       });
     }
     return next({ ctx: { ...ctx, user: ctx.user } });
   }),
 );
 
+// Despachante ou superior
 export const dispatcherProcedure = t.procedure.use(
   t.middleware(async opts => {
     const { ctx, next } = opts;
@@ -97,7 +76,7 @@ export const dispatcherProcedure = t.procedure.use(
     if (!ctx.user || !dispatcherRoles.includes(ctx.user.role)) {
       throw new TRPCError({
         code: "FORBIDDEN",
-        message: "Acesso negado.",
+        message: "Acesso negado. Apenas despachantes e administradores podem realizar esta ação.",
       });
     }
     return next({ ctx: { ...ctx, user: ctx.user } });
