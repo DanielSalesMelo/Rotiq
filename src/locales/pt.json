@@ -78,5 +78,8 @@
   },
   "home": {
     "manage_fleet": "Gerencie sua frota de forma inteligente e eficiente."
+  },
+  "dashboard": {
+    "overview": "Visão geral da operação — "
   }
 }

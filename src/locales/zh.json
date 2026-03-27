@@ -78,5 +78,8 @@
   },
   "home": {
     "manage_fleet": "智能高效地管理您的車隊。"
+  },
+  "dashboard": {
+    "overview": "一般操作概述 — "
   }
 }

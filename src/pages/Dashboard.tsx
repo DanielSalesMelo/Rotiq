@@ -6,6 +6,7 @@ import {
   AlertTriangle, Wallet, MapPin, ClipboardCheck, ArrowUpRight,
 } from "lucide-react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 const EMPRESA_ID = 1;
 
@@ -69,6 +70,7 @@ function AlertCard({ title, count, value, color }: { title: string; count: numbe
 }
 
 export default function Dashboard() {
+  const { t } = useTranslation();
   const { data: resumo, isLoading } = trpc.dashboard.resumo.useQuery({ empresaId: EMPRESA_ID });
   const { data: finDash } = trpc.financeiro.dashboard.useQuery({ empresaId: EMPRESA_ID });
   const { data: tanque } = trpc.frota.tanque.saldoAtual.useQuery({ empresaId: EMPRESA_ID });
@@ -94,28 +96,28 @@ export default function Dashboard() {
         {/* KPIs principais */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <KpiCard
-            title="Veículos Ativos"
+            title={t("pages.veiculos")}
             value={isLoading ? "..." : resumo?.veiculos.total ?? 0}
             subtitle="na frota"
             icon={Truck}
             color="blue"
           />
           <KpiCard
-            title="Motoristas"
+            title={t("pages.motoristas")}
             value={isLoading ? "..." : resumo?.funcionarios.motoristas ?? 0}
             subtitle={`${resumo?.funcionarios.ajudantes ?? 0} ajudantes`}
             icon={Users}
             color="purple"
           />
           <KpiCard
-            title="Viagens Ativas"
+            title={t("pages.viagens")}
             value={isLoading ? "..." : resumo?.viagens.emAndamento ?? 0}
             subtitle={`${resumo?.viagens.planejadas ?? 0} planejadas`}
             icon={MapPin}
             color="green"
           />
           <KpiCard
-            title="Alertas"
+            title={t("pages.alertas")}
             value={isLoading ? "..." : totalAlertas}
             subtitle="requerem atenção"
             icon={AlertTriangle}
@@ -126,7 +128,7 @@ export default function Dashboard() {
         {/* Financeiro e Combustível */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <KpiCard
-            title="A Pagar (pendente)"
+            title=t("pages.contas_pagar")
             value={finDash ? formatCurrency(finDash.totalPagar) : "..."}
             subtitle={finDash ? `+ ${formatCurrency(finDash.totalVencido)} vencido` : ""}
             icon={TrendingDown}
@@ -140,7 +142,7 @@ export default function Dashboard() {
             color="green"
           />
           <KpiCard
-            title="Adiantamentos Abertos"
+            title=t("pages.adiantamentos")
             value={finDash ? formatCurrency(finDash.totalAdiantamentos) : "..."}
             subtitle="aguardando acerto"
             icon={Wallet}
@@ -151,14 +153,14 @@ export default function Dashboard() {
         {/* Combustível do mês e Tanque */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <KpiCard
-            title="Combustível (mês)"
+            title=t("pages.abastecimentos")
             value={resumo ? formatCurrency(resumo.combustivel.valorMes) : "..."}
             subtitle={`${resumo?.combustivel.litrosMes?.toFixed(0) ?? 0} litros`}
             icon={Fuel}
             color="blue"
           />
           <KpiCard
-            title="Manutenções (mês)"
+            title=t("pages.manutencoes")
             value={resumo ? formatCurrency(resumo.manutencao.valorMes) : "..."}
             subtitle={`${resumo?.manutencao.quantidadeMes ?? 0} serviços`}
             icon={Wrench}
