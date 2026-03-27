@@ -1,4 +1,7 @@
 {
+  "buildCommand": "cd client && npm run build",
+  "outputDirectory": "client/dist",
+  "framework": "vite",
   "rewrites": [
     {
       "source": "/api/trpc/:path*",
@@ -12,5 +15,10 @@
       "source": "/(.*)",
       "destination": "/"
     }
-  ]
+  ],
+  "env": {
+    "DATABASE_URL": "@rotiq_database_url",
+    "OAUTH_SERVER_URL": "@rotiq_oauth_server_url",
+    "OWNER_OPEN_ID": "@rotiq_owner_open_id"
+  }
 }
