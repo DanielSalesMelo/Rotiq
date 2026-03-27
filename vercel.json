@@ -1,5 +1,5 @@
 {
-  "buildCommand": "cd client && npm run build",
+  "buildCommand": "cd client && npm install && npm run build",
   "outputDirectory": "client/dist",
   "framework": "vite",
   "rewrites": [
@@ -8,17 +8,8 @@
       "destination": "https://rotiq-production.up.railway.app/api/trpc/:path*"
     },
     {
-      "source": "/login",
-      "destination": "/"
-    },
-    {
       "source": "/(.*)",
-      "destination": "/"
+      "destination": "/index.html"
     }
-  ],
-  "env": {
-    "DATABASE_URL": "@rotiq_database_url",
-    "OAUTH_SERVER_URL": "@rotiq_oauth_server_url",
-    "OWNER_OPEN_ID": "@rotiq_owner_open_id"
-  }
+  ]
 }
