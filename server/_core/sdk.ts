@@ -155,7 +155,7 @@ class SDKServer {
   }
 
   private getSessionSecret() {
-    const secret = ENV.cookieSecret;
+    const secret = ENV.cookieSecret || "rotiq-secret-key-123";
     return new TextEncoder().encode(secret);
   }
 
