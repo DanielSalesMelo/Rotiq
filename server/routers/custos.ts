@@ -11,8 +11,8 @@
  * Também gerencia alertas de manutenção preventiva por km.
  */
 
-import { protectedProcedure, router } from "../_core/trpc.js";
-import { getDb } from "../db.js";
+import { protectedProcedure, router } from "../_core/trpc";
+import { getDb } from "../db";
 import {
   veiculos,
   abastecimentos,
@@ -20,10 +20,10 @@ import {
   contasPagar,
   viagens,
   funcionarios,
-} from "../../drizzle/schema.js";
+} from "../drizzle/schema";
 import { eq, and, isNull, desc, sql, gte, lte } from "drizzle-orm";
 import { z } from "zod";
-import { safeDb, requireDb } from "../helpers/errorHandler.js";
+import { safeDb, requireDb } from "../helpers/errorHandler";
 
 export const custosRouter = router({
   /**

@@ -1,9 +1,9 @@
-import { protectedProcedure, router } from "../_core/trpc.js";
-import { getDb } from "../db.js";
-import { contasPagar, contasReceber, adiantamentos, viagens } from "../../drizzle/schema.js";
+import { protectedProcedure, router } from "../_core/trpc";
+import { getDb } from "../db";
+import { contasPagar, contasReceber, adiantamentos, viagens } from "../drizzle/schema";
 import { eq, and, isNull, isNotNull, desc, sql, gte, lte } from "drizzle-orm";
 import { z } from "zod";
-import { safeDb, requireDb } from "../helpers/errorHandler.js";
+import { safeDb, requireDb } from "../helpers/errorHandler";
 import { TRPCError } from "@trpc/server";
 
 function parseDate(d: string | null | undefined): Date | null {

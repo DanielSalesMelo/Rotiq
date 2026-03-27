@@ -1,9 +1,9 @@
-import { protectedProcedure, router } from "../_core/trpc.js";
-import { getDb } from "../db.js";
-import { funcionarios } from "../../drizzle/schema.js";
+import { protectedProcedure, router } from "../_core/trpc";
+import { getDb } from "../db";
+import { funcionarios } from "../drizzle/schema";
 import { eq, and, isNull, isNotNull, desc } from "drizzle-orm";
 import { z } from "zod";
-import { safeDb, requireDb } from "../helpers/errorHandler.js";
+import { safeDb, requireDb } from "../helpers/errorHandler";
 
 // Apenas nome e função são obrigatórios — todo o resto é opcional
 const funcionarioInput = z.object({

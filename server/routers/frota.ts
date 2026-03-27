@@ -1,9 +1,9 @@
-import { protectedProcedure, router } from "../_core/trpc.js";
-import { getDb } from "../db.js";
-import { abastecimentos, manutencoes, controleTanque, veiculos, funcionarios } from "../../drizzle/schema.js";
+import { protectedProcedure, router } from "../_core/trpc";
+import { getDb } from "../db";
+import { abastecimentos, manutencoes, controleTanque, veiculos, funcionarios } from "../drizzle/schema";
 import { eq, and, isNull, isNotNull, desc, gte, lte, sql } from "drizzle-orm";
 import { z } from "zod";
-import { safeDb, requireDb } from "../helpers/errorHandler.js";
+import { safeDb, requireDb } from "../helpers/errorHandler";
 
 function parseDate(d: string | null | undefined): Date | null {
   if (!d) return null;

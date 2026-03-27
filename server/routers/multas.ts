@@ -1,8 +1,8 @@
-import { protectedProcedure, router } from "../_core/trpc.js";
-import { getDb } from "../db.js";
+import { protectedProcedure, router } from "../_core/trpc";
+import { getDb } from "../db";
 import { z } from "zod";
 import { sql } from "drizzle-orm";
-import { safeDb, requireDb } from "../helpers/errorHandler.js";
+import { safeDb, requireDb } from "../helpers/errorHandler";
 
 export const multasRouter = router({
   list: protectedProcedure

@@ -1,9 +1,9 @@
-import { protectedProcedure, router } from "../_core/trpc.js";
-import { getDb } from "../db.js";
-import { viagens, despesasViagem, funcionarios, veiculos } from "../../drizzle/schema.js";
+import { protectedProcedure, router } from "../_core/trpc";
+import { getDb } from "../db";
+import { viagens, despesasViagem, funcionarios, veiculos } from "../drizzle/schema";
 import { eq, and, isNull, isNotNull, desc, sql } from "drizzle-orm";
 import { z } from "zod";
-import { safeDb, requireDb } from "../helpers/errorHandler.js";
+import { safeDb, requireDb } from "../helpers/errorHandler";
 
 // Apenas veículo é obrigatório para criar uma viagem — resto pode ser preenchido depois
 const viagemInput = z.object({

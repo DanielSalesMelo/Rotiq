@@ -1,7 +1,7 @@
-import { protectedProcedure, router } from "../_core/trpc.js";
-import { users } from "../../drizzle/schema.js";
-import { getDb } from "../db.js";
-import { veiculos, funcionarios, abastecimentos, manutencoes, viagens, contasPagar, contasReceber, adiantamentos, checklists, empresas } from "../../drizzle/schema.js";
+import { protectedProcedure, router } from "../_core/trpc";
+import { users } from "../drizzle/schema";
+import { getDb } from "../db";
+import { veiculos, funcionarios, abastecimentos, manutencoes, viagens, contasPagar, contasReceber, adiantamentos, checklists, empresas } from "../drizzle/schema";
 import { eq, and, isNull, desc, sql, gte, lte } from "drizzle-orm";
 import { z } from "zod";
 
