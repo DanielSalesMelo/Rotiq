@@ -54,6 +54,12 @@ const trpcClient = trpc.createClient({
     httpBatchLink({
       url: `${getBaseUrl()}/api/trpc`,
       transformer: superjson,
+      headers() {
+        const token = localStorage.getItem("rotiq-auth-token");
+        return {
+          Authorization: token ? `Bearer ${token}` : undefined,
+        };
+      },
       fetch(input, init) {
         return globalThis.fetch(input, {
           ...(init ?? {}),

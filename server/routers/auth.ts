@@ -62,7 +62,7 @@ export const authRouter = router({
 
       ctx.res.setHeader("Set-Cookie", `manus-enterprise-suite-session=${token}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${60 * 60 * 24 * 7}`);
 
-      return { success: true, user };
+      return { success: true, user, token };
     }),
 
   register: publicProcedure

@@ -17,6 +17,9 @@ export default function Login() {
 
   const loginMutation = trpc.auth.login.useMutation({
     onSuccess: (data) => {
+      if (data.token) {
+        localStorage.setItem("rotiq-auth-token", data.token);
+      }
       utils.auth.me.setData(undefined, data.user);
       toast.success("Login realizado com sucesso!");
       navigate("/dashboard");
