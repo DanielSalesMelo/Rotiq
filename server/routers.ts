@@ -12,11 +12,13 @@ import { custosRouter } from "./routers/custos";
 import { multasRouter } from "./routers/multas";
 import { authRouter } from "./routers/auth";
 import { usersRouter } from "./routers/users";
+import { chatRouter } from "./routers/chat";
 
 export const appRouter = router({
   system: systemRouter,
   auth: authRouter,
   users: usersRouter,
+  chat: chatRouter,
 
   veiculos: veiculosRouter,
   funcionarios: funcionariosRouter,
