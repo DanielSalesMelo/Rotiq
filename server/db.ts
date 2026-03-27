@@ -1,4 +1,10 @@
-import "dotenv/config";
+import path from "path";
+import dotenv from "dotenv";
+// Carrega o .env da raiz do projeto (um nível acima da pasta server)
+dotenv.config({ path: path.resolve(process.cwd(), "..", ".env") });
+// Tenta carregar da pasta atual também como fallback
+dotenv.config();
+
 import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
