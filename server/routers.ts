@@ -10,17 +10,11 @@ import { dashboardRouter } from "./routers/dashboard";
 import { viagensRouter } from "./routers/viagens";
 import { custosRouter } from "./routers/custos";
 import { multasRouter } from "./routers/multas";
+import { authRouter } from "./routers/auth";
 
 export const appRouter = router({
   system: systemRouter,
-  auth: router({
-    me: publicProcedure.query(opts => opts.ctx.user),
-    logout: publicProcedure.mutation(({ ctx }) => {
-      const cookieOptions = getSessionCookieOptions(ctx.req);
-      ctx.res.clearCookie(COOKIE_NAME, { ...cookieOptions, maxAge: -1 });
-      return { success: true } as const;
-    }),
-  }),
+  auth: authRouter,
 
   veiculos: veiculosRouter,
   funcionarios: funcionariosRouter,
