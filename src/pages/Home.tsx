@@ -9,11 +9,12 @@ export default function Home() {
   const { user, loading } = useAuth();
   const [, setLocation] = useLocation();
 
-  useEffect(() => {
-    if (!loading && user) {
-      setLocation("/dashboard");
-    }
-  }, [user, loading, setLocation]);
+  // Removido o redirecionamento automático para permitir ver a Landing Page mesmo logado
+  // useEffect(() => {
+  //   if (!loading && user) {
+  //     setLocation("/dashboard");
+  //   }
+  // }, [user, loading, setLocation]);
 
   if (loading) {
     return (
@@ -22,8 +23,6 @@ export default function Home() {
       </div>
     );
   }
-
-  if (user) return null;
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
