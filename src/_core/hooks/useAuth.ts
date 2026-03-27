@@ -60,21 +60,22 @@ export function useAuth(options?: UseAuthOptions) {
     logoutMutation.isPending,
   ]);
 
-  useEffect(() => {
-    if (!redirectOnUnauthenticated) return;
-    if (meQuery.isLoading || logoutMutation.isPending) return;
-    if (state.user) return;
-    if (typeof window === "undefined") return;
-    if (window.location.pathname === redirectPath) return;
+  // Desativado temporariamente para evitar redirecionamento infinito no Windows
+  // useEffect(() => {
+  //   if (!redirectOnUnauthenticated) return;
+  //   if (meQuery.isLoading || logoutMutation.isPending) return;
+  //   if (state.user) return;
+  //   if (typeof window === "undefined") return;
+  //   if (window.location.pathname === redirectPath) return;
 
-    window.location.href = redirectPath
-  }, [
-    redirectOnUnauthenticated,
-    redirectPath,
-    logoutMutation.isPending,
-    meQuery.isLoading,
-    state.user,
-  ]);
+  //   window.location.href = redirectPath
+  // }, [
+  //   redirectOnUnauthenticated,
+  //   redirectPath,
+  //   logoutMutation.isPending,
+  //   meQuery.isLoading,
+  //   state.user,
+  // ]);
 
   return {
     ...state,
