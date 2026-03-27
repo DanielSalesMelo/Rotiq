@@ -12,15 +12,23 @@ const JWT_SECRET = process.env.JWT_SECRET || "rotiq-secret-key-123";
 export const authRouter = router({
   login: publicProcedure
     .input(z.object({
-      username: z.string(), // Nome de usuário em vez de e-mail
+      username: z.string().optional(),
+      email: z.string().optional(),
       password: z.string(),
     }))
     .mutation(async ({ input, ctx }) => {
       const db = await getDb();
       if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Banco indisponível" });
 
-      // Buscar pelo nome de usuário (campo name no banco)
-      const [user] = await db.select().from(users).where(eq(users.name, input.username)).limit(1);
+      const identifier = input.username || input.email;
+      if (!identifier) {
+        throw new TRPCError({ code: "BAD_REQUEST", message: "Usuário ou e-mail é obrigatório" });
+      }
+
+      // Buscar pelo nome de usuário ou e-mail
+      const [user] = await db.select().from(users)
+        .where(input.username ? eq(users.name, input.username) : eq(users.email, identifier))
+        .limit(1);
 
       if (!user || !user.password) {
         throw new TRPCError({ code: "UNAUTHORIZED", message: "Usuário ou senha incorretos" });
