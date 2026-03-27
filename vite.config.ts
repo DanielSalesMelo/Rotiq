@@ -4,6 +4,7 @@ import tsconfigPaths from 'vite-tsconfig-paths';
 import path from 'path';
 
 export default defineConfig({
+  base: '/',
   plugins: [react(), tsconfigPaths()],
   resolve: {
     alias: {
@@ -12,6 +13,8 @@ export default defineConfig({
     },
   },
   build: {
+    sourcemap: false,
+    minify: 'terser',
     outDir: 'dist',
     emptyOutDir: true,
   },

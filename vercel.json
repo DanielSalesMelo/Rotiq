@@ -1,7 +1,6 @@
 {
   "version": 2,
   "framework": "vite",
-  "installCommand": "npm install",
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "env": {
@@ -13,7 +12,7 @@
       "destination": "https://rotiq-production.up.railway.app/api/trpc/:path*"
     },
     {
-      "source": "/(.*)",
+      "source": "/:path*",
       "destination": "/index.html"
     }
   ]
