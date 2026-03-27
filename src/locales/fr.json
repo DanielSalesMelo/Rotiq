@@ -36,5 +36,8 @@
     "type_message": "Tapez votre message...",
     "no_conversations": "Aucune conversation commencée",
     "select_chat": "Sélectionnez une conversation pour commencer"
+  },
+  "home": {
+    "manage_fleet": "Gérez votre flotte intelligemment et efficacement."
   }
 }

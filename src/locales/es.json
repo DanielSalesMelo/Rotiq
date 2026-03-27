@@ -36,5 +36,8 @@
     "type_message": "Escribe tu mensaje...",
     "no_conversations": "No hay conversaciones iniciadas",
     "select_chat": "Selecciona una conversación para comenzar"
+  },
+  "home": {
+    "manage_fleet": "Administre su flota de forma inteligente y eficiente."
   }
 }

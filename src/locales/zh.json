@@ -36,5 +36,8 @@
     "type_message": "輸入訊息...",
     "no_conversations": "尚無對話",
     "select_chat": "選擇一個對話開始聊天"
+  },
+  "home": {
+    "manage_fleet": "智能高效地管理您的車隊。"
   }
 }
