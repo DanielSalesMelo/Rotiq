@@ -41,6 +41,7 @@ const frequencias = [
 ];
 
 export default function PlanoManutencao() {
+  const { t } = useTranslation();
   const [modalOpen, setModalOpen] = useState(false);
   const [busca, setBusca] = useState("");
   const [form, setForm] = useState({

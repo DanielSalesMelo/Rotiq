@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { trpc } from "@/lib/trpc";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -21,6 +22,7 @@ const STATUS_COLOR: Record<string, string> = {
 };
 
 export default function Relatorios() {
+  const { t } = useTranslation();
   const [tab, setTab] = useState<Tab>("viagens");
   const [busca, setBusca] = useState("");
 

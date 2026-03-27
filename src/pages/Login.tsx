@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
@@ -8,6 +9,7 @@ import { toast } from "sonner";
 import { Mail, Lock, LogIn } from "lucide-react";
 
 export default function Login() {
+  const { t } = useTranslation();
   const [, navigate] = useLocation();
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");

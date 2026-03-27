@@ -44,6 +44,7 @@ interface RotaInfo {
 const ROUTE_COLORS = ["#2563eb", "#16a34a", "#ea580c"];
 
 export default function SimuladorViagem() {
+  const { t } = useTranslation();
   // Map refs
   const mapRef = useRef<google.maps.Map | null>(null);
   const directionsServiceRef = useRef<google.maps.DirectionsService | null>(null);

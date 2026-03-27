@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -30,6 +31,7 @@ const STATUS_COLORS: Record<string, string> = {
 };
 
 export default function Despachante() {
+  const { t } = useTranslation();
   const [modalSaida, setModalSaida] = useState(false);
   const [modalChegada, setModalChegada] = useState(false);
   const [modalNova, setModalNova] = useState(false);

@@ -223,6 +223,7 @@ function VeiculoForm({ initial, cavalos, onSave, onClose }: {
 }
 
 export default function Veiculos() {
+  const { t } = useTranslation();
   const [search, setSearch] = useState("");
   const [filterTipo, setFilterTipo] = useState("todos");
   const [open, setOpen] = useState(false);

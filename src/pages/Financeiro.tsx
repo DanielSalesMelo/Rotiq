@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Plus, TrendingDown, TrendingUp, Wallet, CheckCircle2, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 import { useLocation } from "wouter";
@@ -220,6 +221,7 @@ function ContaReceberForm({ onSave, onClose }: { onSave: (d: any) => void; onClo
 }
 
 export default function Financeiro() {
+  const { t } = useTranslation();
   const [location] = useLocation();
   const defaultTab = location.includes("receber") ? "receber" : location.includes("adiantamentos") ? "adiantamentos" : "pagar";
   const [openPagar, setOpenPagar] = useState(false);

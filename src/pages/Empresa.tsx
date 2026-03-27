@@ -7,9 +7,11 @@ import { Separator } from "@/components/ui/separator";
 import { trpc } from "@/lib/trpc";
 import { Building2, Users, Truck, MapPin, Phone, Mail, FileText, Shield, Save } from "lucide-react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
 export default function Empresa() {
+  const { t } = useTranslation();
   const { data: stats } = trpc.dashboard.resumo.useQuery({ empresaId: 1 });
   const [editMode, setEditMode] = useState(false);
   const [form, setForm] = useState({

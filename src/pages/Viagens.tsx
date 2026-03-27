@@ -33,6 +33,7 @@ const CLASSIFICACAO_CONFIG = {
 };
 
 function CalculadoraViagem() {
+  const { t } = useTranslation();
   const [veiculoId, setVeiculoId] = useState<number | null>(null);
   const [distanciaKm, setDistanciaKm] = useState("");
   const [freteTotal, setFreteTotal] = useState("");

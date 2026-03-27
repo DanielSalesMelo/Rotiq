@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { trpc } from "@/lib/trpc";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -17,6 +18,7 @@ function fmt(v: number) {
 }
 
 export default function Acertos() {
+  const { t } = useTranslation();
   const [modalOpen, setModalOpen] = useState(false);
   const [busca, setBusca] = useState("");
   const [form, setForm] = useState({

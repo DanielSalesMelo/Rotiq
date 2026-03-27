@@ -73,6 +73,7 @@ const perfisIniciais = [
 type Permissao = { ver: boolean; criar: boolean; editar: boolean; excluir: boolean };
 
 export default function Permissoes() {
+  const { t } = useTranslation();
   const { user, loading } = useAuth();
   const [, navigate] = useLocation();
 

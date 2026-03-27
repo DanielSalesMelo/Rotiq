@@ -19,6 +19,7 @@ import {
 import { cn } from "@/lib/utils";
 
 export default function Chat() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [selectedConvId, setSelectedConvId] = useState<number | null>(null);
   const [message, setMessage] = useState("");

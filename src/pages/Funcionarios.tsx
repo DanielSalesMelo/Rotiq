@@ -346,6 +346,7 @@ function FuncionarioForm({ initial, onSave, onClose }: {
 }
 
 export default function Funcionarios() {
+  const { t } = useTranslation();
   const [search, setSearch] = useState("");
   const [filterFuncao, setFilterFuncao] = useState("todos");
   const [filterContrato, setFilterContrato] = useState("todos");

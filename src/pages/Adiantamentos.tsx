@@ -12,6 +12,7 @@ import {
   TrendingDown, User
 } from "lucide-react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
 const STATUS_LABELS: Record<string, { label: string; color: string }> = {
@@ -27,6 +28,7 @@ function fmt(v: number | string | null | undefined) {
 }
 
 export default function Adiantamentos() {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({
     funcionarioId: "",

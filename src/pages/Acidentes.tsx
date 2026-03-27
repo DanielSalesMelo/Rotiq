@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { trpc } from "@/lib/trpc";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -31,6 +32,7 @@ const gravidadeConfig: Record<string, { label: string; color: string }> = {
 };
 
 export default function Acidentes() {
+  const { t } = useTranslation();
   const [modalOpen, setModalOpen] = useState(false);
   const [busca, setBusca] = useState("");
   const [form, setForm] = useState({

@@ -12,6 +12,7 @@ import { Send, MapPin, Truck, User, Clock, CheckCircle2, Play, Square, Info } fr
 import { PlacesAutocomplete } from "@/components/PlacesAutocomplete";
 
 export default function SaidaViagem() {
+  const { t } = useTranslation();
   const [form, setForm] = useState({
     veiculoId: "",
     cavaloCopladoId: "",

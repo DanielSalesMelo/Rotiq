@@ -14,6 +14,7 @@ function getDiasRestantes(vencimento: string): number {
 }
 
 export default function Alertas() {
+  const { t } = useTranslation();
   const { data: veiculos = [] } = trpc.veiculos.list.useQuery({ empresaId: EMPRESA_ID });
   const { data: manutencoes = [] } = trpc.frota.manutencoes.list.useQuery({ empresaId: EMPRESA_ID });
   const { data: multas = [] } = trpc.multas.list.useQuery({ empresaId: EMPRESA_ID });

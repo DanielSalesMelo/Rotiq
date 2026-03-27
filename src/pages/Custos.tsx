@@ -15,6 +15,7 @@ const fmt = (v: number) => v.toLocaleString("pt-BR", { style: "currency", curren
 const fmtN = (v: number, dec = 2) => v.toLocaleString("pt-BR", { minimumFractionDigits: dec, maximumFractionDigits: dec });
 
 export default function Custos() {
+  const { t } = useTranslation();
   const [veiculoId, setVeiculoId] = useState<string>("todos");
   const [periodo, setPeriodo] = useState<string>("12");
   const [precoKm, setPrecoKm] = useState<string>("0.85");

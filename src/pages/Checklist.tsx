@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { trpc } from "@/lib/trpc";
 import { ClipboardCheck, Plus, CheckCircle2, XCircle, MinusCircle, AlertTriangle, Truck } from "lucide-react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
 type ItemStatus = "conforme" | "nao_conforme" | "na";
@@ -75,6 +76,7 @@ const STATUS_CONFIG = {
 };
 
 export default function Checklist() {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [veiculoId, setVeiculoId] = useState("");
   const [motoristaId, setMotoristaId] = useState("");

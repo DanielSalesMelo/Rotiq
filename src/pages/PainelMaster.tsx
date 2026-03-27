@@ -15,6 +15,7 @@ import { toast } from "sonner";
 const EMPRESA_ID = 1;
 
 export default function PainelMaster() {
+  const { t } = useTranslation();
   const { user, loading } = useAuth();
   const [, navigate] = useLocation();
 

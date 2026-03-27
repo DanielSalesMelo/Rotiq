@@ -4,6 +4,7 @@ import { AlertCircle, Home } from "lucide-react";
 import { useLocation } from "wouter";
 
 export default function NotFound() {
+  const { t } = useTranslation();
   const [, setLocation] = useLocation();
 
   const handleGoHome = () => {

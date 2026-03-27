@@ -28,6 +28,7 @@ function dateKey(d: Date | string) {
 type Evento = { tipo: "viagem" | "manutencao" | "documento" | "multa"; titulo: string; cor: string };
 
 export default function Calendario() {
+  const { t } = useTranslation();
   const hoje = new Date();
   const [ano, setAno] = useState(hoje.getFullYear());
   const [mes, setMes] = useState(hoje.getMonth());

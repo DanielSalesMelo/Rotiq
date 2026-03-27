@@ -31,6 +31,7 @@ interface User {
 }
 
 export default function AdminUsers() {
+  const { t } = useTranslation();
   const [users, setUsers] = useState<User[]>([]);
   const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
   const [searchTerm, setSearchTerm] = useState("");

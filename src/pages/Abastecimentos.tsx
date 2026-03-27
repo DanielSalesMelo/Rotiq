@@ -229,6 +229,7 @@ function AbastecimentoForm({ veiculos, motoristas, veiculosEmViagem, onSave, onC
 }
 
 export default function Abastecimentos() {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [filtros, setFiltros] = useState({
     veiculoId: "",

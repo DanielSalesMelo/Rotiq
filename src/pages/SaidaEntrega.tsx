@@ -12,6 +12,7 @@ import { MapPin, Clock, Truck, User, CheckCircle2, Play, Square, Info } from "lu
 import { PlacesAutocomplete } from "@/components/PlacesAutocomplete";
 
 export default function SaidaEntrega() {
+  const { t } = useTranslation();
   const [form, setForm] = useState({
     veiculoId: "",
     cavaloPrincipalId: "",

@@ -141,6 +141,7 @@ function ManutencaoForm({ veiculos, onSave, onClose }: {
 }
 
 export default function Manutencoes() {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const utils = trpc.useUtils();
