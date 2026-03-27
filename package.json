@@ -9,7 +9,8 @@
     "build": "vite build",
     "build:server": "cd server && npm run build",
     "preview": "vite preview",
-    "install:all": "npm install && cd server && npm install"
+    "install:all": "npm install && cd server && npm install",
+    "start": "start.bat"
   },
   "dependencies": {
     "react": "^19.2.1",
