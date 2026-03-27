@@ -252,9 +252,14 @@ function Sidebar({
 }
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const { loading, user } = useAuth();
+  const { loading, user, isAuthenticated } = useAuth();
+  const [, setLocation] = useLocation();
+
+  // Se estiver carregando, mostra o esqueleto do dashboard
   if (loading) return <DashboardLayoutSkeleton />;
-  if (!user) {
+
+  // Se não estiver autenticado, redireciona para o login de forma suave
+  if (!user && !isAuthenticated) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-background">
         <div className="flex flex-col items-center gap-8 p-8 max-w-md w-full">
@@ -264,13 +269,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </div>
             <span className="text-2xl font-bold tracking-tight">Rotiq</span>
           </div>
+          <p className="text-center text-muted-foreground">Sessão expirada ou não autenticada.</p>
           <Button onClick={() => { setLocation("/login"); }} size="lg" className="w-full">
-            Entrar
+            Ir para o Login
           </Button>
         </div>
       </div>
     );
   }
+
+  // Se o usuário existe, renderiza o Shell do App
   return <AppShell>{children}</AppShell>;
 }
 
