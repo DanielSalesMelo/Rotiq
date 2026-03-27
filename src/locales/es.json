@@ -1,0 +1,40 @@
+{
+  "common": {
+    "dashboard": "Tablero",
+    "users": "Usuarios",
+    "chat": "Chat Interno",
+    "settings": "Configuraciones",
+    "logout": "Cerrar sesión",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "approve": "Aprobar",
+    "reject": "Rechazar",
+    "search": "Buscar",
+    "loading": "Cargando...",
+    "status": "Estado",
+    "role": "Rol",
+    "name": "Nombre",
+    "email": "Correo electrónico",
+    "phone": "Teléfono",
+    "actions": "Acciones"
+  },
+  "menu": {
+    "principal": "Principal",
+    "despachante": "Despachador",
+    "operacional": "Operacional",
+    "frota": "Flota",
+    "gestao": "Gestión",
+    "sistema": "Sistema",
+    "financeiro": "Financiero",
+    "master": "Maestro"
+  },
+  "chat": {
+    "messages": "Mensajes",
+    "new_chat": "Nueva Conversación",
+    "type_message": "Escribe tu mensaje...",
+    "no_conversations": "No hay conversaciones iniciadas",
+    "select_chat": "Selecciona una conversación para comenzar"
+  }
+}

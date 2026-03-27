@@ -7,6 +7,7 @@ import superjson from "superjson";
 import App from "./App";
 import { Toaster } from "sonner";
 import "./index.css";
+import "./lib/i18n";
 
 const queryClient = new QueryClient();
 

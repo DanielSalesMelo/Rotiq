@@ -20,6 +20,8 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { useRef, useState } from "react";
 import { DashboardLayoutSkeleton } from "./DashboardLayoutSkeleton";
 import { Button } from "./ui/button";
+import { useTranslation } from "react-i18next";
+import { Globe } from "lucide-react";
 
 // Grupos de menu com controle de acesso por role
 type MenuGroup = {
@@ -28,13 +30,13 @@ type MenuGroup = {
   items: { icon: any; label: string; path: string }[];
 };
 
-const menuGroups: MenuGroup[] = [
+const getMenuGroups = (t: any): MenuGroup[] => [
   {
-    label: "Principal",
-    items: [{ icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" }],
+    label: t("menu.principal"),
+    items: [{ icon: LayoutDashboard, label: t("common.dashboard"), path: "/dashboard" }],
   },
   {
-    label: "Despachante",
+    label: t("menu.despachante"),
     items: [
       { icon: MapPin, label: "Saída de Entrega", path: "/despachante/entrega" },
       { icon: Send, label: "Saída de Viagem", path: "/despachante/viagem" },
@@ -42,7 +44,7 @@ const menuGroups: MenuGroup[] = [
     ],
   },
   {
-    label: "Operacional",
+    label: t("menu.operacional"),
     items: [
       { icon: Navigation, label: "Viagens", path: "/viagens" },
       { icon: Fuel, label: "Abastecimentos", path: "/abastecimentos" },
@@ -50,7 +52,7 @@ const menuGroups: MenuGroup[] = [
     ],
   },
   {
-    label: "Frota",
+    label: t("menu.frota"),
     items: [
       { icon: Truck, label: "Veículos", path: "/veiculos" },
       { icon: Users, label: "Motoristas", path: "/funcionarios" },
@@ -59,7 +61,7 @@ const menuGroups: MenuGroup[] = [
     ],
   },
   {
-    label: "Gestão",
+    label: t("menu.gestao"),
     items: [
       { icon: Gauge, label: "Estoque Combustível", path: "/gestao/estoque-combustivel" },
       { icon: AlertTriangle, label: "Multas", path: "/gestao/multas" },
@@ -73,16 +75,16 @@ const menuGroups: MenuGroup[] = [
     ],
   },
   {
-    label: "Sistema",
+    label: t("menu.sistema"),
     items: [
-      { icon: MessageSquare, label: "Chat Interno", path: "/chat" },
+      { icon: MessageSquare, label: t("common.chat"), path: "/chat" },
       { icon: BarChart3, label: "Relatórios", path: "/relatorios" },
-      { icon: UserCog, label: "Usuários", path: "/usuarios" },
-      { icon: Settings, label: "Configurações", path: "/empresa" },
+      { icon: UserCog, label: t("common.users"), path: "/usuarios" },
+      { icon: Settings, label: t("common.settings"), path: "/empresa" },
     ],
   },
   {
-    label: "Financeiro",
+    label: t("menu.financeiro"),
     items: [
       { icon: TrendingDown, label: "Contas a Pagar", path: "/financeiro" },
       { icon: TrendingUp, label: "Contas a Receber", path: "/financeiro/receber" },
@@ -91,7 +93,7 @@ const menuGroups: MenuGroup[] = [
     ],
   },
   {
-    label: "Master",
+    label: t("menu.master"),
     requiredRole: "master_admin",
     items: [
       { icon: Star, label: "Painel Master", path: "/master/painel" },
@@ -117,6 +119,7 @@ function Sidebar({
   logout: () => void;
 }) {
   const { theme, setTheme } = useTheme();
+  const { t, i18n } = useTranslation();
   const navRef = useRef<HTMLElement>(null);
 
   const isActive = (path: string) =>
@@ -139,6 +142,16 @@ function Sidebar({
       if (navRef.current) navRef.current.scrollTop = scrollTop;
     });
   };
+
+  const menuGroups = getMenuGroups(t);
+
+  const languages = [
+    { code: 'pt', label: 'PT', flag: '🇧🇷' },
+    { code: 'en', label: 'EN', flag: '🇺🇸' },
+    { code: 'es', label: 'ES', flag: '🇪🇸' },
+    { code: 'fr', label: 'FR', flag: '🇫🇷' },
+    { code: 'zh', label: 'TW', flag: '🇹🇼' },
+  ];
 
   return (
     <div className="flex flex-col h-full">
@@ -197,12 +210,32 @@ function Sidebar({
 
       {/* Footer */}
       <div className="border-t border-border shrink-0 p-3 space-y-2">
+        {/* Language Selector */}
+        {!collapsed && (
+          <div className="flex items-center gap-1 rounded-lg bg-muted p-1 mb-2">
+            {languages.map((lang) => (
+              <button
+                key={lang.code}
+                onClick={() => i18n.changeLanguage(lang.code)}
+                title={lang.label}
+                className={`flex-1 flex items-center justify-center rounded-md py-1 text-[10px] transition-colors ${
+                  i18n.language === lang.code
+                    ? "bg-background text-foreground font-bold shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <span>{lang.flag}</span>
+              </button>
+            ))}
+          </div>
+        )}
+
         {!collapsed && (
           <div className="flex items-center gap-1 rounded-lg bg-muted p-1">
             {[
-              { key: "light" as const, icon: Sun, label: "Claro" },
-              { key: "gray" as const, icon: Monitor, label: "Cinza" },
-              { key: "dark" as const, icon: Moon, label: "Escuro" },
+              { key: "light" as const, icon: Sun, label: t("common.dashboard") === "Dashboard" ? "Claro" : "Light" },
+              { key: "gray" as const, icon: Monitor, label: t("common.dashboard") === "Dashboard" ? "Cinza" : "Gray" },
+              { key: "dark" as const, icon: Moon, label: t("common.dashboard") === "Dashboard" ? "Escuro" : "Dark" },
             ].map((t) => (
               <button
                 key={t.key}
@@ -242,7 +275,7 @@ function Sidebar({
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={logout} className="text-red-600">
               <LogOut className="h-4 w-4 mr-2" />
-              Sair
+              {t("common.logout")}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
