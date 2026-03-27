@@ -54,11 +54,10 @@ export const authRouter = router({
         throw new TRPCError({ code: "UNAUTHORIZED", message: "Usuário ou senha incorretos" });
       }
 
-      const token = jwt.sign(
-        { id: user.id, email: user.email, role: user.role, name: user.name },
-        JWT_SECRET,
-        { expiresIn: "7d" }
-      );
+      const token = await sdk.createSessionToken(user.openId, { 
+        name: user.name || user.email || "Usuário",
+        expiresInMs: 60 * 60 * 24 * 7 * 1000 
+      });
 
       ctx.res.setHeader("Set-Cookie", `manus-enterprise-suite-session=${token}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${60 * 60 * 24 * 7}`);
 
