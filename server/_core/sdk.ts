@@ -201,7 +201,6 @@ class SDKServer {
     cookieValue: string | undefined | null
   ): Promise<{ openId: string; appId: string; name: string } | null> {
     if (!cookieValue) {
-      console.warn("[Auth] Missing session cookie");
       return null;
     }
 
@@ -210,22 +209,18 @@ class SDKServer {
       const { payload } = await jwtVerify(cookieValue, secretKey, {
         algorithms: ["HS256"],
       });
-      const { openId, appId, name } = payload as Record<string, unknown>;
+      
+      // Se for um token de login local, ele terá o campo 'id' ou 'openId'
+      const openId = (payload.openId || payload.id) as string;
+      const name = (payload.name || "Usuário") as string;
+      const appId = (payload.appId || ENV.appId || "rotiq") as string;
 
-      if (
-        !isNonEmptyString(openId) ||
-        !isNonEmptyString(appId) ||
-        !isNonEmptyString(name)
-      ) {
-        console.warn("[Auth] Session payload missing required fields");
+      if (!openId) {
+        console.warn("[Auth] Session payload missing openId/id");
         return null;
       }
 
-      return {
-        openId,
-        appId,
-        name,
-      };
+      return { openId, appId, name };
     } catch (error) {
       console.warn("[Auth] Session verification failed", String(error));
       return null;

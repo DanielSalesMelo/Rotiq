@@ -55,10 +55,11 @@ export const authRouter = router({
         throw new TRPCError({ code: "UNAUTHORIZED", message: "Usuário ou senha incorretos" });
       }
 
-      const token = await sdk.createSessionToken(user.openId, { 
-        name: user.name || user.email || "Usuário",
-        expiresInMs: 60 * 60 * 24 * 7 * 1000 
-      });
+      const token = await sdk.signSession({
+        openId: user.openId,
+        appId: process.env.VITE_APP_ID || "rotiq",
+        name: user.name || user.email || "Usuário"
+      }, { expiresInMs: 60 * 60 * 24 * 7 * 1000 });
 
       ctx.res.setHeader("Set-Cookie", `manus-enterprise-suite-session=${token}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${60 * 60 * 24 * 7}`);
 
