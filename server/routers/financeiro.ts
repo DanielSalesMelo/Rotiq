@@ -108,6 +108,7 @@ export const financeiroRouter = router({
           const db = requireDb(await getDb(), "financeiro.pagar.resumo");
           const hoje = new Date();
           const inicioMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+          const inicioMesStr = inicioMes.toISOString();
           const rows = await db.select({
             status: contasPagar.status,
             total: sql<number>`SUM(${contasPagar.valor})`,
@@ -125,7 +126,7 @@ export const financeiroRouter = router({
             .where(and(
               eq(contasPagar.empresaId, input.empresaId),
               eq(contasPagar.status, "pago"),
-              gte(contasPagar.dataPagamento, inicioMes),
+              gte(contasPagar.dataPagamento, sql`${inicioMesStr}::timestamp`),
               isNull(contasPagar.deletedAt),
             ));
           result.pagoMes = Number(pagoRows[0]?.total) || 0;
@@ -228,6 +229,7 @@ export const financeiroRouter = router({
           const db = requireDb(await getDb(), "financeiro.receber.resumo");
           const hoje = new Date();
           const inicioMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+          const inicioMesStr = inicioMes.toISOString();
           const rows = await db.select({
             status: contasReceber.status,
             total: sql<number>`SUM(${contasReceber.valor})`,
@@ -245,7 +247,7 @@ export const financeiroRouter = router({
             .where(and(
               eq(contasReceber.empresaId, input.empresaId),
               eq(contasReceber.status, "recebido"),
-              gte(contasReceber.dataRecebimento, inicioMes),
+              gte(contasReceber.dataRecebimento, sql`${inicioMesStr}::timestamp`),
               isNull(contasReceber.deletedAt),
             ));
           result.recebidoMes = Number(recRows[0]?.total) || 0;
