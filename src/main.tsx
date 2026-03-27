@@ -45,8 +45,10 @@ const getBaseUrl = () => {
     if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
       return "http://localhost:3000";
     }
+    // Na Vercel ou em produção, usa o backend Railway
+    return "https://rotiq-production.up.railway.app";
   }
-  // Na Vercel, usa o caminho padrão (relativo)
+  // Fallback para requisições relativas
   return "";
 };
 

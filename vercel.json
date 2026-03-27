@@ -4,6 +4,9 @@
   "installCommand": "npm install",
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
+  "env": {
+    "VITE_API_URL": "https://rotiq-production.up.railway.app"
+  },
   "rewrites": [
     {
       "source": "/api/trpc/:path*",
