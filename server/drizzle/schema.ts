@@ -45,7 +45,9 @@ export const users = pgTable("users", {
   id: serial("id").primaryKey(),
   openId: varchar("openId", { length: 64 }).notNull().unique(),
   name: text("name"),
+  lastName: text("lastName"),
   email: varchar("email", { length: 320 }),
+  phone: varchar("phone", { length: 20 }),
   loginMethod: varchar("loginMethod", { length: 64 }),
   password: varchar("password", { length: 255 }), // Hash bcrypt
   role: userRoleEnum("role").default("user").notNull(),

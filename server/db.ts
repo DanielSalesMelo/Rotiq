@@ -46,7 +46,7 @@ export async function upsertUser(user: InsertUser): Promise<void> {
     };
     const updateSet: Record<string, unknown> = {};
 
-    const textFields = ["name", "email", "loginMethod"] as const;
+    const textFields = ["name", "lastName", "email", "phone", "loginMethod"] as const;
     type TextField = (typeof textFields)[number];
 
     const assignNullable = (field: TextField) => {
@@ -102,6 +102,24 @@ export async function getUserByOpenId(openId: string) {
   return result.length > 0 ? result[0] : undefined;
 }
 
+export async function getAllUsers() {
+  const db = await getDb();
+  if (!db) return [];
+  return await db.select().from(users);
+}
+
+export async function updateUser(id: number, data: Partial<InsertUser>) {
+  const db = await getDb();
+  if (!db) return;
+  await db.update(users).set(data).where(eq(users.id, id));
+}
+
+export async function deleteUser(id: number) {
+  const db = await getDb();
+  if (!db) return;
+  await db.delete(users).where(eq(users.id, id));
+}
+
 export async function closeDb() {
   if (_client) {
     await _client.end();
@@ -109,5 +127,3 @@ export async function closeDb() {
     _db = null;
   }
 }
-
-// TODO: add feature queries here as your schema grows.

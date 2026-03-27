@@ -11,10 +11,12 @@ import { viagensRouter } from "./routers/viagens";
 import { custosRouter } from "./routers/custos";
 import { multasRouter } from "./routers/multas";
 import { authRouter } from "./routers/auth";
+import { usersRouter } from "./routers/users";
 
 export const appRouter = router({
   system: systemRouter,
   auth: authRouter,
+  users: usersRouter,
 
   veiculos: veiculosRouter,
   funcionarios: funcionariosRouter,
