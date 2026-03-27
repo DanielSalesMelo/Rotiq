@@ -5,8 +5,11 @@
   "private": true,
   "scripts": {
     "dev": "vite",
+    "dev:server": "cd server && npm run start",
     "build": "vite build",
-    "preview": "vite preview"
+    "build:server": "cd server && npm run build",
+    "preview": "vite preview",
+    "install:all": "npm install && cd server && npm install"
   },
   "dependencies": {
     "react": "^19.2.1",
