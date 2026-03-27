@@ -6,6 +6,7 @@ import { eq } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { TRPCError } from "@trpc/server";
+import { sdk } from "../_core/sdk";
 
 const JWT_SECRET = process.env.JWT_SECRET || "rotiq-secret-key-123";
 
