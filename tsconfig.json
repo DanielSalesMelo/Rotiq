@@ -17,7 +17,7 @@
     "jsx": "react-jsx",
     "paths": {
       "@/*": ["./src/*"],
-      "@shared/*": ["../shared/*"]
+      "@shared/*": ["./server/shared/*"]
     }
   },
   "include": ["src"],
