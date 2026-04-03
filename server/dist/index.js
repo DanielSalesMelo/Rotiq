@@ -2697,7 +2697,7 @@ var ForbiddenError = (msg) => new HttpError(403, msg);
 // _core/sdk.ts
 import axios from "axios";
 import { parse as parseCookieHeader } from "cookie";
-import { SignJWT, jwtVerify } from "jose";
+import jwt from "jsonwebtoken";
 var EXCHANGE_TOKEN_PATH = `/webdev.v1.WebDevAuthPublicService/ExchangeToken`;
 var GET_USER_INFO_PATH = `/webdev.v1.WebDevAuthPublicService/GetUserInfo`;
 var GET_USER_INFO_WITH_JWT_PATH = `/webdev.v1.WebDevAuthPublicService/GetUserInfoWithJwt`;
@@ -2816,25 +2816,21 @@ var SDKServer = class {
     );
   }
   async signSession(payload, options = {}) {
-    const issuedAt = Date.now();
     const expiresInMs = options.expiresInMs ?? ONE_YEAR_MS;
-    const expirationSeconds = Math.floor((issuedAt + expiresInMs) / 1e3);
-    const secretKey = this.getSessionSecret();
-    return new SignJWT({
-      openId: payload.openId,
-      appId: payload.appId,
-      name: payload.name
-    }).setProtectedHeader({ alg: "HS256", typ: "JWT" }).setExpirationTime(expirationSeconds).sign(secretKey);
+    const secret = ENV.cookieSecret || "rotiq-secret-key-123";
+    return jwt.sign(
+      { openId: payload.openId, appId: payload.appId, name: payload.name },
+      secret,
+      { expiresIn: Math.floor(expiresInMs / 1e3), algorithm: "HS256" }
+    );
   }
   async verifySession(cookieValue) {
     if (!cookieValue) {
       return null;
     }
     try {
-      const secretKey = this.getSessionSecret();
-      const { payload } = await jwtVerify(cookieValue, secretKey, {
-        algorithms: ["HS256"]
-      });
+      const secret = ENV.cookieSecret || "rotiq-secret-key-123";
+      const payload = jwt.verify(cookieValue, secret, { algorithms: ["HS256"] });
       const openId = payload.openId || payload.id;
       const name = payload.name || "Usu\xE1rio";
       const appId = payload.appId || ENV.appId || "rotiq";
