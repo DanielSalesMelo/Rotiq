@@ -2679,7 +2679,7 @@ var multasRouter = router({
 
 // routers/auth.ts
 import { z as z10 } from "zod";
-import { eq as eq9 } from "drizzle-orm";
+import { eq as eq9, sql as sql8 } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 import { TRPCError as TRPCError4 } from "@trpc/server";
 
@@ -2926,7 +2926,7 @@ var authRouter = router({
     if (!identifier) {
       throw new TRPCError4({ code: "BAD_REQUEST", message: "Usu\xE1rio ou e-mail \xE9 obrigat\xF3rio" });
     }
-    const [user] = await db.select().from(users).where(input.username ? eq9(users.name, input.username) : eq9(users.email, identifier)).limit(1);
+    const [user] = await db.select().from(users).where(input.username ? eq9(users.name, input.username) : sql8`LOWER(${users.email}) = LOWER(${identifier})`).limit(1);
     if (!user || !user.password) {
       throw new TRPCError4({ code: "UNAUTHORIZED", message: "Usu\xE1rio ou senha incorretos" });
     }
@@ -3109,7 +3109,7 @@ var usersRouter = router({
 
 // routers/chat.ts
 import { z as z12 } from "zod";
-import { eq as eq10, and as and8, desc as desc8, sql as sql8 } from "drizzle-orm";
+import { eq as eq10, and as and8, desc as desc8, sql as sql9 } from "drizzle-orm";
 import { TRPCError as TRPCError6 } from "@trpc/server";
 var chatRouter = router({
   // Listar conversas do usuário logado
@@ -3133,7 +3133,7 @@ var chatRouter = router({
           }).from(chatMembers).innerJoin(users, eq10(chatMembers.userId, users.id)).where(
             and8(
               eq10(chatMembers.conversationId, conv.id),
-              sql8`${chatMembers.userId} != ${ctx.user.id}`
+              sql9`${chatMembers.userId} != ${ctx.user.id}`
             )
           ).limit(1);
           const otherMember = otherMembers[0];
@@ -3189,7 +3189,7 @@ var chatRouter = router({
     if (!ctx.user) throw new TRPCError6({ code: "UNAUTHORIZED" });
     const db = await getDb();
     if (!db) throw new TRPCError6({ code: "INTERNAL_SERVER_ERROR" });
-    const existingConv = await db.execute(sql8`
+    const existingConv = await db.execute(sql9`
         SELECT c.id 
         FROM chat_conversations c
         JOIN chat_members m1 ON c.id = m1."conversationId"
@@ -3224,7 +3224,7 @@ var chatRouter = router({
       name: users.name,
       lastName: users.lastName,
       email: users.email
-    }).from(users).where(sql8`${users.id} != ${ctx.user.id}`).limit(100);
+    }).from(users).where(sql9`${users.id} != ${ctx.user.id}`).limit(100);
   })
 });
 

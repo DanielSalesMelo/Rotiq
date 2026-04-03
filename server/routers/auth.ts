@@ -2,7 +2,7 @@ import { publicProcedure, router } from "../_core/trpc";
 import { z } from "zod";
 import { getDb } from "../db";
 import { users } from "../drizzle/schema";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { TRPCError } from "@trpc/server";
@@ -26,9 +26,9 @@ export const authRouter = router({
         throw new TRPCError({ code: "BAD_REQUEST", message: "Usuário ou e-mail é obrigatório" });
       }
 
-      // Buscar pelo nome de usuário ou e-mail
+      // Buscar pelo nome de usuário ou e-mail (case-insensitive)
       const [user] = await db.select().from(users)
-        .where(input.username ? eq(users.name, input.username) : eq(users.email, identifier))
+        .where(input.username ? eq(users.name, input.username) : sql`LOWER(${users.email}) = LOWER(${identifier})`)
         .limit(1);
 
       if (!user || !user.password) {
