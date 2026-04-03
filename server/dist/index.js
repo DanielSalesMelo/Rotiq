@@ -1,4 +1,5 @@
 // index.ts
+import { webcrypto } from "crypto";
 import express from "express";
 import * as trpcExpress from "@trpc/server/adapters/express";
 
@@ -3261,6 +3262,9 @@ async function createContext(opts) {
 
 // index.ts
 import cors from "cors";
+if (typeof globalThis.crypto === "undefined") {
+  globalThis.crypto = webcrypto;
+}
 var app = express();
 var port = process.env.PORT || 3e3;
 app.use(cors({

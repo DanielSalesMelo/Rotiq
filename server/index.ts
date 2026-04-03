@@ -1,3 +1,9 @@
+import { webcrypto } from "crypto";
+// Polyfill for Node.js 18 - make crypto available globally for jose
+if (typeof globalThis.crypto === "undefined") {
+  (globalThis as any).crypto = webcrypto;
+}
+
 import express from "express";
 import * as trpcExpress from "@trpc/server/adapters/express";
 import { appRouter } from "./routers";
