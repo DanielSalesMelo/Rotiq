@@ -16,6 +16,7 @@ export default defineConfig({
     outDir: 'dist',
     emptyOutDir: true,
     sourcemap: false,
-    minify: 'terser',
+    minify: 'esbuild', // Usando esbuild que já vem com o Vite
+    chunkSizeWarningLimit: 1000,
   },
 });
