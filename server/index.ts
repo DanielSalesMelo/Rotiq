@@ -10,13 +10,13 @@ const port = process.env.PORT || 3000;
 // 1. Configuração Robusta de CORS para aceitar conexões locais e da Vercel
 app.use(cors({
   origin: (origin, callback) => {
-    const allowedOrigins = [
-      "http://localhost:5173",
-      "http://localhost:5174",
-      "http://localhost:5175",
-      "https://rotiq.vercel.app"
-    ];
-    if (!origin || allowedOrigins.includes(origin) || origin?.startsWith("http://localhost:")) {
+    // Aceita qualquer origem em desenvolvimento e domínios Vercel em produção
+    if (
+      !origin ||
+      origin.startsWith("http://localhost:") ||
+      origin.includes(".vercel.app") ||
+      origin.includes("rotiq")
+    ) {
       callback(null, true);
     } else {
       callback(new Error("Not allowed by CORS"));
