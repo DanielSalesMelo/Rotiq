@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "build": "tsc",
+    "build": "esbuild index.ts --bundle --platform=node --target=node20 --outfile=dist/index.js --packages=external",
     "start": "tsx index.ts",
     "serve": "node dist/index.js",
     "db:migrate": "drizzle-kit migrate",
