@@ -3,9 +3,12 @@
 .pnpm-store/
 
 # Build outputs
-dist/
+# dist/ is excluded globally but server/dist is needed for Railway deployment
 build/
 *.dist
+dist/
+!server/dist/
+!server/dist/index.js
 
 # Environment variables
 .env
