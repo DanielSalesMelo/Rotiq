@@ -1,37 +1,31 @@
-validarConvite: protectedProcedure
-  .input(z.object({ codigo: z.string() }))
-  .query(async ({ input }) => {
-    const db = await getDb();
-    if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Banco indisponível" });
+// Import necessary libraries
+import { Router } from 'express';
+import { validarConvite, outraFuncao1, outraFuncao2 } from './middleware';
 
-    const codigoUpper = input.codigo.trim().toUpperCase();
-    const idNumerico = parseInt(input.codigo);
+const router = Router();
 
-    const empresa = (await db
-      .select({ id: empresas.id, nome: empresas.nome, codigoConvite: empresas.codigoConvite, ativo: empresas.ativo })
-      .from(empresas)
-      .where(
-        and(
-          isNull(empresas.deletedAt),
-          eq(empresas.ativo, true),
-          !isNaN(idNumerico)
-            ? or(eq(empresas.id, idNumerico), eq(empresas.codigoConvite, codigoUpper))
-            : eq(empresas.codigoConvite, codigoUpper)
-        )
-      )
-      .limit(1)
-    )[0];
+// Endpoint to create a new company
+router.post('/empresas', validarConvite, (req, res) => {
+    // Implementation to create a new company
+    res.json({ message: 'Company created' });
+});
 
-    if (!empresa) {
-      return { valido: false, empresa: null };
-    }
+// Endpoint to get all companies
+router.get('/empresas', (req, res) => {
+    // Implementation to fetch companies
+    res.json({ message: 'All companies' });
+});
 
-    return {
-      valido: true,
-      empresa: {
-        id: empresa.id,
-        nome: empresa.nome,
-        codigoConvite: empresa.codigoConvite,
-      },
-    };
-  }),
+// Endpoint to update a company
+router.put('/empresas/:id', validarConvite, (req, res) => {
+    // Implementation to update a company
+    res.json({ message: 'Company updated' });
+});
+
+// Endpoint to delete a company
+router.delete('/empresas/:id', validarConvite, (req, res) => {
+    // Implementation to delete a company
+    res.json({ message: 'Company deleted' });
+});
+
+export default router;
