@@ -14,7 +14,7 @@ import {
   Wallet, BarChart3, Sun, Moon, Monitor, UserCog, Send, RotateCcw,
   Navigation, AlertTriangle, FileText, Bell, Calendar, Gauge,
   ClipboardList, BookOpen, Shield, Settings, Star, ChevronLeft,
-  ChevronRight, Calculator, MessageSquare, Scale, FileSpreadsheet,
+  ChevronRight, Calculator, MessageSquare, Scale, FileSpreadsheet, HelpCircle,
 } from "lucide-react";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useViewAs } from "@/contexts/ViewAsContext";
@@ -86,6 +86,7 @@ const getMenuGroups = (t: any): MenuGroup[] => [
       { icon: BarChart3, label: t("pages.relatorios"), path: "/relatorios" },
       { icon: TrendingUp, label: "Relatórios Avançados", path: "/relatorios-avancados" },
       { icon: FileSpreadsheet, label: "Importar/Exportar", path: "/import-export" },
+      { icon: HelpCircle, label: "Ajuda e Documentação", path: "/ajuda" },
       { icon: UserCog, label: t("common.users"), path: "/usuarios" },
       { icon: Settings, label: t("common.settings"), path: "/empresa" },
     ],

@@ -44,6 +44,7 @@ import AcertoCarga from "./pages/AcertoCarga";
 import Carregamento from "./pages/Carregamento";
 import ImportExport from "./pages/ImportExport";
 import RelatoriosAvancados from "./pages/RelatoriosAvancados";
+import Ajuda from "./pages/Ajuda";
 
 function DashboardRoutes() {
   return (
@@ -104,6 +105,7 @@ function DashboardRoutes() {
         {/* Relatórios e Dados */}
         <Route path="/relatorios-avancados" component={RelatoriosAvancados} />
         <Route path="/import-export" component={ImportExport} />
+        <Route path="/ajuda" component={Ajuda} />
 
         {/* Master */}
         <Route path="/master/painel" component={PainelMaster} />
