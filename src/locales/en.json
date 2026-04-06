@@ -71,7 +71,8 @@
     "permissoes": "Permissions",
     "integracoes": "Integrations",
     "notas_fiscais": "Fiscal Notes",
-    "acerto_carga": "Load Settlement"
+    "acerto_carga": "Load Settlement",
+    "carregamento": "Load Management"
   },
   "chat": {
     "messages": "Messages",

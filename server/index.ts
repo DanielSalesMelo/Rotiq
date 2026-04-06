@@ -90,6 +90,70 @@ async function runMigrations() {
     await rawDb.unsafe(`CREATE INDEX IF NOT EXISTS "idx_acerto_empresa" ON "acertos_carga" ("empresaId")`);
     await rawDb.unsafe(`CREATE INDEX IF NOT EXISTS "idx_acerto_motorista" ON "acertos_carga" ("motoristaId")`);
 
+    // Cria enum status_carregamento se não existir
+    await rawDb.unsafe(`DO $$ BEGIN CREATE TYPE "status_carregamento" AS ENUM ('montando','pronto','em_rota','retornado','encerrado'); EXCEPTION WHEN duplicate_object THEN null; END $$`);
+
+    // Cria tabela carregamentos
+    await rawDb.unsafe(`CREATE TABLE IF NOT EXISTS "carregamentos" (
+      "id" SERIAL PRIMARY KEY,
+      "empresaId" INTEGER NOT NULL,
+      "numero" VARCHAR(20),
+      "data" DATE NOT NULL,
+      "veiculoId" INTEGER,
+      "veiculoPlaca" VARCHAR(10),
+      "motoristaId" INTEGER,
+      "motoristaNome" VARCHAR(255),
+      "ajudanteId" INTEGER,
+      "ajudanteNome" VARCHAR(255),
+      "rotaDescricao" VARCHAR(255),
+      "cidadesRota" TEXT,
+      "status" "status_carregamento" NOT NULL DEFAULT 'montando',
+      "dataSaida" TIMESTAMP,
+      "dataRetorno" TIMESTAMP,
+      "kmSaida" INTEGER,
+      "kmRetorno" INTEGER,
+      "totalNfs" INTEGER DEFAULT 0,
+      "totalVolumes" INTEGER DEFAULT 0,
+      "totalPesoKg" DECIMAL(10,2) DEFAULT 0,
+      "totalValorNfs" DECIMAL(12,2) DEFAULT 0,
+      "observacoes" TEXT,
+      "createdAt" TIMESTAMP NOT NULL DEFAULT NOW(),
+      "updatedAt" TIMESTAMP NOT NULL DEFAULT NOW(),
+      "deletedAt" TIMESTAMP
+    )`);
+    await rawDb.unsafe(`CREATE INDEX IF NOT EXISTS "idx_carg_empresa" ON "carregamentos" ("empresaId")`);
+    await rawDb.unsafe(`CREATE INDEX IF NOT EXISTS "idx_carg_veiculo" ON "carregamentos" ("veiculoId")`);
+
+    // Cria tabela itens_carregamento
+    await rawDb.unsafe(`CREATE TABLE IF NOT EXISTS "itens_carregamento" (
+      "id" SERIAL PRIMARY KEY,
+      "carregamentoId" INTEGER NOT NULL,
+      "empresaId" INTEGER NOT NULL,
+      "numeroNf" VARCHAR(20) NOT NULL,
+      "serie" VARCHAR(5),
+      "chaveAcesso" VARCHAR(44),
+      "destinatario" VARCHAR(255),
+      "cnpjDestinatario" VARCHAR(18),
+      "enderecoEntrega" VARCHAR(500),
+      "cidade" VARCHAR(100),
+      "uf" VARCHAR(2),
+      "valorNf" DECIMAL(12,2),
+      "pesoKg" DECIMAL(8,2),
+      "volumes" INTEGER,
+      "descricaoCarga" VARCHAR(255),
+      "ordemEntrega" INTEGER,
+      "status" "status_nf" NOT NULL DEFAULT 'pendente',
+      "dataCanhoto" TIMESTAMP,
+      "recebidoPor" VARCHAR(255),
+      "motivoDevolucao" TEXT,
+      "observacoes" TEXT,
+      "createdAt" TIMESTAMP NOT NULL DEFAULT NOW(),
+      "updatedAt" TIMESTAMP NOT NULL DEFAULT NOW(),
+      "deletedAt" TIMESTAMP
+    )`);
+    await rawDb.unsafe(`CREATE INDEX IF NOT EXISTS "idx_item_carg" ON "itens_carregamento" ("carregamentoId")`);
+    await rawDb.unsafe(`CREATE INDEX IF NOT EXISTS "idx_item_empresa" ON "itens_carregamento" ("empresaId")`);
+
     console.log("[Migration] Migrações aplicadas com sucesso");
   } catch (err) {
     console.error("[Migration] Erro ao aplicar migrações:", err);

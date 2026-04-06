@@ -71,7 +71,8 @@
     "permissoes": "權限",
     "integracoes": "整合",
     "notas_fiscais": "财务票据",
-    "acerto_carga": "货物结算"
+    "acerto_carga": "货物结算",
+    "carregamento": "装货管理"
   },
   "chat": {
     "messages": "訊息",

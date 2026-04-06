@@ -48,6 +48,7 @@ const getMenuGroups = (t: any): MenuGroup[] => [
     label: t("menu.operacional"),
     items: [
       { icon: Navigation, label: t("pages.viagens"), path: "/viagens" },
+      { icon: ClipboardList, label: t("pages.carregamento") || "Carregamento", path: "/carregamento" },
       { icon: FileText, label: t("pages.notas_fiscais") || "Notas Fiscais", path: "/notas-fiscais" },
       { icon: Scale, label: t("pages.acerto_carga") || "Acerto de Carga", path: "/acerto-carga" },
       { icon: Fuel, label: t("pages.abastecimentos"), path: "/abastecimentos" },

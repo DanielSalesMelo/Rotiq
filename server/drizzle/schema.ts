@@ -586,3 +586,82 @@ export const acertosCarga = pgTable("acertos_carga", {
 });
 
 export type AcertoCarga = typeof acertosCarga.$inferSelect;
+
+// ─── CARREGAMENTO / ROMANEIO ──────────────────────────────────────────────────
+export const statusCarregamentoEnum = pgEnum("status_carregamento", [
+  "montando",    // carga sendo montada
+  "pronto",      // carga montada, aguardando saída
+  "em_rota",     // veículo saiu com a carga
+  "retornado",   // veículo retornou
+  "encerrado",   // carregamento finalizado e conferido
+]);
+
+export const carregamentos = pgTable("carregamentos", {
+  id: serial("id").primaryKey(),
+  empresaId: integer("empresaId").notNull(),
+  // Identificação
+  numero: varchar("numero", { length: 20 }),          // número do carregamento (ex: CARG-001)
+  data: date("data").notNull(),
+  // Veículo e motorista
+  veiculoId: integer("veiculoId"),
+  veiculoPlaca: varchar("veiculoPlaca", { length: 10 }),
+  motoristaId: integer("motoristaId"),
+  motoristaNome: varchar("motoristaNome", { length: 255 }),
+  ajudanteId: integer("ajudanteId"),
+  ajudanteNome: varchar("ajudanteNome", { length: 255 }),
+  // Rota
+  rotaDescricao: varchar("rotaDescricao", { length: 255 }),
+  cidadesRota: text("cidadesRota"),                    // JSON array de cidades
+  // Status e datas
+  status: statusCarregamentoEnum("status").default("montando").notNull(),
+  dataSaida: timestamp("dataSaida"),
+  dataRetorno: timestamp("dataRetorno"),
+  kmSaida: integer("kmSaida"),
+  kmRetorno: integer("kmRetorno"),
+  // Totais (calculados)
+  totalNfs: integer("totalNfs").default(0),
+  totalVolumes: integer("totalVolumes").default(0),
+  totalPesoKg: decimal("totalPesoKg", { precision: 10, scale: 2 }).default("0"),
+  totalValorNfs: decimal("totalValorNfs", { precision: 12, scale: 2 }).default("0"),
+  // Observações
+  observacoes: text("observacoes"),
+  // Auditoria
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+  deletedAt: timestamp("deletedAt"),
+});
+
+export const itensCarregamento = pgTable("itens_carregamento", {
+  id: serial("id").primaryKey(),
+  carregamentoId: integer("carregamentoId").notNull(),
+  empresaId: integer("empresaId").notNull(),
+  // Dados da NF
+  numeroNf: varchar("numeroNf", { length: 20 }).notNull(),
+  serie: varchar("serie", { length: 5 }),
+  chaveAcesso: varchar("chaveAcesso", { length: 44 }),
+  // Destinatário
+  destinatario: varchar("destinatario", { length: 255 }),
+  cnpjDestinatario: varchar("cnpjDestinatario", { length: 18 }),
+  enderecoEntrega: varchar("enderecoEntrega", { length: 500 }),
+  cidade: varchar("cidade", { length: 100 }),
+  uf: varchar("uf", { length: 2 }),
+  // Carga
+  valorNf: decimal("valorNf", { precision: 12, scale: 2 }),
+  pesoKg: decimal("pesoKg", { precision: 8, scale: 2 }),
+  volumes: integer("volumes"),
+  descricaoCarga: varchar("descricaoCarga", { length: 255 }),
+  // Ordem e status de entrega
+  ordemEntrega: integer("ordemEntrega"),
+  status: statusNfEnum("status").default("pendente").notNull(),
+  dataCanhoto: timestamp("dataCanhoto"),
+  recebidoPor: varchar("recebidoPor", { length: 255 }),
+  motivoDevolucao: text("motivoDevolucao"),
+  observacoes: text("observacoes"),
+  // Auditoria
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+  deletedAt: timestamp("deletedAt"),
+});
+
+export type Carregamento = typeof carregamentos.$inferSelect;
+export type ItemCarregamento = typeof itensCarregamento.$inferSelect;

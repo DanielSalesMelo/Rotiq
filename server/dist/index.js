@@ -750,6 +750,85 @@ var acertosCarga = pgTable("acertos_carga", {
   updatedAt: timestamp("updatedAt").defaultNow().notNull(),
   deletedAt: timestamp("deletedAt")
 });
+var statusCarregamentoEnum = pgEnum("status_carregamento", [
+  "montando",
+  // carga sendo montada
+  "pronto",
+  // carga montada, aguardando saída
+  "em_rota",
+  // veículo saiu com a carga
+  "retornado",
+  // veículo retornou
+  "encerrado"
+  // carregamento finalizado e conferido
+]);
+var carregamentos = pgTable("carregamentos", {
+  id: serial("id").primaryKey(),
+  empresaId: integer("empresaId").notNull(),
+  // Identificação
+  numero: varchar("numero", { length: 20 }),
+  // número do carregamento (ex: CARG-001)
+  data: date("data").notNull(),
+  // Veículo e motorista
+  veiculoId: integer("veiculoId"),
+  veiculoPlaca: varchar("veiculoPlaca", { length: 10 }),
+  motoristaId: integer("motoristaId"),
+  motoristaNome: varchar("motoristaNome", { length: 255 }),
+  ajudanteId: integer("ajudanteId"),
+  ajudanteNome: varchar("ajudanteNome", { length: 255 }),
+  // Rota
+  rotaDescricao: varchar("rotaDescricao", { length: 255 }),
+  cidadesRota: text("cidadesRota"),
+  // JSON array de cidades
+  // Status e datas
+  status: statusCarregamentoEnum("status").default("montando").notNull(),
+  dataSaida: timestamp("dataSaida"),
+  dataRetorno: timestamp("dataRetorno"),
+  kmSaida: integer("kmSaida"),
+  kmRetorno: integer("kmRetorno"),
+  // Totais (calculados)
+  totalNfs: integer("totalNfs").default(0),
+  totalVolumes: integer("totalVolumes").default(0),
+  totalPesoKg: decimal("totalPesoKg", { precision: 10, scale: 2 }).default("0"),
+  totalValorNfs: decimal("totalValorNfs", { precision: 12, scale: 2 }).default("0"),
+  // Observações
+  observacoes: text("observacoes"),
+  // Auditoria
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+  deletedAt: timestamp("deletedAt")
+});
+var itensCarregamento = pgTable("itens_carregamento", {
+  id: serial("id").primaryKey(),
+  carregamentoId: integer("carregamentoId").notNull(),
+  empresaId: integer("empresaId").notNull(),
+  // Dados da NF
+  numeroNf: varchar("numeroNf", { length: 20 }).notNull(),
+  serie: varchar("serie", { length: 5 }),
+  chaveAcesso: varchar("chaveAcesso", { length: 44 }),
+  // Destinatário
+  destinatario: varchar("destinatario", { length: 255 }),
+  cnpjDestinatario: varchar("cnpjDestinatario", { length: 18 }),
+  enderecoEntrega: varchar("enderecoEntrega", { length: 500 }),
+  cidade: varchar("cidade", { length: 100 }),
+  uf: varchar("uf", { length: 2 }),
+  // Carga
+  valorNf: decimal("valorNf", { precision: 12, scale: 2 }),
+  pesoKg: decimal("pesoKg", { precision: 8, scale: 2 }),
+  volumes: integer("volumes"),
+  descricaoCarga: varchar("descricaoCarga", { length: 255 }),
+  // Ordem e status de entrega
+  ordemEntrega: integer("ordemEntrega"),
+  status: statusNfEnum("status").default("pendente").notNull(),
+  dataCanhoto: timestamp("dataCanhoto"),
+  recebidoPor: varchar("recebidoPor", { length: 255 }),
+  motivoDevolucao: text("motivoDevolucao"),
+  observacoes: text("observacoes"),
+  // Auditoria
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+  deletedAt: timestamp("deletedAt")
+});
 
 // db.ts
 dotenv.config({ path: path.resolve(process.cwd(), "..", ".env") });
@@ -3608,6 +3687,269 @@ var acertosCargaRouter = router({
   })
 });
 
+// routers/carregamentos.ts
+import { eq as eq14, and as and11, isNull as isNull10, desc as desc11 } from "drizzle-orm";
+import { z as z15 } from "zod";
+var statusCarregamentoEnum2 = z15.enum(["montando", "pronto", "em_rota", "retornado", "encerrado"]);
+var statusNfEnum2 = z15.enum(["pendente", "entregue", "devolvida", "parcial", "extraviada"]);
+var itemInput = z15.object({
+  carregamentoId: z15.number(),
+  empresaId: z15.number(),
+  numeroNf: z15.string().min(1),
+  serie: z15.string().optional(),
+  chaveAcesso: z15.string().optional(),
+  destinatario: z15.string().optional(),
+  cnpjDestinatario: z15.string().optional(),
+  enderecoEntrega: z15.string().optional(),
+  cidade: z15.string().optional(),
+  uf: z15.string().max(2).optional(),
+  valorNf: z15.string().optional(),
+  pesoKg: z15.string().optional(),
+  volumes: z15.number().optional(),
+  descricaoCarga: z15.string().optional(),
+  ordemEntrega: z15.number().optional(),
+  observacoes: z15.string().optional()
+});
+async function recalcularTotais(db, carregamentoId) {
+  const itens = await db.select().from(itensCarregamento).where(
+    and11(
+      eq14(itensCarregamento.carregamentoId, carregamentoId),
+      isNull10(itensCarregamento.deletedAt)
+    )
+  );
+  const totalNfs = itens.length;
+  const totalVolumes = itens.reduce((acc, i) => acc + (Number(i.volumes) || 0), 0);
+  const totalPesoKg = itens.reduce((acc, i) => acc + (Number(i.pesoKg) || 0), 0);
+  const totalValorNfs = itens.reduce((acc, i) => acc + (Number(i.valorNf) || 0), 0);
+  await db.update(carregamentos).set({
+    totalNfs,
+    totalVolumes,
+    totalPesoKg: totalPesoKg.toFixed(2),
+    totalValorNfs: totalValorNfs.toFixed(2),
+    updatedAt: /* @__PURE__ */ new Date()
+  }).where(eq14(carregamentos.id, carregamentoId));
+}
+async function gerarNumero(db, empresaId) {
+  const rows = await db.select({ id: carregamentos.id }).from(carregamentos).where(eq14(carregamentos.empresaId, empresaId)).orderBy(desc11(carregamentos.id)).limit(1);
+  const seq = rows.length > 0 ? rows[0].id + 1 : 1;
+  return `CARG-${String(seq).padStart(4, "0")}`;
+}
+var carregamentosRouter = router({
+  // ─── Listar carregamentos ──────────────────────────────────────────────────
+  list: protectedProcedure.input(
+    z15.object({
+      empresaId: z15.number(),
+      status: statusCarregamentoEnum2.optional()
+    })
+  ).query(async ({ input }) => {
+    return safeDb(async () => {
+      const db = requireDb(await getDb(), "carregamentos.list");
+      const conditions = [
+        eq14(carregamentos.empresaId, input.empresaId),
+        isNull10(carregamentos.deletedAt)
+      ];
+      if (input.status) conditions.push(eq14(carregamentos.status, input.status));
+      return db.select().from(carregamentos).where(and11(...conditions)).orderBy(desc11(carregamentos.createdAt));
+    }, "carregamentos.list");
+  }),
+  // ─── Buscar carregamento por ID com itens ──────────────────────────────────
+  getById: protectedProcedure.input(z15.object({ id: z15.number() })).query(async ({ input }) => {
+    return safeDb(async () => {
+      const db = requireDb(await getDb(), "carregamentos.getById");
+      const [carg] = await db.select().from(carregamentos).where(and11(eq14(carregamentos.id, input.id), isNull10(carregamentos.deletedAt))).limit(1);
+      if (!carg) return null;
+      const itens = await db.select().from(itensCarregamento).where(
+        and11(
+          eq14(itensCarregamento.carregamentoId, input.id),
+          isNull10(itensCarregamento.deletedAt)
+        )
+      ).orderBy(itensCarregamento.ordemEntrega);
+      return { ...carg, itens };
+    }, "carregamentos.getById");
+  }),
+  // ─── Criar carregamento ────────────────────────────────────────────────────
+  create: protectedProcedure.input(
+    z15.object({
+      empresaId: z15.number(),
+      data: z15.string(),
+      veiculoId: z15.number().optional(),
+      veiculoPlaca: z15.string().optional(),
+      motoristaId: z15.number().optional(),
+      motoristaNome: z15.string().optional(),
+      ajudanteId: z15.number().optional(),
+      ajudanteNome: z15.string().optional(),
+      rotaDescricao: z15.string().optional(),
+      cidadesRota: z15.string().optional(),
+      observacoes: z15.string().optional()
+    })
+  ).mutation(async ({ input }) => {
+    return safeDb(async () => {
+      const db = requireDb(await getDb(), "carregamentos.create");
+      const numero = await gerarNumero(db, input.empresaId);
+      const [result] = await db.insert(carregamentos).values({
+        ...input,
+        numero,
+        status: "montando"
+      });
+      return { id: result.insertId, numero };
+    }, "carregamentos.create");
+  }),
+  // ─── Atualizar carregamento ────────────────────────────────────────────────
+  update: protectedProcedure.input(
+    z15.object({
+      id: z15.number(),
+      data: z15.string().optional(),
+      veiculoId: z15.number().optional(),
+      veiculoPlaca: z15.string().optional(),
+      motoristaId: z15.number().optional(),
+      motoristaNome: z15.string().optional(),
+      ajudanteId: z15.number().optional(),
+      ajudanteNome: z15.string().optional(),
+      rotaDescricao: z15.string().optional(),
+      cidadesRota: z15.string().optional(),
+      observacoes: z15.string().optional()
+    })
+  ).mutation(async ({ input }) => {
+    return safeDb(async () => {
+      const db = requireDb(await getDb(), "carregamentos.update");
+      const { id, ...data } = input;
+      await db.update(carregamentos).set({ ...data, updatedAt: /* @__PURE__ */ new Date() }).where(eq14(carregamentos.id, id));
+      return { success: true };
+    }, "carregamentos.update");
+  }),
+  // ─── Registrar saída ──────────────────────────────────────────────────────
+  registrarSaida: protectedProcedure.input(
+    z15.object({
+      id: z15.number(),
+      dataSaida: z15.string(),
+      kmSaida: z15.number().optional()
+    })
+  ).mutation(async ({ input }) => {
+    return safeDb(async () => {
+      const db = requireDb(await getDb(), "carregamentos.registrarSaida");
+      await db.update(carregamentos).set({
+        status: "em_rota",
+        dataSaida: new Date(input.dataSaida),
+        kmSaida: input.kmSaida,
+        updatedAt: /* @__PURE__ */ new Date()
+      }).where(eq14(carregamentos.id, input.id));
+      return { success: true };
+    }, "carregamentos.registrarSaida");
+  }),
+  // ─── Registrar retorno ────────────────────────────────────────────────────
+  registrarRetorno: protectedProcedure.input(
+    z15.object({
+      id: z15.number(),
+      dataRetorno: z15.string(),
+      kmRetorno: z15.number().optional(),
+      observacoes: z15.string().optional()
+    })
+  ).mutation(async ({ input }) => {
+    return safeDb(async () => {
+      const db = requireDb(await getDb(), "carregamentos.registrarRetorno");
+      await db.update(carregamentos).set({
+        status: "retornado",
+        dataRetorno: new Date(input.dataRetorno),
+        kmRetorno: input.kmRetorno,
+        observacoes: input.observacoes,
+        updatedAt: /* @__PURE__ */ new Date()
+      }).where(eq14(carregamentos.id, input.id));
+      return { success: true };
+    }, "carregamentos.registrarRetorno");
+  }),
+  // ─── Encerrar carregamento ────────────────────────────────────────────────
+  encerrar: protectedProcedure.input(z15.object({ id: z15.number() })).mutation(async ({ input }) => {
+    return safeDb(async () => {
+      const db = requireDb(await getDb(), "carregamentos.encerrar");
+      await db.update(carregamentos).set({ status: "encerrado", updatedAt: /* @__PURE__ */ new Date() }).where(eq14(carregamentos.id, input.id));
+      return { success: true };
+    }, "carregamentos.encerrar");
+  }),
+  // ─── Marcar como pronto ───────────────────────────────────────────────────
+  marcarPronto: protectedProcedure.input(z15.object({ id: z15.number() })).mutation(async ({ input }) => {
+    return safeDb(async () => {
+      const db = requireDb(await getDb(), "carregamentos.marcarPronto");
+      await db.update(carregamentos).set({ status: "pronto", updatedAt: /* @__PURE__ */ new Date() }).where(eq14(carregamentos.id, input.id));
+      return { success: true };
+    }, "carregamentos.marcarPronto");
+  }),
+  // ─── Remover carregamento (soft delete) ───────────────────────────────────
+  remove: protectedProcedure.input(z15.object({ id: z15.number() })).mutation(async ({ input }) => {
+    return safeDb(async () => {
+      const db = requireDb(await getDb(), "carregamentos.remove");
+      await db.update(carregamentos).set({ deletedAt: /* @__PURE__ */ new Date() }).where(eq14(carregamentos.id, input.id));
+      return { success: true };
+    }, "carregamentos.remove");
+  }),
+  // ─── ITENS ────────────────────────────────────────────────────────────────
+  // Listar itens de um carregamento
+  listItens: protectedProcedure.input(z15.object({ carregamentoId: z15.number() })).query(async ({ input }) => {
+    return safeDb(async () => {
+      const db = requireDb(await getDb(), "carregamentos.listItens");
+      return db.select().from(itensCarregamento).where(
+        and11(
+          eq14(itensCarregamento.carregamentoId, input.carregamentoId),
+          isNull10(itensCarregamento.deletedAt)
+        )
+      ).orderBy(itensCarregamento.ordemEntrega);
+    }, "carregamentos.listItens");
+  }),
+  // Adicionar item (NF) ao carregamento
+  addItem: protectedProcedure.input(itemInput).mutation(async ({ input }) => {
+    return safeDb(async () => {
+      const db = requireDb(await getDb(), "carregamentos.addItem");
+      const [result] = await db.insert(itensCarregamento).values({
+        ...input,
+        status: "pendente"
+      });
+      await recalcularTotais(db, input.carregamentoId);
+      return { id: result.insertId };
+    }, "carregamentos.addItem");
+  }),
+  // Atualizar item
+  updateItem: protectedProcedure.input(itemInput.extend({ id: z15.number() })).mutation(async ({ input }) => {
+    return safeDb(async () => {
+      const db = requireDb(await getDb(), "carregamentos.updateItem");
+      const { id, ...data } = input;
+      await db.update(itensCarregamento).set({ ...data, updatedAt: /* @__PURE__ */ new Date() }).where(eq14(itensCarregamento.id, id));
+      await recalcularTotais(db, input.carregamentoId);
+      return { success: true };
+    }, "carregamentos.updateItem");
+  }),
+  // Atualizar status do item (entrega)
+  updateItemStatus: protectedProcedure.input(
+    z15.object({
+      id: z15.number(),
+      carregamentoId: z15.number(),
+      status: statusNfEnum2,
+      dataCanhoto: z15.string().optional(),
+      recebidoPor: z15.string().optional(),
+      motivoDevolucao: z15.string().optional(),
+      observacoes: z15.string().optional()
+    })
+  ).mutation(async ({ input }) => {
+    return safeDb(async () => {
+      const db = requireDb(await getDb(), "carregamentos.updateItemStatus");
+      const { id, carregamentoId, ...data } = input;
+      await db.update(itensCarregamento).set({
+        ...data,
+        dataCanhoto: data.dataCanhoto ? new Date(data.dataCanhoto) : void 0,
+        updatedAt: /* @__PURE__ */ new Date()
+      }).where(eq14(itensCarregamento.id, id));
+      return { success: true };
+    }, "carregamentos.updateItemStatus");
+  }),
+  // Remover item
+  removeItem: protectedProcedure.input(z15.object({ id: z15.number(), carregamentoId: z15.number() })).mutation(async ({ input }) => {
+    return safeDb(async () => {
+      const db = requireDb(await getDb(), "carregamentos.removeItem");
+      await db.update(itensCarregamento).set({ deletedAt: /* @__PURE__ */ new Date() }).where(eq14(itensCarregamento.id, input.id));
+      await recalcularTotais(db, input.carregamentoId);
+      return { success: true };
+    }, "carregamentos.removeItem");
+  })
+});
+
 // routers.ts
 var appRouter = router({
   system: systemRouter,
@@ -3623,7 +3965,8 @@ var appRouter = router({
   custos: custosRouter,
   multas: multasRouter,
   notasFiscais: notasFiscaisRouter,
-  acertosCarga: acertosCargaRouter
+  acertosCarga: acertosCargaRouter,
+  carregamentos: carregamentosRouter
 });
 
 // _core/context.ts
@@ -3716,6 +4059,64 @@ async function runMigrations() {
     await rawDb.unsafe(`CREATE INDEX IF NOT EXISTS "idx_acerto_viagem" ON "acertos_carga" ("viagemId")`);
     await rawDb.unsafe(`CREATE INDEX IF NOT EXISTS "idx_acerto_empresa" ON "acertos_carga" ("empresaId")`);
     await rawDb.unsafe(`CREATE INDEX IF NOT EXISTS "idx_acerto_motorista" ON "acertos_carga" ("motoristaId")`);
+    await rawDb.unsafe(`DO $$ BEGIN CREATE TYPE "status_carregamento" AS ENUM ('montando','pronto','em_rota','retornado','encerrado'); EXCEPTION WHEN duplicate_object THEN null; END $$`);
+    await rawDb.unsafe(`CREATE TABLE IF NOT EXISTS "carregamentos" (
+      "id" SERIAL PRIMARY KEY,
+      "empresaId" INTEGER NOT NULL,
+      "numero" VARCHAR(20),
+      "data" DATE NOT NULL,
+      "veiculoId" INTEGER,
+      "veiculoPlaca" VARCHAR(10),
+      "motoristaId" INTEGER,
+      "motoristaNome" VARCHAR(255),
+      "ajudanteId" INTEGER,
+      "ajudanteNome" VARCHAR(255),
+      "rotaDescricao" VARCHAR(255),
+      "cidadesRota" TEXT,
+      "status" "status_carregamento" NOT NULL DEFAULT 'montando',
+      "dataSaida" TIMESTAMP,
+      "dataRetorno" TIMESTAMP,
+      "kmSaida" INTEGER,
+      "kmRetorno" INTEGER,
+      "totalNfs" INTEGER DEFAULT 0,
+      "totalVolumes" INTEGER DEFAULT 0,
+      "totalPesoKg" DECIMAL(10,2) DEFAULT 0,
+      "totalValorNfs" DECIMAL(12,2) DEFAULT 0,
+      "observacoes" TEXT,
+      "createdAt" TIMESTAMP NOT NULL DEFAULT NOW(),
+      "updatedAt" TIMESTAMP NOT NULL DEFAULT NOW(),
+      "deletedAt" TIMESTAMP
+    )`);
+    await rawDb.unsafe(`CREATE INDEX IF NOT EXISTS "idx_carg_empresa" ON "carregamentos" ("empresaId")`);
+    await rawDb.unsafe(`CREATE INDEX IF NOT EXISTS "idx_carg_veiculo" ON "carregamentos" ("veiculoId")`);
+    await rawDb.unsafe(`CREATE TABLE IF NOT EXISTS "itens_carregamento" (
+      "id" SERIAL PRIMARY KEY,
+      "carregamentoId" INTEGER NOT NULL,
+      "empresaId" INTEGER NOT NULL,
+      "numeroNf" VARCHAR(20) NOT NULL,
+      "serie" VARCHAR(5),
+      "chaveAcesso" VARCHAR(44),
+      "destinatario" VARCHAR(255),
+      "cnpjDestinatario" VARCHAR(18),
+      "enderecoEntrega" VARCHAR(500),
+      "cidade" VARCHAR(100),
+      "uf" VARCHAR(2),
+      "valorNf" DECIMAL(12,2),
+      "pesoKg" DECIMAL(8,2),
+      "volumes" INTEGER,
+      "descricaoCarga" VARCHAR(255),
+      "ordemEntrega" INTEGER,
+      "status" "status_nf" NOT NULL DEFAULT 'pendente',
+      "dataCanhoto" TIMESTAMP,
+      "recebidoPor" VARCHAR(255),
+      "motivoDevolucao" TEXT,
+      "observacoes" TEXT,
+      "createdAt" TIMESTAMP NOT NULL DEFAULT NOW(),
+      "updatedAt" TIMESTAMP NOT NULL DEFAULT NOW(),
+      "deletedAt" TIMESTAMP
+    )`);
+    await rawDb.unsafe(`CREATE INDEX IF NOT EXISTS "idx_item_carg" ON "itens_carregamento" ("carregamentoId")`);
+    await rawDb.unsafe(`CREATE INDEX IF NOT EXISTS "idx_item_empresa" ON "itens_carregamento" ("empresaId")`);
     console.log("[Migration] Migra\xE7\xF5es aplicadas com sucesso");
   } catch (err) {
     console.error("[Migration] Erro ao aplicar migra\xE7\xF5es:", err);

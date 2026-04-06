@@ -71,7 +71,8 @@
     "permissoes": "Permisos",
     "integracoes": "Integraciones",
     "notas_fiscais": "Notas Fiscales",
-    "acerto_carga": "Liquidación de Carga"
+    "acerto_carga": "Liquidación de Carga",
+    "carregamento": "Carga"
   },
   "chat": {
     "messages": "Mensajes",
