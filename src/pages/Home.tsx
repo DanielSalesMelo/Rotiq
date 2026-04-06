@@ -1,18 +1,84 @@
+import { useState } from "react";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import {
   Truck, BarChart3, Users, Fuel, Wrench, Shield, ArrowRight,
   MapPin, FileText, Package, DollarSign, Bell, CheckSquare,
-  Zap, Globe, ChevronRight, Star, TrendingUp, Clock, Lock,
+  Zap, Globe, ChevronRight, Star, TrendingUp, Clock, Lock, X,
 } from "lucide-react";
 import { useLocation } from "wouter";
 import { useTranslation } from "react-i18next";
+
+// ─── Tipo dos módulos ───────────────────────────────────────────────────────
+type ModuleItem = {
+  icon: React.ElementType; label: string; color: string; bg: string;
+  border: string; route: string; tagline: string; desc: string; features: string[];
+};
+
+// ─── Modal ───────────────────────────────────────────────────────────────────
+function ModuleModal({ mod, lang, onClose, onAccess }: {
+  mod: ModuleItem; lang: string; onClose: () => void; onAccess: () => void;
+}) {
+  const Icon = mod.icon;
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={onClose}>
+      <div className="absolute inset-0 bg-black/75 backdrop-blur-sm" />
+      <div
+        className={`relative w-full max-w-lg rounded-3xl border ${mod.border} bg-[#0f0f1a] overflow-hidden shadow-2xl`}
+        onClick={(e) => e.stopPropagation()}
+        style={{ animation: "modalIn 0.2s ease-out" }}
+      >
+        <style>{`@keyframes modalIn{from{opacity:0;transform:scale(.95) translateY(8px)}to{opacity:1;transform:scale(1) translateY(0)}}`}</style>
+        <div className={`h-1 w-full ${mod.bg}`} style={{ opacity: 0.9 }} />
+        <div className="p-6 pb-4 flex items-start justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <div className={`h-14 w-14 rounded-2xl ${mod.bg} flex items-center justify-center flex-shrink-0`}>
+              <Icon className={`h-7 w-7 ${mod.color}`} />
+            </div>
+            <div>
+              <h2 className="text-xl font-bold text-white">{mod.label}</h2>
+              <p className={`text-sm font-medium ${mod.color} mt-0.5`}>{mod.tagline}</p>
+            </div>
+          </div>
+          <button onClick={onClose} className="h-8 w-8 rounded-full bg-white/5 hover:bg-white/15 flex items-center justify-center transition-colors flex-shrink-0 mt-1">
+            <X className="h-4 w-4 text-white/60" />
+          </button>
+        </div>
+        <div className="px-6 pb-4">
+          <p className="text-white/55 text-sm leading-relaxed">{mod.desc}</p>
+        </div>
+        <div className="px-6 pb-6">
+          <p className="text-xs font-semibold text-white/30 uppercase tracking-wider mb-3">
+            {lang === "pt" ? "Funcionalidades incluídas" : "Included features"}
+          </p>
+          <ul className="space-y-2">
+            {mod.features.map((f, i) => (
+              <li key={i} className="flex items-start gap-2.5 text-sm text-white/65">
+                <span className={`inline-block h-1.5 w-1.5 rounded-full mt-1.5 flex-shrink-0 ${mod.color.replace("text-","bg-")}`} />
+                {f}
+              </li>
+            ))}
+          </ul>
+        </div>
+        <div className={`px-6 py-4 border-t ${mod.border} bg-white/2 flex items-center justify-between gap-4`}>
+          <p className="text-xs text-white/30">{lang === "pt" ? "Disponível no sistema" : "Available in the system"}</p>
+          <Button size="sm" onClick={onAccess}
+            className={`border ${mod.border} text-sm font-semibold px-4 bg-white/5 hover:bg-white/10 ${mod.color}`}>
+            {lang === "pt" ? "Acessar módulo" : "Access module"}
+            <ChevronRight className="ml-1 h-4 w-4" />
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function Home() {
   const { loading } = useAuth();
   const [, setLocation] = useLocation();
   const { i18n } = useTranslation();
   const lang = i18n.language || "pt";
+  const [selectedModule, setSelectedModule] = useState<number | null>(null);
 
   if (loading) {
     return (
@@ -22,19 +88,55 @@ export default function Home() {
     );
   }
 
-  const modules = [
-    { icon: Truck,       label: lang === "pt" ? "Viagens"        : "Trips",        color: "text-blue-400",   bg: "bg-blue-500/10" },
-    { icon: Package,     label: lang === "pt" ? "Carregamento"   : "Loading",      color: "text-purple-400", bg: "bg-purple-500/10" },
-    { icon: FileText,    label: lang === "pt" ? "Notas Fiscais"  : "Invoices",     color: "text-green-400",  bg: "bg-green-500/10" },
-    { icon: DollarSign,  label: lang === "pt" ? "Acerto de Carga": "Settlement",   color: "text-yellow-400", bg: "bg-yellow-500/10" },
-    { icon: Fuel,        label: lang === "pt" ? "Abastecimentos" : "Fuel",         color: "text-orange-400", bg: "bg-orange-500/10" },
-    { icon: Wrench,      label: lang === "pt" ? "Manutenções"    : "Maintenance",  color: "text-red-400",    bg: "bg-red-500/10" },
-    { icon: Users,       label: lang === "pt" ? "Motoristas"     : "Drivers",      color: "text-cyan-400",   bg: "bg-cyan-500/10" },
-    { icon: CheckSquare, label: lang === "pt" ? "Checklist"      : "Checklist",    color: "text-teal-400",   bg: "bg-teal-500/10" },
-    { icon: BarChart3,   label: lang === "pt" ? "Financeiro"     : "Financial",    color: "text-indigo-400", bg: "bg-indigo-500/10" },
-    { icon: MapPin,      label: lang === "pt" ? "Despachante"    : "Dispatcher",   color: "text-pink-400",   bg: "bg-pink-500/10" },
-    { icon: Bell,        label: lang === "pt" ? "Alertas"        : "Alerts",       color: "text-amber-400",  bg: "bg-amber-500/10" },
-    { icon: Zap,         label: lang === "pt" ? "Integrações"    : "Integrations", color: "text-lime-400",   bg: "bg-lime-500/10" },
+  const modules: ModuleItem[] = [
+    { icon: Truck,       label: lang === "pt" ? "Viagens"         : "Trips",        color: "text-blue-400",   bg: "bg-blue-500/10",   border: "border-blue-500/30",   route: "/viagens",
+      tagline: lang === "pt" ? "Controle total de cada rota percorrida" : "Full control of every route",
+      desc: lang === "pt" ? "Crie, acompanhe e encerre viagens de transporte. Vincule motoristas, veículos, notas fiscais e calcule automaticamente KM rodado e consumo de combustível." : "Create, track and close transport trips. Link drivers, vehicles, invoices and automatically calculate mileage and fuel consumption.",
+      features: lang === "pt" ? ["Criação rápida com seleção de motorista e veículo","Status: Planejada → Em Andamento → Concluída","Vinculação de múltiplas Notas Fiscais por viagem","Cálculo automático de KM rodado e consumo","Histórico completo por motorista e veículo","Integração direta com Acerto de Carga"] : ["Quick creation with driver and vehicle selection","Status: Planned → In Progress → Completed","Link multiple invoices per trip","Automatic mileage and fuel consumption calculation","Complete history by driver and vehicle","Direct integration with Cargo Settlement"] },
+    { icon: Package,     label: lang === "pt" ? "Carregamento"    : "Loading",      color: "text-purple-400", bg: "bg-purple-500/10", border: "border-purple-500/30", route: "/carregamento",
+      tagline: lang === "pt" ? "Monte a carga e gere o romaneio em segundos" : "Build the load and generate the manifest in seconds",
+      desc: lang === "pt" ? "Organize todas as notas fiscais de uma carga, defina a ordem de entrega e gere o Romaneio em PDF automaticamente para o motorista." : "Organize all invoices for a load, define delivery order and automatically generate a PDF Manifest for the driver.",
+      features: lang === "pt" ? ["Montagem visual da carga com lista de NFs","Geração automática de Romaneio em PDF","Controle de peso total e número de volumes","Registro de canhoto (comprovante de entrega)","Rastreamento de status por NF: entregue, devolvida, ocorrência","Histórico de carregamentos por veículo"] : ["Visual load assembly with invoice list","Automatic PDF Manifest generation","Total weight and volume count control","Proof of delivery registration","Status tracking per invoice: delivered, returned, incident","Loading history by vehicle"] },
+    { icon: FileText,    label: lang === "pt" ? "Notas Fiscais"   : "Invoices",     color: "text-green-400",  bg: "bg-green-500/10",  border: "border-green-500/30",  route: "/notas-fiscais",
+      tagline: lang === "pt" ? "Rastreie cada NF-e do início ao fim" : "Track every invoice from start to finish",
+      desc: lang === "pt" ? "Controle o ciclo de vida completo de cada Nota Fiscal: emissão, trânsito, entrega ou devolução. Integração com Arquivei para download de XML e DANFE." : "Control the full lifecycle of each invoice: issuance, transit, delivery or return. Integration with Arquivei for XML and DANFE download.",
+      features: lang === "pt" ? ["Status: Pendente, Em Trânsito, Entregue, Devolvida, Ocorrência","Busca por número ou chave de acesso (44 dígitos)","Download de XML e DANFE via integração Arquivei","Vinculação automática com viagem e carregamento","Alertas de NFs em aberto há mais de X dias","Relatório por período, motorista ou destinatário"] : ["Status: Pending, In Transit, Delivered, Returned, Incident","Search by number or access key (44 digits)","XML and DANFE download via Arquivei integration","Automatic link with trip and loading","Alerts for open invoices older than X days","Report by period, driver or recipient"] },
+    { icon: DollarSign,  label: lang === "pt" ? "Acerto de Carga" : "Settlement",   color: "text-yellow-400", bg: "bg-yellow-500/10", border: "border-yellow-500/30", route: "/acerto",
+      tagline: lang === "pt" ? "Feche o financeiro de cada viagem com precisão" : "Close the financials for each trip accurately",
+      desc: lang === "pt" ? "Calcule automaticamente a comissão do motorista, desconte adiantamentos e outros débitos, e gere o comprovante de pagamento em PDF." : "Automatically calculate driver commission, deduct advances and other debits, and generate a PDF payment receipt.",
+      features: lang === "pt" ? ["Cálculo automático: Frete × % Comissão","Desconto automático de adiantamentos registrados","Campos para outros descontos (multas, combustível, danos)","Campos para acréscimos (bônus, ajuda de custo)","Geração de comprovante de pagamento em PDF","Histórico de acertos por motorista"] : ["Automatic calculation: Freight × % Commission","Automatic deduction of registered advances","Fields for other deductions (fines, fuel, damages)","Fields for additions (bonus, expense allowance)","PDF payment receipt generation","Settlement history by driver"] },
+    { icon: Fuel,        label: lang === "pt" ? "Abastecimentos"  : "Fuel",         color: "text-orange-400", bg: "bg-orange-500/10", border: "border-orange-500/30", route: "/abastecimentos",
+      tagline: lang === "pt" ? "Controle cada litro da sua frota" : "Control every liter of your fleet",
+      desc: lang === "pt" ? "Registre abastecimentos externos e movimentações do tanque interno. O sistema calcula automaticamente o consumo médio (km/l) por veículo." : "Record external refueling and internal tank movements. The system automatically calculates average consumption (km/l) per vehicle.",
+      features: lang === "pt" ? ["Registro de abastecimentos externos e tanque interno","Controle de estoque de Diesel e ARLA","Cálculo automático de consumo médio (km/l)","Alertas de nível baixo no tanque interno","Relatório de custo de combustível por veículo/período","Vinculação com KM do hodômetro"] : ["External and internal tank refueling records","Diesel and ARLA stock control","Automatic average consumption calculation (km/l)","Low tank level alerts","Fuel cost report by vehicle/period","Odometer mileage linkage"] },
+    { icon: Wrench,      label: lang === "pt" ? "Manutenções"     : "Maintenance",  color: "text-red-400",    bg: "bg-red-500/10",    border: "border-red-500/30",    route: "/manutencoes",
+      tagline: lang === "pt" ? "Mantenha sua frota sempre em dia" : "Keep your fleet always up to date",
+      desc: lang === "pt" ? "Registre manutenções corretivas e preventivas, crie planos por KM ou dias, e receba alertas automáticos quando estiver na hora de agir." : "Record corrective and preventive maintenance, create plans by KM or days, and receive automatic alerts.",
+      features: lang === "pt" ? ["Registro de manutenções corretivas e preventivas","Planos de manutenção por intervalo de KM ou dias","Alertas automáticos de manutenção vencida","Histórico completo por veículo","Controle de custo por tipo de serviço","Relatório de manutenções pendentes"] : ["Corrective and preventive maintenance records","Maintenance plans by KM or day interval","Automatic overdue maintenance alerts","Complete history by vehicle","Cost control by service type","Pending maintenance report"] },
+    { icon: Users,       label: lang === "pt" ? "Motoristas"      : "Drivers",      color: "text-cyan-400",   bg: "bg-cyan-500/10",   border: "border-cyan-500/30",   route: "/motoristas",
+      tagline: lang === "pt" ? "Gerencie toda a sua equipe de campo" : "Manage your entire field team",
+      desc: lang === "pt" ? "Cadastre motoristas, ajudantes e freelancers com todos os dados pessoais, profissionais e de CNH. Controle vencimentos e receba alertas automáticos." : "Register drivers, helpers and freelancers with all personal, professional and license data. Control expirations and receive automatic alerts.",
+      features: lang === "pt" ? ["Cadastro completo: dados pessoais, profissionais e CNH","Suporte a motoristas, ajudantes e freelancers","Alertas de CNH vencendo (30 dias antes)","Histórico de viagens por motorista","Controle de adiantamentos e acertos","Relatório de desempenho por motorista"] : ["Complete registration: personal, professional and license data","Support for drivers, helpers and freelancers","License expiry alerts (30 days in advance)","Trip history by driver","Advance and settlement control","Driver performance report"] },
+    { icon: CheckSquare, label: lang === "pt" ? "Checklist"       : "Checklist",    color: "text-teal-400",   bg: "bg-teal-500/10",   border: "border-teal-500/30",   route: "/checklist",
+      tagline: lang === "pt" ? "Inspeção de veículos antes de cada saída" : "Vehicle inspection before every departure",
+      desc: lang === "pt" ? "Registre a inspeção do veículo antes de cada viagem com uma lista padronizada. Garanta segurança e conformidade operacional." : "Record vehicle inspection before each trip with a standardized checklist. Ensure safety and operational compliance.",
+      features: lang === "pt" ? ["Lista padronizada: pneus, luzes, fluidos, documentação, freios","Registro de itens com defeito e observações","Upload de fotos dos defeitos encontrados","Alertas automáticos para itens críticos","Histórico de inspeções por veículo","Relatório de não-conformidades"] : ["Standardized list: tires, lights, fluids, documents, brakes","Record defective items with observations","Photo upload for defects found","Automatic alerts for critical items","Inspection history by vehicle","Non-compliance report"] },
+    { icon: BarChart3,   label: lang === "pt" ? "Financeiro"      : "Financial",    color: "text-indigo-400", bg: "bg-indigo-500/10", border: "border-indigo-500/30", route: "/financeiro",
+      tagline: lang === "pt" ? "Controle total de entradas e saídas" : "Full control of income and expenses",
+      desc: lang === "pt" ? "Gerencie contas a pagar, contas a receber e adiantamentos para motoristas. Tenha uma visão clara do fluxo de caixa da operação." : "Manage accounts payable, accounts receivable and driver advances. Get a clear view of the operation's cash flow.",
+      features: lang === "pt" ? ["Contas a pagar com categorias e vencimentos","Contas a receber vinculadas a viagens e CTEs","Adiantamentos para motoristas com desconto automático","Dashboard de fluxo de caixa semanal/mensal","Alertas de contas vencidas","Relatório financeiro por período"] : ["Accounts payable with categories and due dates","Accounts receivable linked to trips and CTEs","Driver advances with automatic deduction","Weekly/monthly cash flow dashboard","Overdue account alerts","Financial report by period"] },
+    { icon: MapPin,      label: lang === "pt" ? "Despachante"     : "Dispatcher",   color: "text-pink-400",   bg: "bg-pink-500/10",   border: "border-pink-500/30",   route: "/despachante",
+      tagline: lang === "pt" ? "Controle de saída e retorno de veículos" : "Vehicle departure and return control",
+      desc: lang === "pt" ? "Módulo exclusivo para despachantes: registre saídas para entrega e para viagem, e confirme o retorno dos veículos com KM e observações." : "Exclusive module for dispatchers: record departures for delivery and trips, and confirm vehicle returns with mileage and notes.",
+      features: lang === "pt" ? ["Saída para entrega com vinculação de NFs","Saída para viagem com romaneio","Retorno de veículo com KM de chegada","Upload de canhoto no retorno","Painel de veículos em campo vs. disponíveis","Histórico de saídas e retornos por data"] : ["Delivery departure with invoice linking","Trip departure with manifest","Vehicle return with arrival mileage","Proof of delivery upload on return","Panel of vehicles in field vs. available","Departure and return history by date"] },
+    { icon: Bell,        label: lang === "pt" ? "Alertas"         : "Alerts",       color: "text-amber-400",  bg: "bg-amber-500/10",  border: "border-amber-500/30",  route: "/alertas",
+      tagline: lang === "pt" ? "Nunca perca um prazo importante" : "Never miss an important deadline",
+      desc: lang === "pt" ? "Central de alertas inteligentes: documentos vencendo, manutenções pendentes, NFs em aberto e situações críticas da operação." : "Smart alert center: expiring documents, pending maintenance, open invoices and critical situations.",
+      features: lang === "pt" ? ["Alertas de documentos vencendo (CRLV, CNH, Seguro, Tacógrafo)","Alertas de manutenções preventivas próximas","NFs em aberto há mais de X dias","Contas vencidas sem pagamento","Veículos sem checklist de saída","Painel com prioridade: crítico, atenção, informativo"] : ["Expiring document alerts (CRLV, License, Insurance, Tachograph)","Upcoming preventive maintenance alerts","Invoices open for more than X days","Overdue unpaid accounts","Vehicles without departure checklist","Alert panel with priority: critical, warning, informational"] },
+    { icon: Zap,         label: lang === "pt" ? "Integrações"     : "Integrations", color: "text-lime-400",   bg: "bg-lime-500/10",   border: "border-lime-500/30",   route: "/integracoes",
+      tagline: lang === "pt" ? "Conectado ao seu ecossistema" : "Connected to your ecosystem",
+      desc: lang === "pt" ? "Integração nativa com Arquivei para consulta e download de NF-e, e Winthor com 65 rotinas disponíveis para sincronização de dados com o Oracle." : "Native integration with Arquivei for NF-e query and download, and Winthor with 65 routines for Oracle data synchronization.",
+      features: lang === "pt" ? ["Arquivei: busca de NF-e por chave de acesso (44 dígitos)","Download de XML e DANFE via Arquivei/Qive","Winthor: 65 rotinas reais (521, 901–1474)","Conexão Oracle: Host, Porta, Usuário, Senha, SID","Módulos: Veículos, Carregamento, Acerto, Expedição, Rota, Vendas","Exportação de relatórios em PDF e Excel"] : ["Arquivei: NF-e search by access key (44 digits)","XML and DANFE download via Arquivei/Qive","Winthor: 65 real routines (521, 901–1474)","Oracle connection: Host, Port, User, Password, SID","Modules: Vehicles, Loading, Settlement, Dispatch, Route, Sales","Report export in PDF and Excel"] },
   ];
 
   const benefits = [
@@ -202,16 +304,20 @@ export default function Home() {
             </p>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-            {modules.map((m) => (
-              <div
+            {modules.map((m, idx) => (
+              <button
                 key={m.label}
-                className="group p-4 rounded-2xl border border-white/5 bg-white/3 hover:bg-white/6 hover:border-white/10 transition-all cursor-default"
+                onClick={() => setSelectedModule(idx)}
+                className={`group p-4 rounded-2xl border border-white/5 bg-white/3 hover:bg-white/6 hover:${m.border} transition-all text-left cursor-pointer`}
               >
                 <div className={`h-10 w-10 rounded-xl ${m.bg} flex items-center justify-center mb-3 group-hover:scale-110 transition-transform`}>
                   <m.icon className={`h-5 w-5 ${m.color}`} />
                 </div>
-                <p className="font-semibold text-sm text-white/90">{m.label}</p>
-              </div>
+                <p className="font-semibold text-sm text-white/90 mb-1">{m.label}</p>
+                <p className="text-xs text-white/30 group-hover:text-white/50 transition-colors">
+                  {lang === "pt" ? "Saiba mais →" : "Learn more →"}
+                </p>
+              </button>
             ))}
           </div>
         </div>
@@ -327,6 +433,15 @@ export default function Home() {
           </div>
         </div>
       </footer>
+
+      {selectedModule !== null && (
+        <ModuleModal
+          mod={modules[selectedModule]}
+          lang={lang}
+          onClose={() => setSelectedModule(null)}
+          onAccess={() => { setSelectedModule(null); setLocation("/login"); }}
+        />
+      )}
     </div>
   );
 }
