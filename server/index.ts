@@ -154,6 +154,15 @@ async function runMigrations() {
     await rawDb.unsafe(`CREATE INDEX IF NOT EXISTS "idx_item_carg" ON "itens_carregamento" ("carregamentoId")`);
     await rawDb.unsafe(`CREATE INDEX IF NOT EXISTS "idx_item_empresa" ON "itens_carregamento" ("empresaId")`);
 
+    // Cria enum tipo_empresa se não existir
+    await rawDb.unsafe(`DO $$ BEGIN CREATE TYPE "tipo_empresa" AS ENUM ('independente','matriz','filial'); EXCEPTION WHEN duplicate_object THEN null; END $$`);
+
+    // Adiciona tipoEmpresa e matrizId na tabela empresas se não existirem
+    await rawDb.unsafe(`ALTER TABLE "empresas" ADD COLUMN IF NOT EXISTS "tipoEmpresa" "tipo_empresa" DEFAULT 'independente' NOT NULL`);
+    await rawDb.unsafe(`ALTER TABLE "empresas" ADD COLUMN IF NOT EXISTS "matrizId" INTEGER`);
+    await rawDb.unsafe(`CREATE INDEX IF NOT EXISTS "idx_empresas_matrizId" ON "empresas" ("matrizId")`);
+
+
     console.log("[Migration] Migrações aplicadas com sucesso");
   } catch (err) {
     console.error("[Migration] Erro ao aplicar migrações:", err);
@@ -209,3 +218,5 @@ runMigrations().then(() => {
     console.log(`[Server] Rotiq Backend running on port ${port}`);
   });
 });
+
+// Placeholder for migration 0003 - will be added via shell

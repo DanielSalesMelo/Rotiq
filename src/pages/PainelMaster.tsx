@@ -251,6 +251,8 @@ export default function PainelMaster() {
                     <tr className="border-b bg-muted/30 text-muted-foreground text-xs uppercase">
                       <th className="text-left px-4 py-3">Empresa</th>
                       <th className="text-left px-4 py-3">CNPJ</th>
+                      <th className="text-left px-4 py-3">Tipo</th>
+                      <th className="text-left px-4 py-3">Grupo</th>
                       <th className="text-left px-4 py-3">Plano</th>
                       <th className="text-center px-4 py-3">Veículos</th>
                       <th className="text-center px-4 py-3">Motoristas</th>
@@ -265,6 +267,12 @@ export default function PainelMaster() {
                         <tr key={e.id} className="border-b hover:bg-muted/20">
                           <td className="px-4 py-3 font-medium">{e.nome}</td>
                           <td className="px-4 py-3 text-muted-foreground">{e.cnpj || "—"}</td>
+                          <td className="px-4 py-3 text-xs">
+                            <Badge variant="outline" className={e.tipoEmpresa === "matriz" ? "bg-blue-500/10 text-blue-400 border-blue-500/30" : e.tipoEmpresa === "filial" ? "bg-purple-500/10 text-purple-400 border-purple-500/30" : "bg-gray-500/10 text-gray-400 border-gray-500/30"}>
+                              {e.tipoEmpresa === "matriz" ? "Matriz" : e.tipoEmpresa === "filial" ? "Filial" : "Independente"}
+                            </Badge>
+                          </td>
+                          <td className="px-4 py-3 text-xs text-muted-foreground">{e.matrizId ? `Filial de #${e.matrizId}` : "—"}</td>
                           <td className="px-4 py-3"><Badge className={`border text-xs ${plano.color}`}>{plano.label}</Badge></td>
                           <td className="px-4 py-3 text-center">{e.id === 1 ? veiculos.length : 0} / {e.maxVeiculos}</td>
                           <td className="px-4 py-3 text-center">{e.id === 1 ? motoristas.length : 0} / {e.maxMotoristas}</td>

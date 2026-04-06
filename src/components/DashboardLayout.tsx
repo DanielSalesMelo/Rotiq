@@ -17,7 +17,8 @@ import {
   ChevronRight, Calculator, MessageSquare, Scale,
 } from "lucide-react";
 import { useTheme } from "@/contexts/ThemeContext";
-import { useViewAs } from "@/contexts/ViewAsContext";
+import { ViewAsContext } from "@/contexts/ViewAsContext";
+import { SeletorEmpresa } from "./SeletorEmpresa";
 import { useRef, useState } from "react";
 import { DashboardLayoutSkeleton } from "./DashboardLayoutSkeleton";
 import { Button } from "./ui/button";
@@ -399,6 +400,7 @@ function AppShell({ children }: { children: React.ReactNode }) {
             <Menu className="h-5 w-5" />
           </button>
           <div className="flex-1" />
+          <SeletorEmpresa />
           {/* Indicador de modo simulação */}
           {isSimulating && (
             <div className="flex items-center gap-2 bg-amber-500/15 border border-amber-500/40 text-amber-600 dark:text-amber-400 rounded-lg px-3 py-1.5 text-xs font-medium">

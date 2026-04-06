@@ -39,6 +39,7 @@ export const operacaoTanqueEnum = pgEnum("operacao_tanque", ["entrada", "saida"]
 export const statusAcidenteEnum = pgEnum("status_acidente", ["aberto", "em_reparo", "resolvido"]);
 export const chatRoleEnum = pgEnum("chat_role", ["admin", "member"]);
 export const chatMessageTypeEnum = pgEnum("chat_message_type", ["text", "image", "file"]);
+export const tipoEmpresaEnum = pgEnum("tipo_empresa", ["independente", "matriz", "filial"]);
 
 // ─── USERS (auth) ─────────────────────────────────────────────────────────────
 export const users = pgTable("users", {
@@ -70,6 +71,9 @@ export const empresas = pgTable("empresas", {
   endereco: text("endereco"),
   cidade: varchar("cidade", { length: 100 }),
   estado: varchar("estado", { length: 2 }),
+  // Hierarquia de grupo
+  tipoEmpresa: tipoEmpresaEnum("tipoEmpresa").default("independente").notNull(),
+  matrizId: integer("matrizId"),  // ID da empresa matriz (se for filial)
   ativo: boolean("ativo").default(true).notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().notNull(),

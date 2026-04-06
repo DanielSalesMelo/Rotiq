@@ -16,6 +16,7 @@ import { chatRouter } from "./routers/chat";
 import { notasFiscaisRouter } from "./routers/notasFiscais";
 import { acertosCargaRouter } from "./routers/acertosCarga";
 import { carregamentosRouter } from "./routers/carregamentos";
+import { gruposRouter } from "./routers/grupos";
 
 export const appRouter = router({
   system: systemRouter,
@@ -34,6 +35,7 @@ export const appRouter = router({
   notasFiscais: notasFiscaisRouter,
   acertosCarga: acertosCargaRouter,
   carregamentos: carregamentosRouter,
+  grupos: gruposRouter,
 });
 
 export type AppRouter = typeof appRouter;

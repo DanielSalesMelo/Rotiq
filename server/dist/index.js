@@ -243,6 +243,7 @@ var operacaoTanqueEnum = pgEnum("operacao_tanque", ["entrada", "saida"]);
 var statusAcidenteEnum = pgEnum("status_acidente", ["aberto", "em_reparo", "resolvido"]);
 var chatRoleEnum = pgEnum("chat_role", ["admin", "member"]);
 var chatMessageTypeEnum = pgEnum("chat_message_type", ["text", "image", "file"]);
+var tipoEmpresaEnum = pgEnum("tipo_empresa", ["independente", "matriz", "filial"]);
 var users = pgTable("users", {
   id: serial("id").primaryKey(),
   openId: varchar("openId", { length: 64 }).notNull().unique(),
@@ -271,6 +272,10 @@ var empresas = pgTable("empresas", {
   endereco: text("endereco"),
   cidade: varchar("cidade", { length: 100 }),
   estado: varchar("estado", { length: 2 }),
+  // Hierarquia de grupo
+  tipoEmpresa: tipoEmpresaEnum("tipoEmpresa").default("independente").notNull(),
+  matrizId: integer("matrizId"),
+  // ID da empresa matriz (se for filial)
   ativo: boolean("ativo").default(true).notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().notNull(),
@@ -3950,6 +3955,160 @@ var carregamentosRouter = router({
   })
 });
 
+// routers/grupos.ts
+import { z as z16 } from "zod";
+import { eq as eq15, and as and12, isNull as isNull11 } from "drizzle-orm";
+var gruposRouter = router({
+  // Listar todas as matrizes (empresas que são matriz ou independente)
+  listMatrizes: protectedProcedure.query(async ({ ctx }) => {
+    if (ctx.user.role !== "master_admin") {
+      throw new Error("Apenas master_admin pode listar matrizes");
+    }
+    const db = await getDb();
+    if (!db) throw new Error("Database n\xE3o dispon\xEDvel");
+    const matrizes = await db.select().from(empresas).where(
+      and12(
+        isNull11(empresas.deletedAt)
+        // Matrizes são empresas que são "matriz" ou "independente" (sem matrizId)
+      )
+    );
+    return matrizes.map((e) => ({
+      ...e,
+      tipoEmpresa: e.tipoEmpresa
+    }));
+  }),
+  // Listar filiais de uma matriz
+  listFiliais: protectedProcedure.input(z16.object({ matrizId: z16.number() })).query(async ({ input, ctx }) => {
+    const db = await getDb();
+    if (!db) throw new Error("Database n\xE3o dispon\xEDvel");
+    const matriz = await db.select().from(empresas).where(eq15(empresas.id, input.matrizId)).limit(1);
+    if (!matriz.length) throw new Error("Matriz n\xE3o encontrada");
+    if (ctx.user.role !== "master_admin" && ctx.user.empresaId !== input.matrizId) {
+      throw new Error("Acesso negado");
+    }
+    const filiais = await db.select().from(empresas).where(
+      and12(
+        eq15(empresas.matrizId, input.matrizId),
+        isNull11(empresas.deletedAt)
+      )
+    );
+    return filiais.map((e) => ({
+      ...e,
+      tipoEmpresa: e.tipoEmpresa
+    }));
+  }),
+  // Obter hierarquia completa (matriz + filiais)
+  getHierarquia: protectedProcedure.input(z16.object({ empresaId: z16.number() })).query(async ({ input, ctx }) => {
+    const db = await getDb();
+    if (!db) throw new Error("Database n\xE3o dispon\xEDvel");
+    const empresa = await db.select().from(empresas).where(eq15(empresas.id, input.empresaId)).limit(1);
+    if (!empresa.length) throw new Error("Empresa n\xE3o encontrada");
+    const emp = empresa[0];
+    if (emp.matrizId) {
+      const matriz = await db.select().from(empresas).where(eq15(empresas.id, emp.matrizId)).limit(1);
+      const filiais2 = await db.select().from(empresas).where(
+        and12(
+          eq15(empresas.matrizId, emp.matrizId),
+          isNull11(empresas.deletedAt)
+        )
+      );
+      return {
+        matriz: matriz[0],
+        filiais: filiais2.map((f) => ({
+          ...f,
+          tipoEmpresa: f.tipoEmpresa
+        })),
+        atual: emp
+      };
+    }
+    const filiais = await db.select().from(empresas).where(
+      and12(
+        eq15(empresas.matrizId, emp.id),
+        isNull11(empresas.deletedAt)
+      )
+    );
+    return {
+      matriz: emp,
+      filiais: filiais.map((f) => ({
+        ...f,
+        tipoEmpresa: f.tipoEmpresa
+      })),
+      atual: emp
+    };
+  }),
+  // Vincular uma empresa como filial de uma matriz
+  vincularFilial: protectedProcedure.input(
+    z16.object({
+      empresaId: z16.number(),
+      matrizId: z16.number()
+    })
+  ).mutation(async ({ input, ctx }) => {
+    if (ctx.user.role !== "master_admin") {
+      throw new Error("Apenas master_admin pode vincular filiais");
+    }
+    const db = await getDb();
+    if (!db) throw new Error("Database n\xE3o dispon\xEDvel");
+    const [empresa, matriz] = await Promise.all([
+      db.select().from(empresas).where(eq15(empresas.id, input.empresaId)).limit(1),
+      db.select().from(empresas).where(eq15(empresas.id, input.matrizId)).limit(1)
+    ]);
+    if (!empresa.length) throw new Error("Empresa n\xE3o encontrada");
+    if (!matriz.length) throw new Error("Matriz n\xE3o encontrada");
+    await db.update(empresas).set({
+      tipoEmpresa: "filial",
+      matrizId: input.matrizId,
+      updatedAt: /* @__PURE__ */ new Date()
+    }).where(eq15(empresas.id, input.empresaId));
+    if (matriz[0].tipoEmpresa === "independente") {
+      await db.update(empresas).set({
+        tipoEmpresa: "matriz",
+        updatedAt: /* @__PURE__ */ new Date()
+      }).where(eq15(empresas.id, input.matrizId));
+    }
+    return { success: true };
+  }),
+  // Desvincular uma filial (volta a ser independente)
+  desvinculaFilial: protectedProcedure.input(z16.object({ empresaId: z16.number() })).mutation(async ({ input, ctx }) => {
+    if (ctx.user.role !== "master_admin") {
+      throw new Error("Apenas master_admin pode desvincular filiais");
+    }
+    const db = await getDb();
+    if (!db) throw new Error("Database n\xE3o dispon\xEDvel");
+    const empresa = await db.select().from(empresas).where(eq15(empresas.id, input.empresaId)).limit(1);
+    if (!empresa.length) throw new Error("Empresa n\xE3o encontrada");
+    const emp = empresa[0];
+    await db.update(empresas).set({
+      tipoEmpresa: "independente",
+      matrizId: null,
+      updatedAt: /* @__PURE__ */ new Date()
+    }).where(eq15(empresas.id, input.empresaId));
+    if (emp.matrizId) {
+      const outrasFiliais = await db.select().from(empresas).where(
+        and12(
+          eq15(empresas.matrizId, emp.matrizId),
+          isNull11(empresas.deletedAt)
+        )
+      );
+      if (outrasFiliais.length === 0) {
+        await db.update(empresas).set({
+          tipoEmpresa: "independente",
+          updatedAt: /* @__PURE__ */ new Date()
+        }).where(eq15(empresas.id, emp.matrizId));
+      }
+    }
+    return { success: true };
+  }),
+  // Mudar a empresa selecionada do usuário (para alternar entre filiais)
+  // Nota: isso é armazenado no contexto/sessão, não no banco
+  // O frontend deve chamar isso para atualizar a empresa ativa
+  setEmpresaAtiva: protectedProcedure.input(z16.object({ empresaId: z16.number() })).mutation(async ({ input, ctx }) => {
+    if (ctx.user.role !== "master_admin" && ctx.user.empresaId !== input.empresaId) {
+      throw new Error("Acesso negado a essa empresa");
+    }
+    return { empresaId: input.empresaId };
+  })
+});
+
 // routers.ts
 var appRouter = router({
   system: systemRouter,
@@ -3966,7 +4125,8 @@ var appRouter = router({
   multas: multasRouter,
   notasFiscais: notasFiscaisRouter,
   acertosCarga: acertosCargaRouter,
-  carregamentos: carregamentosRouter
+  carregamentos: carregamentosRouter,
+  grupos: gruposRouter
 });
 
 // _core/context.ts
@@ -4117,6 +4277,10 @@ async function runMigrations() {
     )`);
     await rawDb.unsafe(`CREATE INDEX IF NOT EXISTS "idx_item_carg" ON "itens_carregamento" ("carregamentoId")`);
     await rawDb.unsafe(`CREATE INDEX IF NOT EXISTS "idx_item_empresa" ON "itens_carregamento" ("empresaId")`);
+    await rawDb.unsafe(`DO $$ BEGIN CREATE TYPE "tipo_empresa" AS ENUM ('independente','matriz','filial'); EXCEPTION WHEN duplicate_object THEN null; END $$`);
+    await rawDb.unsafe(`ALTER TABLE "empresas" ADD COLUMN IF NOT EXISTS "tipoEmpresa" "tipo_empresa" DEFAULT 'independente' NOT NULL`);
+    await rawDb.unsafe(`ALTER TABLE "empresas" ADD COLUMN IF NOT EXISTS "matrizId" INTEGER`);
+    await rawDb.unsafe(`CREATE INDEX IF NOT EXISTS "idx_empresas_matrizId" ON "empresas" ("matrizId")`);
     console.log("[Migration] Migra\xE7\xF5es aplicadas com sucesso");
   } catch (err) {
     console.error("[Migration] Erro ao aplicar migra\xE7\xF5es:", err);
