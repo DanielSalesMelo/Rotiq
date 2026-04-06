@@ -112,6 +112,7 @@ export const notasFiscaisRouter = router({
         recebidoPor: z.string().optional(),
         motivoDevolucao: z.string().optional(),
         observacoes: z.string().optional(),
+        fotoCanhoto: z.string().optional(), // URL da foto do canhoto
       }),
     )
     .mutation(async ({ input }) => {
@@ -126,6 +127,7 @@ export const notasFiscaisRouter = router({
             recebidoPor: input.recebidoPor,
             motivoDevolucao: input.motivoDevolucao,
             observacoes: input.observacoes,
+            fotoCanhoto: input.fotoCanhoto,
             updatedAt: new Date(),
           })
           .where(eq(notasFiscaisViagem.id, input.id));

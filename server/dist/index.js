@@ -703,6 +703,8 @@ var notasFiscaisViagem = pgTable("notas_fiscais_viagem", {
   motivoDevolucao: text("motivoDevolucao"),
   observacoes: text("observacoes"),
   ordemEntrega: integer("ordemEntrega"),
+  fotoCanhoto: varchar("fotoCanhoto", { length: 500 }),
+  // URL da foto do canhoto assinado
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().notNull(),
   deletedAt: timestamp("deletedAt")
@@ -3515,7 +3517,9 @@ var notasFiscaisRouter = router({
       dataCanhoto: z13.string().optional(),
       recebidoPor: z13.string().optional(),
       motivoDevolucao: z13.string().optional(),
-      observacoes: z13.string().optional()
+      observacoes: z13.string().optional(),
+      fotoCanhoto: z13.string().optional()
+      // URL da foto do canhoto
     })
   ).mutation(async ({ input }) => {
     return safeDb(async () => {
@@ -3527,6 +3531,7 @@ var notasFiscaisRouter = router({
         recebidoPor: input.recebidoPor,
         motivoDevolucao: input.motivoDevolucao,
         observacoes: input.observacoes,
+        fotoCanhoto: input.fotoCanhoto,
         updatedAt: /* @__PURE__ */ new Date()
       }).where(eq12(notasFiscaisViagem.id, input.id));
       return { success: true };
@@ -4189,6 +4194,7 @@ async function runMigrations() {
     await rawDb.unsafe(`CREATE INDEX IF NOT EXISTS "idx_nfv_viagem" ON "notas_fiscais_viagem" ("viagemId")`);
     await rawDb.unsafe(`CREATE INDEX IF NOT EXISTS "idx_nfv_empresa" ON "notas_fiscais_viagem" ("empresaId")`);
     await rawDb.unsafe(`CREATE INDEX IF NOT EXISTS "idx_nfv_numero" ON "notas_fiscais_viagem" ("numeroNf")`);
+    await rawDb.unsafe(`ALTER TABLE "notas_fiscais_viagem" ADD COLUMN IF NOT EXISTS "fotoCanhoto" VARCHAR(500)`);
     await rawDb.unsafe(`DO $$ BEGIN CREATE TYPE "status_acerto_carga" AS ENUM ('aberto','em_analise','fechado','pago'); EXCEPTION WHEN duplicate_object THEN null; END $$`);
     await rawDb.unsafe(`CREATE TABLE IF NOT EXISTS "acertos_carga" (
       "id" SERIAL PRIMARY KEY,

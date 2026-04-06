@@ -537,6 +537,7 @@ export const notasFiscaisViagem = pgTable("notas_fiscais_viagem", {
   motivoDevolucao: text("motivoDevolucao"),
   observacoes: text("observacoes"),
   ordemEntrega: integer("ordemEntrega"),
+  fotoCanhoto: varchar("fotoCanhoto", { length: 500 }), // URL da foto do canhoto assinado
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().notNull(),
   deletedAt: timestamp("deletedAt"),

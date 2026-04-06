@@ -55,6 +55,9 @@ async function runMigrations() {
     await rawDb.unsafe(`CREATE INDEX IF NOT EXISTS "idx_nfv_viagem" ON "notas_fiscais_viagem" ("viagemId")`);
     await rawDb.unsafe(`CREATE INDEX IF NOT EXISTS "idx_nfv_empresa" ON "notas_fiscais_viagem" ("empresaId")`);
     await rawDb.unsafe(`CREATE INDEX IF NOT EXISTS "idx_nfv_numero" ON "notas_fiscais_viagem" ("numeroNf")`);
+    
+    // Adiciona fotoCanhoto na tabela notas_fiscais_viagem se não existir
+    await rawDb.unsafe(`ALTER TABLE "notas_fiscais_viagem" ADD COLUMN IF NOT EXISTS "fotoCanhoto" VARCHAR(500)`);
 
     // Cria enum status_acerto_carga se não existir
     await rawDb.unsafe(`DO $$ BEGIN CREATE TYPE "status_acerto_carga" AS ENUM ('aberto','em_analise','fechado','pago'); EXCEPTION WHEN duplicate_object THEN null; END $$`);

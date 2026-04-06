@@ -252,6 +252,7 @@ function ModalStatus({ nf, onClose }: { nf: NotaFiscal; onClose: () => void }) {
   const [recebidoPor, setRecebidoPor] = useState(nf.recebidoPor ?? "");
   const [motivoDevolucao, setMotivoDevolucao] = useState(nf.motivoDevolucao ?? "");
   const [obs, setObs] = useState(nf.observacoes ?? "");
+  const [fotoCanhoto, setFotoCanhoto] = useState("");
 
   const mutation = trpc.notasFiscais.updateStatus.useMutation({
     onSuccess: () => {
@@ -272,6 +273,7 @@ function ModalStatus({ nf, onClose }: { nf: NotaFiscal; onClose: () => void }) {
       recebidoPor: recebidoPor || undefined,
       motivoDevolucao: motivoDevolucao || undefined,
       observacoes: obs || undefined,
+      fotoCanhoto: fotoCanhoto || undefined,
     });
   };
 
@@ -317,6 +319,12 @@ function ModalStatus({ nf, onClose }: { nf: NotaFiscal; onClose: () => void }) {
       <div>
         <Label>Observações</Label>
         <Textarea className="mt-1" rows={2} value={obs} onChange={(e) => setObs(e.target.value)} />
+      </div>
+
+      <div>
+        <Label>Foto do Canhoto (URL)</Label>
+        <Input className="mt-1" placeholder="Cole a URL da foto do canhoto assinado" value={fotoCanhoto} onChange={(e) => setFotoCanhoto(e.target.value)} />
+        {fotoCanhoto && <p className="text-xs text-muted-foreground mt-1">✓ Foto será salva</p>}
       </div>
 
       <div className="flex gap-2 justify-end pt-2">
