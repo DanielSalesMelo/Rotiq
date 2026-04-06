@@ -1,3 +1,708 @@
+var __defProp = Object.defineProperty;
+var __getOwnPropNames = Object.getOwnPropertyNames;
+var __esm = (fn, res) => function __init() {
+  return fn && (res = (0, fn[__getOwnPropNames(fn)[0]])(fn = 0)), res;
+};
+var __export = (target, all) => {
+  for (var name in all)
+    __defProp(target, name, { get: all[name], enumerable: true });
+};
+
+// drizzle/schema.ts
+var schema_exports = {};
+__export(schema_exports, {
+  abastecimentos: () => abastecimentos,
+  acertosCarga: () => acertosCarga,
+  acidentes: () => acidentes,
+  adiantamentos: () => adiantamentos,
+  auditLog: () => auditLog,
+  carregamentos: () => carregamentos,
+  categoriaContaPagarEnum: () => categoriaContaPagarEnum,
+  categoriaContaReceberEnum: () => categoriaContaReceberEnum,
+  chatConversations: () => chatConversations,
+  chatMembers: () => chatMembers,
+  chatMessageTypeEnum: () => chatMessageTypeEnum,
+  chatMessages: () => chatMessages,
+  chatRoleEnum: () => chatRoleEnum,
+  checklists: () => checklists,
+  contasPagar: () => contasPagar,
+  contasReceber: () => contasReceber,
+  controleTanque: () => controleTanque,
+  despesasViagem: () => despesasViagem,
+  empresas: () => empresas,
+  formaPagamentoEnum: () => formaPagamentoEnum,
+  funcaoEnum: () => funcaoEnum,
+  funcionarios: () => funcionarios,
+  itemChecklistEnum: () => itemChecklistEnum,
+  itensCarregamento: () => itensCarregamento,
+  manutencoes: () => manutencoes,
+  notasFiscaisViagem: () => notasFiscaisViagem,
+  operacaoTanqueEnum: () => operacaoTanqueEnum,
+  statusAcertoCargaEnum: () => statusAcertoCargaEnum,
+  statusAcidenteEnum: () => statusAcidenteEnum,
+  statusAdiantamentoEnum: () => statusAdiantamentoEnum,
+  statusCarregamentoEnum: () => statusCarregamentoEnum,
+  statusContaPagarEnum: () => statusContaPagarEnum,
+  statusContaReceberEnum: () => statusContaReceberEnum,
+  statusNfEnum: () => statusNfEnum,
+  statusViagemEnum: () => statusViagemEnum,
+  tipoAbastecimentoEnum: () => tipoAbastecimentoEnum,
+  tipoChecklistEnum: () => tipoChecklistEnum,
+  tipoCobrancaEnum: () => tipoCobrancaEnum,
+  tipoCombustivelEnum: () => tipoCombustivelEnum,
+  tipoContaEnum: () => tipoContaEnum,
+  tipoContratoEnum: () => tipoContratoEnum,
+  tipoDespesaEnum: () => tipoDespesaEnum,
+  tipoEmpresaEnum: () => tipoEmpresaEnum,
+  tipoManutencaoEnum: () => tipoManutencaoEnum,
+  tipoTanqueEnum: () => tipoTanqueEnum,
+  tipoVeiculoEnum: () => tipoVeiculoEnum,
+  tipoViagemEnum: () => tipoViagemEnum,
+  turnoEnum: () => turnoEnum,
+  userRoleEnum: () => userRoleEnum,
+  users: () => users,
+  veiculos: () => veiculos,
+  viagens: () => viagens
+});
+import {
+  bigint,
+  boolean,
+  date,
+  decimal,
+  integer,
+  pgEnum,
+  pgTable,
+  serial,
+  text,
+  timestamp,
+  varchar
+} from "drizzle-orm/pg-core";
+var userRoleEnum, funcaoEnum, tipoContratoEnum, tipoCobrancaEnum, tipoContaEnum, tipoVeiculoEnum, tipoCombustivelEnum, tipoAbastecimentoEnum, tipoManutencaoEnum, tipoViagemEnum, statusViagemEnum, tipoDespesaEnum, turnoEnum, tipoChecklistEnum, itemChecklistEnum, categoriaContaPagarEnum, statusContaPagarEnum, categoriaContaReceberEnum, statusContaReceberEnum, formaPagamentoEnum, statusAdiantamentoEnum, tipoTanqueEnum, operacaoTanqueEnum, statusAcidenteEnum, chatRoleEnum, chatMessageTypeEnum, tipoEmpresaEnum, users, empresas, funcionarios, veiculos, abastecimentos, manutencoes, viagens, despesasViagem, checklists, contasPagar, contasReceber, adiantamentos, controleTanque, auditLog, acidentes, chatConversations, chatMembers, chatMessages, statusNfEnum, notasFiscaisViagem, statusAcertoCargaEnum, acertosCarga, statusCarregamentoEnum, carregamentos, itensCarregamento;
+var init_schema = __esm({
+  "drizzle/schema.ts"() {
+    userRoleEnum = pgEnum("user_role", ["user", "admin", "master_admin", "monitor", "dispatcher"]);
+    funcaoEnum = pgEnum("funcao", ["motorista", "ajudante", "despachante", "gerente", "admin", "outro"]);
+    tipoContratoEnum = pgEnum("tipo_contrato", ["clt", "freelancer", "terceirizado", "estagiario"]);
+    tipoCobrancaEnum = pgEnum("tipo_cobranca", ["diaria", "mensal", "por_viagem"]);
+    tipoContaEnum = pgEnum("tipo_conta", ["corrente", "poupanca", "pix"]);
+    tipoVeiculoEnum = pgEnum("tipo_veiculo", ["van", "toco", "truck", "cavalo", "carreta", "empilhadeira", "paletera", "outro"]);
+    tipoCombustivelEnum = pgEnum("tipo_combustivel", ["diesel", "arla", "gasolina", "etanol", "gas", "outro"]);
+    tipoAbastecimentoEnum = pgEnum("tipo_abastecimento", ["interno", "externo"]);
+    tipoManutencaoEnum = pgEnum("tipo_manutencao", ["preventiva", "corretiva", "revisao", "pneu", "eletrica", "funilaria", "outro"]);
+    tipoViagemEnum = pgEnum("tipo_viagem", ["entrega", "viagem"]);
+    statusViagemEnum = pgEnum("status_viagem", ["planejada", "em_andamento", "concluida", "cancelada"]);
+    tipoDespesaEnum = pgEnum("tipo_despesa", ["combustivel", "pedagio", "borracharia", "estacionamento", "oficina", "telefone", "descarga", "diaria", "alimentacao", "outro"]);
+    turnoEnum = pgEnum("turno", ["manha", "tarde", "noite"]);
+    tipoChecklistEnum = pgEnum("tipo_checklist", ["saida", "retorno"]);
+    itemChecklistEnum = pgEnum("item_checklist", ["conforme", "nao_conforme", "na"]);
+    categoriaContaPagarEnum = pgEnum("categoria_conta_pagar", ["combustivel", "manutencao", "salario", "freelancer", "pedagio", "seguro", "ipva", "licenciamento", "pneu", "outro"]);
+    statusContaPagarEnum = pgEnum("status_conta_pagar", ["pendente", "pago", "vencido", "cancelado"]);
+    categoriaContaReceberEnum = pgEnum("categoria_conta_receber", ["frete", "cte", "devolucao", "outro"]);
+    statusContaReceberEnum = pgEnum("status_conta_receber", ["pendente", "recebido", "vencido", "cancelado"]);
+    formaPagamentoEnum = pgEnum("forma_pagamento", ["dinheiro", "pix", "transferencia", "cartao"]);
+    statusAdiantamentoEnum = pgEnum("status_adiantamento", ["pendente", "acertado", "cancelado"]);
+    tipoTanqueEnum = pgEnum("tipo_tanque", ["diesel", "arla"]);
+    operacaoTanqueEnum = pgEnum("operacao_tanque", ["entrada", "saida"]);
+    statusAcidenteEnum = pgEnum("status_acidente", ["aberto", "em_reparo", "resolvido"]);
+    chatRoleEnum = pgEnum("chat_role", ["admin", "member"]);
+    chatMessageTypeEnum = pgEnum("chat_message_type", ["text", "image", "file"]);
+    tipoEmpresaEnum = pgEnum("tipo_empresa", ["independente", "matriz", "filial"]);
+    users = pgTable("users", {
+      id: serial("id").primaryKey(),
+      openId: varchar("openId", { length: 64 }).notNull().unique(),
+      name: text("name"),
+      lastName: text("lastName"),
+      email: varchar("email", { length: 320 }),
+      phone: varchar("phone", { length: 20 }),
+      loginMethod: varchar("loginMethod", { length: 64 }),
+      password: varchar("password", { length: 255 }),
+      // Hash bcrypt
+      role: userRoleEnum("role").default("user").notNull(),
+      status: varchar("status", { length: 20 }).default("pending").notNull(),
+      // pending, approved, rejected
+      empresaId: integer("empresaId"),
+      // null = master_admin sem empresa fixa
+      createdAt: timestamp("createdAt").defaultNow().notNull(),
+      updatedAt: timestamp("updatedAt").defaultNow().$onUpdateFn(() => /* @__PURE__ */ new Date()).notNull(),
+      lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull()
+    });
+    empresas = pgTable("empresas", {
+      id: serial("id").primaryKey(),
+      nome: varchar("nome", { length: 255 }).notNull(),
+      cnpj: varchar("cnpj", { length: 18 }),
+      telefone: varchar("telefone", { length: 20 }),
+      email: varchar("email", { length: 320 }),
+      endereco: text("endereco"),
+      cidade: varchar("cidade", { length: 100 }),
+      estado: varchar("estado", { length: 2 }),
+      codigoConvite: varchar("codigoConvite", { length: 50 }).unique(),
+      // Hierarquia de grupo
+      tipoEmpresa: tipoEmpresaEnum("tipoEmpresa").default("independente").notNull(),
+      matrizId: integer("matrizId"),
+      // ID da empresa matriz (se for filial)
+      ativo: boolean("ativo").default(true).notNull(),
+      createdAt: timestamp("createdAt").defaultNow().notNull(),
+      updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+      deletedAt: timestamp("deletedAt"),
+      deletedBy: integer("deletedBy"),
+      deleteReason: text("deleteReason")
+    });
+    funcionarios = pgTable("funcionarios", {
+      id: serial("id").primaryKey(),
+      empresaId: integer("empresaId").notNull(),
+      nome: varchar("nome", { length: 255 }).notNull(),
+      cpf: varchar("cpf", { length: 14 }),
+      rg: varchar("rg", { length: 20 }),
+      telefone: varchar("telefone", { length: 20 }),
+      email: varchar("email", { length: 320 }),
+      funcao: funcaoEnum("funcao").notNull(),
+      tipoContrato: tipoContratoEnum("tipoContrato").notNull(),
+      // Dados CLT
+      salario: decimal("salario", { precision: 10, scale: 2 }),
+      dataAdmissao: date("dataAdmissao"),
+      dataDemissao: date("dataDemissao"),
+      // Dados Freelancer/Temporário
+      valorDiaria: decimal("valorDiaria", { precision: 10, scale: 2 }),
+      valorMensal: decimal("valorMensal", { precision: 10, scale: 2 }),
+      tipoCobranca: tipoCobrancaEnum("tipoCobranca"),
+      dataInicioContrato: date("dataInicioContrato"),
+      dataFimContrato: date("dataFimContrato"),
+      diaPagamento: integer("diaPagamento"),
+      // dia do mes para pagar
+      // Dados Motorista
+      cnh: varchar("cnh", { length: 20 }),
+      categoriaCnh: varchar("categoriaCnh", { length: 5 }),
+      vencimentoCnh: date("vencimentoCnh"),
+      mopp: boolean("mopp").default(false),
+      vencimentoMopp: date("vencimentoMopp"),
+      vencimentoAso: date("vencimentoAso"),
+      // exame medico
+      // Dados bancarios (freelancer)
+      banco: varchar("banco", { length: 100 }),
+      agencia: varchar("agencia", { length: 10 }),
+      conta: varchar("conta", { length: 20 }),
+      tipoConta: tipoContaEnum("tipoConta"),
+      chavePix: varchar("chavePix", { length: 255 }),
+      // Observacoes
+      observacoes: text("observacoes"),
+      foto: text("foto"),
+      ativo: boolean("ativo").default(true).notNull(),
+      createdAt: timestamp("createdAt").defaultNow().notNull(),
+      updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+      deletedAt: timestamp("deletedAt"),
+      deletedBy: integer("deletedBy"),
+      deleteReason: text("deleteReason")
+    });
+    veiculos = pgTable("veiculos", {
+      id: serial("id").primaryKey(),
+      empresaId: integer("empresaId").notNull(),
+      placa: varchar("placa", { length: 10 }).notNull(),
+      tipo: tipoVeiculoEnum("tipo").notNull(),
+      // Cavalo/Carreta: relacionamento
+      cavaloPrincipalId: integer("cavaloPrincipalId"),
+      // para carreta: qual cavalo esta acoplado
+      // Dados do veiculo
+      marca: varchar("marca", { length: 100 }),
+      modelo: varchar("modelo", { length: 100 }),
+      ano: integer("ano"),
+      cor: varchar("cor", { length: 50 }),
+      renavam: varchar("renavam", { length: 20 }),
+      chassi: varchar("chassi", { length: 30 }),
+      capacidadeCarga: decimal("capacidadeCarga", { precision: 8, scale: 2 }),
+      // em toneladas
+      // Motorista e ajudante padrao
+      motoristaId: integer("motoristaId"),
+      ajudanteId: integer("ajudanteId"),
+      // KM e consumo
+      kmAtual: integer("kmAtual"),
+      mediaConsumo: decimal("mediaConsumo", { precision: 5, scale: 2 }),
+      // km/l
+      // Documentacao
+      vencimentoCrlv: date("vencimentoCrlv"),
+      vencimentoSeguro: date("vencimentoSeguro"),
+      // Classificacao (estrelas do Excel)
+      classificacao: integer("classificacao").default(0),
+      // 0-5 estrelas
+      observacoes: text("observacoes"),
+      ativo: boolean("ativo").default(true).notNull(),
+      createdAt: timestamp("createdAt").defaultNow().notNull(),
+      updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+      deletedAt: timestamp("deletedAt"),
+      deletedBy: integer("deletedBy"),
+      deleteReason: text("deleteReason")
+    });
+    abastecimentos = pgTable("abastecimentos", {
+      id: serial("id").primaryKey(),
+      empresaId: integer("empresaId").notNull(),
+      veiculoId: integer("veiculoId").notNull(),
+      motoristaId: integer("motoristaId"),
+      data: date("data").notNull(),
+      tipoCombustivel: tipoCombustivelEnum("tipoCombustivel").notNull(),
+      quantidade: decimal("quantidade", { precision: 8, scale: 3 }).notNull(),
+      valorUnitario: decimal("valorUnitario", { precision: 8, scale: 3 }),
+      valorTotal: decimal("valorTotal", { precision: 10, scale: 2 }),
+      kmAtual: integer("kmAtual"),
+      kmRodado: integer("kmRodado"),
+      mediaConsumo: decimal("mediaConsumo", { precision: 5, scale: 2 }),
+      local: varchar("local", { length: 255 }),
+      // posto/cidade
+      tipoAbastecimento: tipoAbastecimentoEnum("tipoAbastecimento").default("interno"),
+      notaFiscal: varchar("notaFiscal", { length: 50 }),
+      observacoes: text("observacoes"),
+      createdAt: timestamp("createdAt").defaultNow().notNull(),
+      updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+      deletedAt: timestamp("deletedAt"),
+      deletedBy: integer("deletedBy"),
+      deleteReason: text("deleteReason")
+    });
+    manutencoes = pgTable("manutencoes", {
+      id: serial("id").primaryKey(),
+      empresaId: integer("empresaId").notNull(),
+      veiculoId: integer("veiculoId").notNull(),
+      data: date("data").notNull(),
+      tipo: tipoManutencaoEnum("tipo").notNull(),
+      descricao: text("descricao").notNull(),
+      empresa: varchar("empresa", { length: 255 }),
+      // oficina/empresa
+      valor: decimal("valor", { precision: 10, scale: 2 }),
+      kmAtual: integer("kmAtual"),
+      proximaManutencaoKm: integer("proximaManutencaoKm"),
+      proximaManutencaoData: date("proximaManutencaoData"),
+      notaFiscal: varchar("notaFiscal", { length: 50 }),
+      observacoes: text("observacoes"),
+      createdAt: timestamp("createdAt").defaultNow().notNull(),
+      updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+      deletedAt: timestamp("deletedAt"),
+      deletedBy: integer("deletedBy"),
+      deleteReason: text("deleteReason")
+    });
+    viagens = pgTable("viagens", {
+      id: serial("id").primaryKey(),
+      empresaId: integer("empresaId").notNull(),
+      tipo: tipoViagemEnum("tipo").default("viagem").notNull(),
+      veiculoId: integer("veiculoId").notNull(),
+      cavaloPrincipalId: integer("cavaloPrincipalId"),
+      // se for carreta, o cavalo que puxou
+      motoristaId: integer("motoristaId"),
+      ajudante1Id: integer("ajudante1Id"),
+      ajudante2Id: integer("ajudante2Id"),
+      ajudante3Id: integer("ajudante3Id"),
+      // Rota
+      origem: varchar("origem", { length: 255 }),
+      destino: varchar("destino", { length: 255 }),
+      // Datas e KM
+      dataSaida: timestamp("dataSaida"),
+      dataChegada: timestamp("dataChegada"),
+      kmSaida: integer("kmSaida"),
+      kmChegada: integer("kmChegada"),
+      kmRodado: integer("kmRodado"),
+      // Carga
+      descricaoCarga: text("descricaoCarga"),
+      tipoCarga: text("tipoCarga"),
+      pesoCarga: decimal("pesoCarga", { precision: 8, scale: 2 }),
+      // Financeiro da viagem
+      freteTotalIda: decimal("freteTotalIda", { precision: 10, scale: 2 }),
+      freteTotalVolta: decimal("freteTotalVolta", { precision: 10, scale: 2 }),
+      freteTotal: decimal("freteTotal", { precision: 10, scale: 2 }),
+      adiantamento: decimal("adiantamento", { precision: 10, scale: 2 }),
+      saldoViagem: decimal("saldoViagem", { precision: 10, scale: 2 }),
+      // Despesas da viagem
+      totalDespesas: decimal("totalDespesas", { precision: 10, scale: 2 }),
+      mediaConsumo: decimal("mediaConsumo", { precision: 5, scale: 2 }),
+      // Documentacao
+      notaFiscal: varchar("notaFiscal", { length: 50 }),
+      // Status
+      status: statusViagemEnum("status").default("planejada").notNull(),
+      observacoes: text("observacoes"),
+      teveProblema: boolean("teveProblema").default(false),
+      voltouComCarga: boolean("voltouComCarga").default(false),
+      observacoesChegada: text("observacoesChegada"),
+      createdAt: timestamp("createdAt").defaultNow().notNull(),
+      updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+      deletedAt: timestamp("deletedAt"),
+      deletedBy: integer("deletedBy"),
+      deleteReason: text("deleteReason")
+    });
+    despesasViagem = pgTable("despesas_viagem", {
+      id: serial("id").primaryKey(),
+      viagemId: integer("viagemId").notNull(),
+      empresaId: integer("empresaId").notNull(),
+      tipo: tipoDespesaEnum("tipo").notNull(),
+      descricao: text("descricao"),
+      valor: decimal("valor", { precision: 10, scale: 2 }).notNull(),
+      data: date("data"),
+      comprovante: text("comprovante"),
+      // URL da foto
+      createdAt: timestamp("createdAt").defaultNow().notNull(),
+      deletedAt: timestamp("deletedAt"),
+      deletedBy: integer("deletedBy"),
+      deleteReason: text("deleteReason")
+    });
+    checklists = pgTable("checklists", {
+      id: serial("id").primaryKey(),
+      empresaId: integer("empresaId").notNull(),
+      veiculoId: integer("veiculoId").notNull(),
+      cavaloPrincipalId: integer("cavaloPrincipalId"),
+      // checklist independente para carreta
+      motoristaId: integer("motoristaId"),
+      turno: turnoEnum("turno"),
+      tipo: tipoChecklistEnum("tipo").default("retorno").notNull(),
+      // Itens internos
+      cracha: itemChecklistEnum("cracha"),
+      cnh: itemChecklistEnum("cnh"),
+      documentosVeiculo: itemChecklistEnum("documentosVeiculo"),
+      epi: itemChecklistEnum("epi"),
+      computadorBordo: itemChecklistEnum("computadorBordo"),
+      cinto: itemChecklistEnum("cinto"),
+      banco: itemChecklistEnum("banco"),
+      direcao: itemChecklistEnum("direcao"),
+      luzesPainel: itemChecklistEnum("luzesPainel"),
+      tacografo: itemChecklistEnum("tacografo"),
+      extintor: itemChecklistEnum("extintor"),
+      portas: itemChecklistEnum("portas"),
+      limpador: itemChecklistEnum("limpador"),
+      buzina: itemChecklistEnum("buzina"),
+      freioDeMao: itemChecklistEnum("freioDeMao"),
+      alarmeCacamba: itemChecklistEnum("alarmeCacamba"),
+      cabineLimpa: itemChecklistEnum("cabineLimpa"),
+      objetosSoltos: itemChecklistEnum("objetosSoltos"),
+      // Itens externos
+      pneus: itemChecklistEnum("pneus"),
+      vazamentos: itemChecklistEnum("vazamentos"),
+      trianguloCones: itemChecklistEnum("trianguloCones"),
+      espelhos: itemChecklistEnum("espelhos"),
+      lonaCarga: itemChecklistEnum("lonaCarga"),
+      faixasRefletivas: itemChecklistEnum("faixasRefletivas"),
+      luzesLaterais: itemChecklistEnum("luzesLaterais"),
+      luzesFreio: itemChecklistEnum("luzesFreio"),
+      farol: itemChecklistEnum("farol"),
+      piscaAlerta: itemChecklistEnum("piscaAlerta"),
+      re: itemChecklistEnum("re"),
+      setas: itemChecklistEnum("setas"),
+      macacoEstepe: itemChecklistEnum("macacoEstepe"),
+      lanternas: itemChecklistEnum("lanternas"),
+      // Resumo
+      itensNaoConformes: integer("itensNaoConformes").default(0),
+      observacoes: text("observacoes"),
+      assinaturaMotorista: text("assinaturaMotorista"),
+      createdAt: timestamp("createdAt").defaultNow().notNull(),
+      updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+      deletedAt: timestamp("deletedAt"),
+      deletedBy: integer("deletedBy"),
+      deleteReason: text("deleteReason")
+    });
+    contasPagar = pgTable("contas_pagar", {
+      id: serial("id").primaryKey(),
+      empresaId: integer("empresaId").notNull(),
+      descricao: text("descricao").notNull(),
+      categoria: categoriaContaPagarEnum("categoria").notNull(),
+      valor: decimal("valor", { precision: 10, scale: 2 }).notNull(),
+      dataVencimento: date("dataVencimento").notNull(),
+      dataPagamento: date("dataPagamento"),
+      status: statusContaPagarEnum("status").default("pendente").notNull(),
+      fornecedor: varchar("fornecedor", { length: 255 }),
+      notaFiscal: varchar("notaFiscal", { length: 50 }),
+      veiculoId: integer("veiculoId"),
+      funcionarioId: integer("funcionarioId"),
+      viagemId: integer("viagemId"),
+      comprovante: text("comprovante"),
+      observacoes: text("observacoes"),
+      createdAt: timestamp("createdAt").defaultNow().notNull(),
+      updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+      deletedAt: timestamp("deletedAt"),
+      deletedBy: integer("deletedBy"),
+      deleteReason: text("deleteReason")
+    });
+    contasReceber = pgTable("contas_receber", {
+      id: serial("id").primaryKey(),
+      empresaId: integer("empresaId").notNull(),
+      descricao: text("descricao").notNull(),
+      categoria: categoriaContaReceberEnum("categoria").notNull(),
+      valor: decimal("valor", { precision: 10, scale: 2 }).notNull(),
+      dataVencimento: date("dataVencimento").notNull(),
+      dataRecebimento: date("dataRecebimento"),
+      status: statusContaReceberEnum("status").default("pendente").notNull(),
+      cliente: varchar("cliente", { length: 255 }),
+      notaFiscal: varchar("notaFiscal", { length: 50 }),
+      cteNumero: varchar("cteNumero", { length: 50 }),
+      viagemId: integer("viagemId"),
+      observacoes: text("observacoes"),
+      createdAt: timestamp("createdAt").defaultNow().notNull(),
+      updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+      deletedAt: timestamp("deletedAt"),
+      deletedBy: integer("deletedBy"),
+      deleteReason: text("deleteReason")
+    });
+    adiantamentos = pgTable("adiantamentos", {
+      id: serial("id").primaryKey(),
+      empresaId: integer("empresaId").notNull(),
+      funcionarioId: integer("funcionarioId").notNull(),
+      viagemId: integer("viagemId"),
+      valor: decimal("valor", { precision: 10, scale: 2 }).notNull(),
+      formaPagamento: formaPagamentoEnum("formaPagamento").notNull(),
+      data: date("data").notNull(),
+      status: statusAdiantamentoEnum("status").default("pendente").notNull(),
+      valorAcertado: decimal("valorAcertado", { precision: 10, scale: 2 }),
+      dataAcerto: date("dataAcerto"),
+      saldo: decimal("saldo", { precision: 10, scale: 2 }),
+      // positivo = devolveu, negativo = empresa deve
+      observacoes: text("observacoes"),
+      createdAt: timestamp("createdAt").defaultNow().notNull(),
+      updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+      deletedAt: timestamp("deletedAt"),
+      deletedBy: integer("deletedBy"),
+      deleteReason: text("deleteReason")
+    });
+    controleTanque = pgTable("controle_tanque", {
+      id: serial("id").primaryKey(),
+      empresaId: integer("empresaId").notNull(),
+      tipo: tipoTanqueEnum("tipo").notNull(),
+      data: date("data").notNull(),
+      operacao: operacaoTanqueEnum("operacao").notNull(),
+      quantidade: decimal("quantidade", { precision: 8, scale: 3 }).notNull(),
+      valorUnitario: decimal("valorUnitario", { precision: 8, scale: 3 }),
+      valorTotal: decimal("valorTotal", { precision: 10, scale: 2 }),
+      fornecedor: varchar("fornecedor", { length: 255 }),
+      notaFiscal: varchar("notaFiscal", { length: 50 }),
+      veiculoId: integer("veiculoId"),
+      // para saidas: qual veiculo abasteceu
+      motoristaId: integer("motoristaId"),
+      saldoAnterior: decimal("saldoAnterior", { precision: 8, scale: 3 }),
+      saldoAtual: decimal("saldoAtual", { precision: 8, scale: 3 }),
+      observacoes: text("observacoes"),
+      createdAt: timestamp("createdAt").defaultNow().notNull(),
+      deletedAt: timestamp("deletedAt"),
+      deletedBy: integer("deletedBy"),
+      deleteReason: text("deleteReason")
+    });
+    auditLog = pgTable("audit_log", {
+      id: bigint("id", { mode: "number" }).generatedAlwaysAsIdentity().primaryKey(),
+      empresaId: integer("empresaId"),
+      userId: integer("userId").notNull(),
+      userName: varchar("userName", { length: 255 }),
+      acao: varchar("acao", { length: 50 }).notNull(),
+      // CREATE, UPDATE, DELETE, RESTORE
+      tabela: varchar("tabela", { length: 100 }).notNull(),
+      registroId: integer("registroId").notNull(),
+      dadosAntes: text("dadosAntes"),
+      // JSON
+      dadosDepois: text("dadosDepois"),
+      // JSON
+      ip: varchar("ip", { length: 45 }),
+      userAgent: text("userAgent"),
+      createdAt: timestamp("createdAt").defaultNow().notNull()
+    });
+    acidentes = pgTable("acidentes", {
+      id: serial("id").primaryKey(),
+      empresaId: integer("empresaId").notNull(),
+      veiculoId: integer("veiculoId").notNull(),
+      motoristaId: integer("motoristaId"),
+      data: date("data").notNull(),
+      local: varchar("local", { length: 255 }),
+      descricao: text("descricao").notNull(),
+      boletimOcorrencia: varchar("boletimOcorrencia", { length: 50 }),
+      valorDano: decimal("valorDano", { precision: 10, scale: 2 }),
+      status: statusAcidenteEnum("status").default("aberto").notNull(),
+      observacoes: text("observacoes"),
+      createdAt: timestamp("createdAt").defaultNow().notNull(),
+      updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+      deletedAt: timestamp("deletedAt"),
+      deletedBy: integer("deletedBy"),
+      deleteReason: text("deleteReason")
+    });
+    chatConversations = pgTable("chat_conversations", {
+      id: serial("id").primaryKey(),
+      empresaId: integer("empresaId").notNull(),
+      name: varchar("name", { length: 255 }),
+      // opcional para grupos
+      isGroup: boolean("isGroup").default(false).notNull(),
+      lastMessageAt: timestamp("lastMessageAt").defaultNow().notNull(),
+      createdAt: timestamp("createdAt").defaultNow().notNull(),
+      updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+      deletedAt: timestamp("deletedAt")
+    });
+    chatMembers = pgTable("chat_members", {
+      id: serial("id").primaryKey(),
+      conversationId: integer("conversationId").notNull(),
+      userId: integer("userId").notNull(),
+      role: chatRoleEnum("role").default("member").notNull(),
+      joinedAt: timestamp("joinedAt").defaultNow().notNull(),
+      lastReadAt: timestamp("lastReadAt").defaultNow().notNull()
+    });
+    chatMessages = pgTable("chat_messages", {
+      id: serial("id").primaryKey(),
+      conversationId: integer("conversationId").notNull(),
+      senderId: integer("senderId").notNull(),
+      content: text("content").notNull(),
+      type: chatMessageTypeEnum("type").default("text").notNull(),
+      createdAt: timestamp("createdAt").defaultNow().notNull(),
+      deletedAt: timestamp("deletedAt")
+    });
+    statusNfEnum = pgEnum("status_nf", [
+      "pendente",
+      "entregue",
+      "devolvida",
+      "parcial",
+      "extraviada"
+    ]);
+    notasFiscaisViagem = pgTable("notas_fiscais_viagem", {
+      id: serial("id").primaryKey(),
+      empresaId: integer("empresaId").notNull(),
+      viagemId: integer("viagemId").notNull(),
+      numeroNf: varchar("numeroNf", { length: 20 }).notNull(),
+      serie: varchar("serie", { length: 5 }),
+      chaveAcesso: varchar("chaveAcesso", { length: 44 }),
+      destinatario: varchar("destinatario", { length: 255 }),
+      cnpjDestinatario: varchar("cnpjDestinatario", { length: 18 }),
+      enderecoEntrega: varchar("enderecoEntrega", { length: 500 }),
+      cidade: varchar("cidade", { length: 100 }),
+      uf: varchar("uf", { length: 2 }),
+      valorNf: decimal("valorNf", { precision: 12, scale: 2 }),
+      pesoKg: decimal("pesoKg", { precision: 8, scale: 2 }),
+      volumes: integer("volumes"),
+      status: statusNfEnum("status").default("pendente").notNull(),
+      dataCanhoto: timestamp("dataCanhoto"),
+      dataEntrega: timestamp("dataEntrega"),
+      recebidoPor: varchar("recebidoPor", { length: 255 }),
+      motivoDevolucao: text("motivoDevolucao"),
+      observacoes: text("observacoes"),
+      ordemEntrega: integer("ordemEntrega"),
+      fotoCanhoto: varchar("fotoCanhoto", { length: 500 }),
+      // URL da foto do canhoto assinado
+      createdAt: timestamp("createdAt").defaultNow().notNull(),
+      updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+      deletedAt: timestamp("deletedAt")
+    });
+    statusAcertoCargaEnum = pgEnum("status_acerto_carga", [
+      "aberto",
+      // viagem concluída mas acerto ainda não feito
+      "em_analise",
+      // conferindo valores
+      "fechado",
+      // acerto finalizado e aprovado
+      "pago"
+      // motorista recebeu o saldo
+    ]);
+    acertosCarga = pgTable("acertos_carga", {
+      id: serial("id").primaryKey(),
+      empresaId: integer("empresaId").notNull(),
+      viagemId: integer("viagemId").notNull(),
+      motoristaId: integer("motoristaId"),
+      // Identificação
+      dataAcerto: date("dataAcerto"),
+      status: statusAcertoCargaEnum("status").default("aberto").notNull(),
+      // ─── O que o motorista levou ───────────────────────────────────────────────
+      adiantamentoConcedido: decimal("adiantamentoConcedido", { precision: 10, scale: 2 }).default("0"),
+      // ─── O que o motorista recebeu em campo ───────────────────────────────────
+      freteRecebido: decimal("freteRecebido", { precision: 10, scale: 2 }).default("0"),
+      // dinheiro recebido de clientes
+      // ─── Despesas do motorista em campo ───────────────────────────────────────
+      despesasPedagio: decimal("despesasPedagio", { precision: 10, scale: 2 }).default("0"),
+      despesasCombustivel: decimal("despesasCombustivel", { precision: 10, scale: 2 }).default("0"),
+      despesasAlimentacao: decimal("despesasAlimentacao", { precision: 10, scale: 2 }).default("0"),
+      despesasEstacionamento: decimal("despesasEstacionamento", { precision: 10, scale: 2 }).default("0"),
+      despesasOutras: decimal("despesasOutras", { precision: 10, scale: 2 }).default("0"),
+      descricaoOutras: text("descricaoOutras"),
+      // ─── Devoluções ───────────────────────────────────────────────────────────
+      valorDevolvido: decimal("valorDevolvido", { precision: 10, scale: 2 }).default("0"),
+      // dinheiro devolvido pelo motorista
+      // ─── Comissão ─────────────────────────────────────────────────────────────
+      percentualComissao: decimal("percentualComissao", { precision: 5, scale: 2 }).default("0"),
+      valorComissao: decimal("valorComissao", { precision: 10, scale: 2 }).default("0"),
+      // ─── Saldo calculado ──────────────────────────────────────────────────────
+      // saldo = freteRecebido - adiantamentoConcedido - totalDespesas - valorDevolvido + valorComissao
+      saldoFinal: decimal("saldoFinal", { precision: 10, scale: 2 }).default("0"),
+      // ─── Observações e aprovação ──────────────────────────────────────────────
+      observacoes: text("observacoes"),
+      aprovadoPor: varchar("aprovadoPor", { length: 255 }),
+      dataAprovacao: timestamp("dataAprovacao"),
+      // ─── Auditoria ────────────────────────────────────────────────────────────
+      createdAt: timestamp("createdAt").defaultNow().notNull(),
+      updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+      deletedAt: timestamp("deletedAt")
+    });
+    statusCarregamentoEnum = pgEnum("status_carregamento", [
+      "montando",
+      // carga sendo montada
+      "pronto",
+      // carga montada, aguardando saída
+      "em_rota",
+      // veículo saiu com a carga
+      "retornado",
+      // veículo retornou
+      "encerrado"
+      // carregamento finalizado e conferido
+    ]);
+    carregamentos = pgTable("carregamentos", {
+      id: serial("id").primaryKey(),
+      empresaId: integer("empresaId").notNull(),
+      // Identificação
+      numero: varchar("numero", { length: 20 }),
+      // número do carregamento (ex: CARG-001)
+      data: date("data").notNull(),
+      // Veículo e motorista
+      veiculoId: integer("veiculoId"),
+      veiculoPlaca: varchar("veiculoPlaca", { length: 10 }),
+      motoristaId: integer("motoristaId"),
+      motoristaNome: varchar("motoristaNome", { length: 255 }),
+      ajudanteId: integer("ajudanteId"),
+      ajudanteNome: varchar("ajudanteNome", { length: 255 }),
+      // Rota
+      rotaDescricao: varchar("rotaDescricao", { length: 255 }),
+      cidadesRota: text("cidadesRota"),
+      // JSON array de cidades
+      // Status e datas
+      status: statusCarregamentoEnum("status").default("montando").notNull(),
+      dataSaida: timestamp("dataSaida"),
+      dataRetorno: timestamp("dataRetorno"),
+      kmSaida: integer("kmSaida"),
+      kmRetorno: integer("kmRetorno"),
+      // Totais (calculados)
+      totalNfs: integer("totalNfs").default(0),
+      totalVolumes: integer("totalVolumes").default(0),
+      totalPesoKg: decimal("totalPesoKg", { precision: 10, scale: 2 }).default("0"),
+      totalValorNfs: decimal("totalValorNfs", { precision: 12, scale: 2 }).default("0"),
+      // Observações
+      observacoes: text("observacoes"),
+      // Auditoria
+      createdAt: timestamp("createdAt").defaultNow().notNull(),
+      updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+      deletedAt: timestamp("deletedAt")
+    });
+    itensCarregamento = pgTable("itens_carregamento", {
+      id: serial("id").primaryKey(),
+      carregamentoId: integer("carregamentoId").notNull(),
+      empresaId: integer("empresaId").notNull(),
+      // Dados da NF
+      numeroNf: varchar("numeroNf", { length: 20 }).notNull(),
+      serie: varchar("serie", { length: 5 }),
+      chaveAcesso: varchar("chaveAcesso", { length: 44 }),
+      // Destinatário
+      destinatario: varchar("destinatario", { length: 255 }),
+      cnpjDestinatario: varchar("cnpjDestinatario", { length: 18 }),
+      enderecoEntrega: varchar("enderecoEntrega", { length: 500 }),
+      cidade: varchar("cidade", { length: 100 }),
+      uf: varchar("uf", { length: 2 }),
+      // Carga
+      valorNf: decimal("valorNf", { precision: 12, scale: 2 }),
+      pesoKg: decimal("pesoKg", { precision: 8, scale: 2 }),
+      volumes: integer("volumes"),
+      descricaoCarga: varchar("descricaoCarga", { length: 255 }),
+      // Ordem e status de entrega
+      ordemEntrega: integer("ordemEntrega"),
+      status: statusNfEnum("status").default("pendente").notNull(),
+      dataCanhoto: timestamp("dataCanhoto"),
+      recebidoPor: varchar("recebidoPor", { length: 255 }),
+      motivoDevolucao: text("motivoDevolucao"),
+      observacoes: text("observacoes"),
+      // Auditoria
+      createdAt: timestamp("createdAt").defaultNow().notNull(),
+      updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+      deletedAt: timestamp("deletedAt")
+    });
+  }
+});
+
 // index.ts
 import { webcrypto } from "crypto";
 import express from "express";
@@ -197,647 +902,12 @@ var systemRouter = router({
 });
 
 // db.ts
+init_schema();
 import path from "path";
 import dotenv from "dotenv";
 import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
-
-// drizzle/schema.ts
-import {
-  bigint,
-  boolean,
-  date,
-  decimal,
-  integer,
-  pgEnum,
-  pgTable,
-  serial,
-  text,
-  timestamp,
-  varchar
-} from "drizzle-orm/pg-core";
-var userRoleEnum = pgEnum("user_role", ["user", "admin", "master_admin", "monitor", "dispatcher"]);
-var funcaoEnum = pgEnum("funcao", ["motorista", "ajudante", "despachante", "gerente", "admin", "outro"]);
-var tipoContratoEnum = pgEnum("tipo_contrato", ["clt", "freelancer", "terceirizado", "estagiario"]);
-var tipoCobrancaEnum = pgEnum("tipo_cobranca", ["diaria", "mensal", "por_viagem"]);
-var tipoContaEnum = pgEnum("tipo_conta", ["corrente", "poupanca", "pix"]);
-var tipoVeiculoEnum = pgEnum("tipo_veiculo", ["van", "toco", "truck", "cavalo", "carreta", "empilhadeira", "paletera", "outro"]);
-var tipoCombustivelEnum = pgEnum("tipo_combustivel", ["diesel", "arla", "gasolina", "etanol", "gas", "outro"]);
-var tipoAbastecimentoEnum = pgEnum("tipo_abastecimento", ["interno", "externo"]);
-var tipoManutencaoEnum = pgEnum("tipo_manutencao", ["preventiva", "corretiva", "revisao", "pneu", "eletrica", "funilaria", "outro"]);
-var tipoViagemEnum = pgEnum("tipo_viagem", ["entrega", "viagem"]);
-var statusViagemEnum = pgEnum("status_viagem", ["planejada", "em_andamento", "concluida", "cancelada"]);
-var tipoDespesaEnum = pgEnum("tipo_despesa", ["combustivel", "pedagio", "borracharia", "estacionamento", "oficina", "telefone", "descarga", "diaria", "alimentacao", "outro"]);
-var turnoEnum = pgEnum("turno", ["manha", "tarde", "noite"]);
-var tipoChecklistEnum = pgEnum("tipo_checklist", ["saida", "retorno"]);
-var itemChecklistEnum = pgEnum("item_checklist", ["conforme", "nao_conforme", "na"]);
-var categoriaContaPagarEnum = pgEnum("categoria_conta_pagar", ["combustivel", "manutencao", "salario", "freelancer", "pedagio", "seguro", "ipva", "licenciamento", "pneu", "outro"]);
-var statusContaPagarEnum = pgEnum("status_conta_pagar", ["pendente", "pago", "vencido", "cancelado"]);
-var categoriaContaReceberEnum = pgEnum("categoria_conta_receber", ["frete", "cte", "devolucao", "outro"]);
-var statusContaReceberEnum = pgEnum("status_conta_receber", ["pendente", "recebido", "vencido", "cancelado"]);
-var formaPagamentoEnum = pgEnum("forma_pagamento", ["dinheiro", "pix", "transferencia", "cartao"]);
-var statusAdiantamentoEnum = pgEnum("status_adiantamento", ["pendente", "acertado", "cancelado"]);
-var tipoTanqueEnum = pgEnum("tipo_tanque", ["diesel", "arla"]);
-var operacaoTanqueEnum = pgEnum("operacao_tanque", ["entrada", "saida"]);
-var statusAcidenteEnum = pgEnum("status_acidente", ["aberto", "em_reparo", "resolvido"]);
-var chatRoleEnum = pgEnum("chat_role", ["admin", "member"]);
-var chatMessageTypeEnum = pgEnum("chat_message_type", ["text", "image", "file"]);
-var tipoEmpresaEnum = pgEnum("tipo_empresa", ["independente", "matriz", "filial"]);
-var users = pgTable("users", {
-  id: serial("id").primaryKey(),
-  openId: varchar("openId", { length: 64 }).notNull().unique(),
-  name: text("name"),
-  lastName: text("lastName"),
-  email: varchar("email", { length: 320 }),
-  phone: varchar("phone", { length: 20 }),
-  loginMethod: varchar("loginMethod", { length: 64 }),
-  password: varchar("password", { length: 255 }),
-  // Hash bcrypt
-  role: userRoleEnum("role").default("user").notNull(),
-  status: varchar("status", { length: 20 }).default("pending").notNull(),
-  // pending, approved, rejected
-  empresaId: integer("empresaId"),
-  // null = master_admin sem empresa fixa
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().$onUpdateFn(() => /* @__PURE__ */ new Date()).notNull(),
-  lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull()
-});
-var empresas = pgTable("empresas", {
-  id: serial("id").primaryKey(),
-  nome: varchar("nome", { length: 255 }).notNull(),
-  cnpj: varchar("cnpj", { length: 18 }),
-  telefone: varchar("telefone", { length: 20 }),
-  email: varchar("email", { length: 320 }),
-  endereco: text("endereco"),
-  cidade: varchar("cidade", { length: 100 }),
-  estado: varchar("estado", { length: 2 }),
-  // Hierarquia de grupo
-  tipoEmpresa: tipoEmpresaEnum("tipoEmpresa").default("independente").notNull(),
-  matrizId: integer("matrizId"),
-  // ID da empresa matriz (se for filial)
-  ativo: boolean("ativo").default(true).notNull(),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
-  deletedAt: timestamp("deletedAt"),
-  deletedBy: integer("deletedBy"),
-  deleteReason: text("deleteReason")
-});
-var funcionarios = pgTable("funcionarios", {
-  id: serial("id").primaryKey(),
-  empresaId: integer("empresaId").notNull(),
-  nome: varchar("nome", { length: 255 }).notNull(),
-  cpf: varchar("cpf", { length: 14 }),
-  rg: varchar("rg", { length: 20 }),
-  telefone: varchar("telefone", { length: 20 }),
-  email: varchar("email", { length: 320 }),
-  funcao: funcaoEnum("funcao").notNull(),
-  tipoContrato: tipoContratoEnum("tipoContrato").notNull(),
-  // Dados CLT
-  salario: decimal("salario", { precision: 10, scale: 2 }),
-  dataAdmissao: date("dataAdmissao"),
-  dataDemissao: date("dataDemissao"),
-  // Dados Freelancer/Temporário
-  valorDiaria: decimal("valorDiaria", { precision: 10, scale: 2 }),
-  valorMensal: decimal("valorMensal", { precision: 10, scale: 2 }),
-  tipoCobranca: tipoCobrancaEnum("tipoCobranca"),
-  dataInicioContrato: date("dataInicioContrato"),
-  dataFimContrato: date("dataFimContrato"),
-  diaPagamento: integer("diaPagamento"),
-  // dia do mes para pagar
-  // Dados Motorista
-  cnh: varchar("cnh", { length: 20 }),
-  categoriaCnh: varchar("categoriaCnh", { length: 5 }),
-  vencimentoCnh: date("vencimentoCnh"),
-  mopp: boolean("mopp").default(false),
-  vencimentoMopp: date("vencimentoMopp"),
-  vencimentoAso: date("vencimentoAso"),
-  // exame medico
-  // Dados bancarios (freelancer)
-  banco: varchar("banco", { length: 100 }),
-  agencia: varchar("agencia", { length: 10 }),
-  conta: varchar("conta", { length: 20 }),
-  tipoConta: tipoContaEnum("tipoConta"),
-  chavePix: varchar("chavePix", { length: 255 }),
-  // Observacoes
-  observacoes: text("observacoes"),
-  foto: text("foto"),
-  ativo: boolean("ativo").default(true).notNull(),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
-  deletedAt: timestamp("deletedAt"),
-  deletedBy: integer("deletedBy"),
-  deleteReason: text("deleteReason")
-});
-var veiculos = pgTable("veiculos", {
-  id: serial("id").primaryKey(),
-  empresaId: integer("empresaId").notNull(),
-  placa: varchar("placa", { length: 10 }).notNull(),
-  tipo: tipoVeiculoEnum("tipo").notNull(),
-  // Cavalo/Carreta: relacionamento
-  cavaloPrincipalId: integer("cavaloPrincipalId"),
-  // para carreta: qual cavalo esta acoplado
-  // Dados do veiculo
-  marca: varchar("marca", { length: 100 }),
-  modelo: varchar("modelo", { length: 100 }),
-  ano: integer("ano"),
-  cor: varchar("cor", { length: 50 }),
-  renavam: varchar("renavam", { length: 20 }),
-  chassi: varchar("chassi", { length: 30 }),
-  capacidadeCarga: decimal("capacidadeCarga", { precision: 8, scale: 2 }),
-  // em toneladas
-  // Motorista e ajudante padrao
-  motoristaId: integer("motoristaId"),
-  ajudanteId: integer("ajudanteId"),
-  // KM e consumo
-  kmAtual: integer("kmAtual"),
-  mediaConsumo: decimal("mediaConsumo", { precision: 5, scale: 2 }),
-  // km/l
-  // Documentacao
-  vencimentoCrlv: date("vencimentoCrlv"),
-  vencimentoSeguro: date("vencimentoSeguro"),
-  // Classificacao (estrelas do Excel)
-  classificacao: integer("classificacao").default(0),
-  // 0-5 estrelas
-  observacoes: text("observacoes"),
-  ativo: boolean("ativo").default(true).notNull(),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
-  deletedAt: timestamp("deletedAt"),
-  deletedBy: integer("deletedBy"),
-  deleteReason: text("deleteReason")
-});
-var abastecimentos = pgTable("abastecimentos", {
-  id: serial("id").primaryKey(),
-  empresaId: integer("empresaId").notNull(),
-  veiculoId: integer("veiculoId").notNull(),
-  motoristaId: integer("motoristaId"),
-  data: date("data").notNull(),
-  tipoCombustivel: tipoCombustivelEnum("tipoCombustivel").notNull(),
-  quantidade: decimal("quantidade", { precision: 8, scale: 3 }).notNull(),
-  valorUnitario: decimal("valorUnitario", { precision: 8, scale: 3 }),
-  valorTotal: decimal("valorTotal", { precision: 10, scale: 2 }),
-  kmAtual: integer("kmAtual"),
-  kmRodado: integer("kmRodado"),
-  mediaConsumo: decimal("mediaConsumo", { precision: 5, scale: 2 }),
-  local: varchar("local", { length: 255 }),
-  // posto/cidade
-  tipoAbastecimento: tipoAbastecimentoEnum("tipoAbastecimento").default("interno"),
-  notaFiscal: varchar("notaFiscal", { length: 50 }),
-  observacoes: text("observacoes"),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
-  deletedAt: timestamp("deletedAt"),
-  deletedBy: integer("deletedBy"),
-  deleteReason: text("deleteReason")
-});
-var manutencoes = pgTable("manutencoes", {
-  id: serial("id").primaryKey(),
-  empresaId: integer("empresaId").notNull(),
-  veiculoId: integer("veiculoId").notNull(),
-  data: date("data").notNull(),
-  tipo: tipoManutencaoEnum("tipo").notNull(),
-  descricao: text("descricao").notNull(),
-  empresa: varchar("empresa", { length: 255 }),
-  // oficina/empresa
-  valor: decimal("valor", { precision: 10, scale: 2 }),
-  kmAtual: integer("kmAtual"),
-  proximaManutencaoKm: integer("proximaManutencaoKm"),
-  proximaManutencaoData: date("proximaManutencaoData"),
-  notaFiscal: varchar("notaFiscal", { length: 50 }),
-  observacoes: text("observacoes"),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
-  deletedAt: timestamp("deletedAt"),
-  deletedBy: integer("deletedBy"),
-  deleteReason: text("deleteReason")
-});
-var viagens = pgTable("viagens", {
-  id: serial("id").primaryKey(),
-  empresaId: integer("empresaId").notNull(),
-  tipo: tipoViagemEnum("tipo").default("viagem").notNull(),
-  veiculoId: integer("veiculoId").notNull(),
-  cavaloPrincipalId: integer("cavaloPrincipalId"),
-  // se for carreta, o cavalo que puxou
-  motoristaId: integer("motoristaId"),
-  ajudante1Id: integer("ajudante1Id"),
-  ajudante2Id: integer("ajudante2Id"),
-  ajudante3Id: integer("ajudante3Id"),
-  // Rota
-  origem: varchar("origem", { length: 255 }),
-  destino: varchar("destino", { length: 255 }),
-  // Datas e KM
-  dataSaida: timestamp("dataSaida"),
-  dataChegada: timestamp("dataChegada"),
-  kmSaida: integer("kmSaida"),
-  kmChegada: integer("kmChegada"),
-  kmRodado: integer("kmRodado"),
-  // Carga
-  descricaoCarga: text("descricaoCarga"),
-  tipoCarga: text("tipoCarga"),
-  pesoCarga: decimal("pesoCarga", { precision: 8, scale: 2 }),
-  // Financeiro da viagem
-  freteTotalIda: decimal("freteTotalIda", { precision: 10, scale: 2 }),
-  freteTotalVolta: decimal("freteTotalVolta", { precision: 10, scale: 2 }),
-  freteTotal: decimal("freteTotal", { precision: 10, scale: 2 }),
-  adiantamento: decimal("adiantamento", { precision: 10, scale: 2 }),
-  saldoViagem: decimal("saldoViagem", { precision: 10, scale: 2 }),
-  // Despesas da viagem
-  totalDespesas: decimal("totalDespesas", { precision: 10, scale: 2 }),
-  mediaConsumo: decimal("mediaConsumo", { precision: 5, scale: 2 }),
-  // Documentacao
-  notaFiscal: varchar("notaFiscal", { length: 50 }),
-  // Status
-  status: statusViagemEnum("status").default("planejada").notNull(),
-  observacoes: text("observacoes"),
-  teveProblema: boolean("teveProblema").default(false),
-  voltouComCarga: boolean("voltouComCarga").default(false),
-  observacoesChegada: text("observacoesChegada"),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
-  deletedAt: timestamp("deletedAt"),
-  deletedBy: integer("deletedBy"),
-  deleteReason: text("deleteReason")
-});
-var despesasViagem = pgTable("despesas_viagem", {
-  id: serial("id").primaryKey(),
-  viagemId: integer("viagemId").notNull(),
-  empresaId: integer("empresaId").notNull(),
-  tipo: tipoDespesaEnum("tipo").notNull(),
-  descricao: text("descricao"),
-  valor: decimal("valor", { precision: 10, scale: 2 }).notNull(),
-  data: date("data"),
-  comprovante: text("comprovante"),
-  // URL da foto
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  deletedAt: timestamp("deletedAt"),
-  deletedBy: integer("deletedBy"),
-  deleteReason: text("deleteReason")
-});
-var checklists = pgTable("checklists", {
-  id: serial("id").primaryKey(),
-  empresaId: integer("empresaId").notNull(),
-  veiculoId: integer("veiculoId").notNull(),
-  cavaloPrincipalId: integer("cavaloPrincipalId"),
-  // checklist independente para carreta
-  motoristaId: integer("motoristaId"),
-  turno: turnoEnum("turno"),
-  tipo: tipoChecklistEnum("tipo").default("retorno").notNull(),
-  // Itens internos
-  cracha: itemChecklistEnum("cracha"),
-  cnh: itemChecklistEnum("cnh"),
-  documentosVeiculo: itemChecklistEnum("documentosVeiculo"),
-  epi: itemChecklistEnum("epi"),
-  computadorBordo: itemChecklistEnum("computadorBordo"),
-  cinto: itemChecklistEnum("cinto"),
-  banco: itemChecklistEnum("banco"),
-  direcao: itemChecklistEnum("direcao"),
-  luzesPainel: itemChecklistEnum("luzesPainel"),
-  tacografo: itemChecklistEnum("tacografo"),
-  extintor: itemChecklistEnum("extintor"),
-  portas: itemChecklistEnum("portas"),
-  limpador: itemChecklistEnum("limpador"),
-  buzina: itemChecklistEnum("buzina"),
-  freioDeMao: itemChecklistEnum("freioDeMao"),
-  alarmeCacamba: itemChecklistEnum("alarmeCacamba"),
-  cabineLimpa: itemChecklistEnum("cabineLimpa"),
-  objetosSoltos: itemChecklistEnum("objetosSoltos"),
-  // Itens externos
-  pneus: itemChecklistEnum("pneus"),
-  vazamentos: itemChecklistEnum("vazamentos"),
-  trianguloCones: itemChecklistEnum("trianguloCones"),
-  espelhos: itemChecklistEnum("espelhos"),
-  lonaCarga: itemChecklistEnum("lonaCarga"),
-  faixasRefletivas: itemChecklistEnum("faixasRefletivas"),
-  luzesLaterais: itemChecklistEnum("luzesLaterais"),
-  luzesFreio: itemChecklistEnum("luzesFreio"),
-  farol: itemChecklistEnum("farol"),
-  piscaAlerta: itemChecklistEnum("piscaAlerta"),
-  re: itemChecklistEnum("re"),
-  setas: itemChecklistEnum("setas"),
-  macacoEstepe: itemChecklistEnum("macacoEstepe"),
-  lanternas: itemChecklistEnum("lanternas"),
-  // Resumo
-  itensNaoConformes: integer("itensNaoConformes").default(0),
-  observacoes: text("observacoes"),
-  assinaturaMotorista: text("assinaturaMotorista"),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
-  deletedAt: timestamp("deletedAt"),
-  deletedBy: integer("deletedBy"),
-  deleteReason: text("deleteReason")
-});
-var contasPagar = pgTable("contas_pagar", {
-  id: serial("id").primaryKey(),
-  empresaId: integer("empresaId").notNull(),
-  descricao: text("descricao").notNull(),
-  categoria: categoriaContaPagarEnum("categoria").notNull(),
-  valor: decimal("valor", { precision: 10, scale: 2 }).notNull(),
-  dataVencimento: date("dataVencimento").notNull(),
-  dataPagamento: date("dataPagamento"),
-  status: statusContaPagarEnum("status").default("pendente").notNull(),
-  fornecedor: varchar("fornecedor", { length: 255 }),
-  notaFiscal: varchar("notaFiscal", { length: 50 }),
-  veiculoId: integer("veiculoId"),
-  funcionarioId: integer("funcionarioId"),
-  viagemId: integer("viagemId"),
-  comprovante: text("comprovante"),
-  observacoes: text("observacoes"),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
-  deletedAt: timestamp("deletedAt"),
-  deletedBy: integer("deletedBy"),
-  deleteReason: text("deleteReason")
-});
-var contasReceber = pgTable("contas_receber", {
-  id: serial("id").primaryKey(),
-  empresaId: integer("empresaId").notNull(),
-  descricao: text("descricao").notNull(),
-  categoria: categoriaContaReceberEnum("categoria").notNull(),
-  valor: decimal("valor", { precision: 10, scale: 2 }).notNull(),
-  dataVencimento: date("dataVencimento").notNull(),
-  dataRecebimento: date("dataRecebimento"),
-  status: statusContaReceberEnum("status").default("pendente").notNull(),
-  cliente: varchar("cliente", { length: 255 }),
-  notaFiscal: varchar("notaFiscal", { length: 50 }),
-  cteNumero: varchar("cteNumero", { length: 50 }),
-  viagemId: integer("viagemId"),
-  observacoes: text("observacoes"),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
-  deletedAt: timestamp("deletedAt"),
-  deletedBy: integer("deletedBy"),
-  deleteReason: text("deleteReason")
-});
-var adiantamentos = pgTable("adiantamentos", {
-  id: serial("id").primaryKey(),
-  empresaId: integer("empresaId").notNull(),
-  funcionarioId: integer("funcionarioId").notNull(),
-  viagemId: integer("viagemId"),
-  valor: decimal("valor", { precision: 10, scale: 2 }).notNull(),
-  formaPagamento: formaPagamentoEnum("formaPagamento").notNull(),
-  data: date("data").notNull(),
-  status: statusAdiantamentoEnum("status").default("pendente").notNull(),
-  valorAcertado: decimal("valorAcertado", { precision: 10, scale: 2 }),
-  dataAcerto: date("dataAcerto"),
-  saldo: decimal("saldo", { precision: 10, scale: 2 }),
-  // positivo = devolveu, negativo = empresa deve
-  observacoes: text("observacoes"),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
-  deletedAt: timestamp("deletedAt"),
-  deletedBy: integer("deletedBy"),
-  deleteReason: text("deleteReason")
-});
-var controleTanque = pgTable("controle_tanque", {
-  id: serial("id").primaryKey(),
-  empresaId: integer("empresaId").notNull(),
-  tipo: tipoTanqueEnum("tipo").notNull(),
-  data: date("data").notNull(),
-  operacao: operacaoTanqueEnum("operacao").notNull(),
-  quantidade: decimal("quantidade", { precision: 8, scale: 3 }).notNull(),
-  valorUnitario: decimal("valorUnitario", { precision: 8, scale: 3 }),
-  valorTotal: decimal("valorTotal", { precision: 10, scale: 2 }),
-  fornecedor: varchar("fornecedor", { length: 255 }),
-  notaFiscal: varchar("notaFiscal", { length: 50 }),
-  veiculoId: integer("veiculoId"),
-  // para saidas: qual veiculo abasteceu
-  motoristaId: integer("motoristaId"),
-  saldoAnterior: decimal("saldoAnterior", { precision: 8, scale: 3 }),
-  saldoAtual: decimal("saldoAtual", { precision: 8, scale: 3 }),
-  observacoes: text("observacoes"),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  deletedAt: timestamp("deletedAt"),
-  deletedBy: integer("deletedBy"),
-  deleteReason: text("deleteReason")
-});
-var auditLog = pgTable("audit_log", {
-  id: bigint("id", { mode: "number" }).generatedAlwaysAsIdentity().primaryKey(),
-  empresaId: integer("empresaId"),
-  userId: integer("userId").notNull(),
-  userName: varchar("userName", { length: 255 }),
-  acao: varchar("acao", { length: 50 }).notNull(),
-  // CREATE, UPDATE, DELETE, RESTORE
-  tabela: varchar("tabela", { length: 100 }).notNull(),
-  registroId: integer("registroId").notNull(),
-  dadosAntes: text("dadosAntes"),
-  // JSON
-  dadosDepois: text("dadosDepois"),
-  // JSON
-  ip: varchar("ip", { length: 45 }),
-  userAgent: text("userAgent"),
-  createdAt: timestamp("createdAt").defaultNow().notNull()
-});
-var acidentes = pgTable("acidentes", {
-  id: serial("id").primaryKey(),
-  empresaId: integer("empresaId").notNull(),
-  veiculoId: integer("veiculoId").notNull(),
-  motoristaId: integer("motoristaId"),
-  data: date("data").notNull(),
-  local: varchar("local", { length: 255 }),
-  descricao: text("descricao").notNull(),
-  boletimOcorrencia: varchar("boletimOcorrencia", { length: 50 }),
-  valorDano: decimal("valorDano", { precision: 10, scale: 2 }),
-  status: statusAcidenteEnum("status").default("aberto").notNull(),
-  observacoes: text("observacoes"),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
-  deletedAt: timestamp("deletedAt"),
-  deletedBy: integer("deletedBy"),
-  deleteReason: text("deleteReason")
-});
-var chatConversations = pgTable("chat_conversations", {
-  id: serial("id").primaryKey(),
-  empresaId: integer("empresaId").notNull(),
-  name: varchar("name", { length: 255 }),
-  // opcional para grupos
-  isGroup: boolean("isGroup").default(false).notNull(),
-  lastMessageAt: timestamp("lastMessageAt").defaultNow().notNull(),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
-  deletedAt: timestamp("deletedAt")
-});
-var chatMembers = pgTable("chat_members", {
-  id: serial("id").primaryKey(),
-  conversationId: integer("conversationId").notNull(),
-  userId: integer("userId").notNull(),
-  role: chatRoleEnum("role").default("member").notNull(),
-  joinedAt: timestamp("joinedAt").defaultNow().notNull(),
-  lastReadAt: timestamp("lastReadAt").defaultNow().notNull()
-});
-var chatMessages = pgTable("chat_messages", {
-  id: serial("id").primaryKey(),
-  conversationId: integer("conversationId").notNull(),
-  senderId: integer("senderId").notNull(),
-  content: text("content").notNull(),
-  type: chatMessageTypeEnum("type").default("text").notNull(),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  deletedAt: timestamp("deletedAt")
-});
-var statusNfEnum = pgEnum("status_nf", [
-  "pendente",
-  "entregue",
-  "devolvida",
-  "parcial",
-  "extraviada"
-]);
-var notasFiscaisViagem = pgTable("notas_fiscais_viagem", {
-  id: serial("id").primaryKey(),
-  empresaId: integer("empresaId").notNull(),
-  viagemId: integer("viagemId").notNull(),
-  numeroNf: varchar("numeroNf", { length: 20 }).notNull(),
-  serie: varchar("serie", { length: 5 }),
-  chaveAcesso: varchar("chaveAcesso", { length: 44 }),
-  destinatario: varchar("destinatario", { length: 255 }),
-  cnpjDestinatario: varchar("cnpjDestinatario", { length: 18 }),
-  enderecoEntrega: varchar("enderecoEntrega", { length: 500 }),
-  cidade: varchar("cidade", { length: 100 }),
-  uf: varchar("uf", { length: 2 }),
-  valorNf: decimal("valorNf", { precision: 12, scale: 2 }),
-  pesoKg: decimal("pesoKg", { precision: 8, scale: 2 }),
-  volumes: integer("volumes"),
-  status: statusNfEnum("status").default("pendente").notNull(),
-  dataCanhoto: timestamp("dataCanhoto"),
-  dataEntrega: timestamp("dataEntrega"),
-  recebidoPor: varchar("recebidoPor", { length: 255 }),
-  motivoDevolucao: text("motivoDevolucao"),
-  observacoes: text("observacoes"),
-  ordemEntrega: integer("ordemEntrega"),
-  fotoCanhoto: varchar("fotoCanhoto", { length: 500 }),
-  // URL da foto do canhoto assinado
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
-  deletedAt: timestamp("deletedAt")
-});
-var statusAcertoCargaEnum = pgEnum("status_acerto_carga", [
-  "aberto",
-  // viagem concluída mas acerto ainda não feito
-  "em_analise",
-  // conferindo valores
-  "fechado",
-  // acerto finalizado e aprovado
-  "pago"
-  // motorista recebeu o saldo
-]);
-var acertosCarga = pgTable("acertos_carga", {
-  id: serial("id").primaryKey(),
-  empresaId: integer("empresaId").notNull(),
-  viagemId: integer("viagemId").notNull(),
-  motoristaId: integer("motoristaId"),
-  // Identificação
-  dataAcerto: date("dataAcerto"),
-  status: statusAcertoCargaEnum("status").default("aberto").notNull(),
-  // ─── O que o motorista levou ───────────────────────────────────────────────
-  adiantamentoConcedido: decimal("adiantamentoConcedido", { precision: 10, scale: 2 }).default("0"),
-  // ─── O que o motorista recebeu em campo ───────────────────────────────────
-  freteRecebido: decimal("freteRecebido", { precision: 10, scale: 2 }).default("0"),
-  // dinheiro recebido de clientes
-  // ─── Despesas do motorista em campo ───────────────────────────────────────
-  despesasPedagio: decimal("despesasPedagio", { precision: 10, scale: 2 }).default("0"),
-  despesasCombustivel: decimal("despesasCombustivel", { precision: 10, scale: 2 }).default("0"),
-  despesasAlimentacao: decimal("despesasAlimentacao", { precision: 10, scale: 2 }).default("0"),
-  despesasEstacionamento: decimal("despesasEstacionamento", { precision: 10, scale: 2 }).default("0"),
-  despesasOutras: decimal("despesasOutras", { precision: 10, scale: 2 }).default("0"),
-  descricaoOutras: text("descricaoOutras"),
-  // ─── Devoluções ───────────────────────────────────────────────────────────
-  valorDevolvido: decimal("valorDevolvido", { precision: 10, scale: 2 }).default("0"),
-  // dinheiro devolvido pelo motorista
-  // ─── Comissão ─────────────────────────────────────────────────────────────
-  percentualComissao: decimal("percentualComissao", { precision: 5, scale: 2 }).default("0"),
-  valorComissao: decimal("valorComissao", { precision: 10, scale: 2 }).default("0"),
-  // ─── Saldo calculado ──────────────────────────────────────────────────────
-  // saldo = freteRecebido - adiantamentoConcedido - totalDespesas - valorDevolvido + valorComissao
-  saldoFinal: decimal("saldoFinal", { precision: 10, scale: 2 }).default("0"),
-  // ─── Observações e aprovação ──────────────────────────────────────────────
-  observacoes: text("observacoes"),
-  aprovadoPor: varchar("aprovadoPor", { length: 255 }),
-  dataAprovacao: timestamp("dataAprovacao"),
-  // ─── Auditoria ────────────────────────────────────────────────────────────
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
-  deletedAt: timestamp("deletedAt")
-});
-var statusCarregamentoEnum = pgEnum("status_carregamento", [
-  "montando",
-  // carga sendo montada
-  "pronto",
-  // carga montada, aguardando saída
-  "em_rota",
-  // veículo saiu com a carga
-  "retornado",
-  // veículo retornou
-  "encerrado"
-  // carregamento finalizado e conferido
-]);
-var carregamentos = pgTable("carregamentos", {
-  id: serial("id").primaryKey(),
-  empresaId: integer("empresaId").notNull(),
-  // Identificação
-  numero: varchar("numero", { length: 20 }),
-  // número do carregamento (ex: CARG-001)
-  data: date("data").notNull(),
-  // Veículo e motorista
-  veiculoId: integer("veiculoId"),
-  veiculoPlaca: varchar("veiculoPlaca", { length: 10 }),
-  motoristaId: integer("motoristaId"),
-  motoristaNome: varchar("motoristaNome", { length: 255 }),
-  ajudanteId: integer("ajudanteId"),
-  ajudanteNome: varchar("ajudanteNome", { length: 255 }),
-  // Rota
-  rotaDescricao: varchar("rotaDescricao", { length: 255 }),
-  cidadesRota: text("cidadesRota"),
-  // JSON array de cidades
-  // Status e datas
-  status: statusCarregamentoEnum("status").default("montando").notNull(),
-  dataSaida: timestamp("dataSaida"),
-  dataRetorno: timestamp("dataRetorno"),
-  kmSaida: integer("kmSaida"),
-  kmRetorno: integer("kmRetorno"),
-  // Totais (calculados)
-  totalNfs: integer("totalNfs").default(0),
-  totalVolumes: integer("totalVolumes").default(0),
-  totalPesoKg: decimal("totalPesoKg", { precision: 10, scale: 2 }).default("0"),
-  totalValorNfs: decimal("totalValorNfs", { precision: 12, scale: 2 }).default("0"),
-  // Observações
-  observacoes: text("observacoes"),
-  // Auditoria
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
-  deletedAt: timestamp("deletedAt")
-});
-var itensCarregamento = pgTable("itens_carregamento", {
-  id: serial("id").primaryKey(),
-  carregamentoId: integer("carregamentoId").notNull(),
-  empresaId: integer("empresaId").notNull(),
-  // Dados da NF
-  numeroNf: varchar("numeroNf", { length: 20 }).notNull(),
-  serie: varchar("serie", { length: 5 }),
-  chaveAcesso: varchar("chaveAcesso", { length: 44 }),
-  // Destinatário
-  destinatario: varchar("destinatario", { length: 255 }),
-  cnpjDestinatario: varchar("cnpjDestinatario", { length: 18 }),
-  enderecoEntrega: varchar("enderecoEntrega", { length: 500 }),
-  cidade: varchar("cidade", { length: 100 }),
-  uf: varchar("uf", { length: 2 }),
-  // Carga
-  valorNf: decimal("valorNf", { precision: 12, scale: 2 }),
-  pesoKg: decimal("pesoKg", { precision: 8, scale: 2 }),
-  volumes: integer("volumes"),
-  descricaoCarga: varchar("descricaoCarga", { length: 255 }),
-  // Ordem e status de entrega
-  ordemEntrega: integer("ordemEntrega"),
-  status: statusNfEnum("status").default("pendente").notNull(),
-  dataCanhoto: timestamp("dataCanhoto"),
-  recebidoPor: varchar("recebidoPor", { length: 255 }),
-  motivoDevolucao: text("motivoDevolucao"),
-  observacoes: text("observacoes"),
-  // Auditoria
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
-  deletedAt: timestamp("deletedAt")
-});
-
-// db.ts
 dotenv.config({ path: path.resolve(process.cwd(), "..", ".env") });
 dotenv.config();
 var _db = null;
@@ -928,6 +998,7 @@ async function deleteUser(id) {
 }
 
 // routers/veiculos.ts
+init_schema();
 import { eq as eq2, and, isNull, isNotNull, desc, sql } from "drizzle-orm";
 import { z as z2 } from "zod";
 
@@ -1088,6 +1159,7 @@ var veiculosRouter = router({
 });
 
 // routers/funcionarios.ts
+init_schema();
 import { eq as eq3, and as and2, isNull as isNull2, isNotNull as isNotNull2, desc as desc2 } from "drizzle-orm";
 import { z as z3 } from "zod";
 var funcionarioInput = z3.object({
@@ -1267,6 +1339,7 @@ var funcionariosRouter = router({
 });
 
 // routers/frota.ts
+init_schema();
 import { eq as eq4, and as and3, isNull as isNull3, isNotNull as isNotNull3, desc as desc3, gte, lte, sql as sql2 } from "drizzle-orm";
 import { z as z4 } from "zod";
 function parseDate3(d) {
@@ -1719,6 +1792,7 @@ var frotaRouter = router({
 });
 
 // routers/financeiro.ts
+init_schema();
 import { eq as eq5, and as and4, isNull as isNull4, desc as desc4, sql as sql3, gte as gte2 } from "drizzle-orm";
 import { z as z5 } from "zod";
 import { TRPCError as TRPCError3 } from "@trpc/server";
@@ -2070,6 +2144,8 @@ var financeiroRouter = router({
 });
 
 // routers/dashboard.ts
+init_schema();
+init_schema();
 import { eq as eq6, and as and5, isNull as isNull5, sql as sql4, gte as gte3, lte as lte3 } from "drizzle-orm";
 import { z as z6 } from "zod";
 var dashboardRouter = router({
@@ -2215,6 +2291,7 @@ var dashboardRouter = router({
 });
 
 // routers/viagens.ts
+init_schema();
 import { eq as eq7, and as and6, isNull as isNull6, isNotNull as isNotNull5, desc as desc6, sql as sql5 } from "drizzle-orm";
 import { z as z7 } from "zod";
 var viagemInput = z7.object({
@@ -2433,6 +2510,7 @@ var viagensRouter = router({
 });
 
 // routers/custos.ts
+init_schema();
 import { eq as eq8, and as and7, isNull as isNull7, desc as desc7, sql as sql6, gte as gte4, lte as lte4 } from "drizzle-orm";
 import { z as z8 } from "zod";
 var custosRouter = router({
@@ -2849,6 +2927,7 @@ var multasRouter = router({
 
 // routers/auth.ts
 import { z as z10 } from "zod";
+init_schema();
 import { eq as eq9, sql as sql8 } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 import { TRPCError as TRPCError4 } from "@trpc/server";
@@ -3122,10 +3201,52 @@ var authRouter = router({
     name: z10.string().min(2),
     email: z10.string().email(),
     phone: z10.string().optional(),
-    password: z10.string().min(6)
+    password: z10.string().min(6),
+    companyCode: z10.string().optional(),
+    role: z10.enum(["user", "admin", "monitor", "dispatcher"]).optional(),
+    // Para criação manual por admin
+    empresaId: z10.number().optional()
+    // Para criação manual por admin
   })).mutation(async ({ input, ctx }) => {
     const db = await getDb();
     if (!db) throw new TRPCError4({ code: "INTERNAL_SERVER_ERROR", message: "Banco indispon\xEDvel" });
+    const isAdmin = ctx.user && (ctx.user.role === "admin" || ctx.user.role === "master_admin");
+    let targetEmpresaId = input.empresaId;
+    let targetStatus = "pending";
+    let targetRole = input.role || "user";
+    if (isAdmin) {
+      targetStatus = "approved";
+      if (ctx.user.role === "admin") {
+        targetEmpresaId = ctx.user.empresaId;
+      }
+    } else {
+      if (!input.companyCode || input.companyCode.trim() === "") {
+        throw new TRPCError4({
+          code: "BAD_REQUEST",
+          message: "C\xF3digo de empresa ou convite \xE9 obrigat\xF3rio para se cadastrar. Solicite o c\xF3digo ao administrador da empresa."
+        });
+      }
+      const { empresas: empresas2 } = await Promise.resolve().then(() => (init_schema(), schema_exports));
+      const { or: or2 } = await import("drizzle-orm");
+      const codigoUpper = input.companyCode.trim().toUpperCase();
+      const companyId = parseInt(input.companyCode);
+      const [empresa] = await db.select().from(empresas2).where(
+        !isNaN(companyId) ? or2(eq9(empresas2.id, companyId), eq9(empresas2.codigoConvite, codigoUpper)) : eq9(empresas2.codigoConvite, codigoUpper)
+      ).limit(1);
+      if (!empresa) {
+        throw new TRPCError4({
+          code: "BAD_REQUEST",
+          message: "C\xF3digo de empresa ou convite inv\xE1lido. Verifique o c\xF3digo com o administrador da empresa."
+        });
+      }
+      if (!empresa.ativo) {
+        throw new TRPCError4({
+          code: "BAD_REQUEST",
+          message: "Esta empresa est\xE1 inativa. Entre em contato com o administrador."
+        });
+      }
+      targetEmpresaId = empresa.id;
+    }
     const [existingUser] = await db.select().from(users).where(eq9(users.name, input.name)).limit(1);
     if (existingUser) {
       throw new TRPCError4({ code: "CONFLICT", message: "Este nome de usu\xE1rio j\xE1 est\xE1 em uso" });
@@ -3135,11 +3256,12 @@ var authRouter = router({
     const [newUser] = await db.insert(users).values({
       name: input.name,
       email: input.email,
+      phone: input.phone,
       password: hashedPassword,
       openId,
-      role: "user",
-      status: "pending",
-      // Sempre começa como pendente
+      role: targetRole,
+      status: targetStatus,
+      empresaId: targetEmpresaId,
       loginMethod: "local"
     }).returning();
     if (!newUser) {
@@ -3147,7 +3269,7 @@ var authRouter = router({
     }
     return {
       success: true,
-      message: "Cadastro realizado com sucesso! Aguarde a aprova\xE7\xE3o de um administrador para acessar o sistema."
+      message: isAdmin ? "Usu\xE1rio criado com sucesso!" : "Cadastro realizado com sucesso! Aguarde a aprova\xE7\xE3o de um administrador para acessar o sistema."
     };
   }),
   me: publicProcedure.query(async ({ ctx }) => {
@@ -3161,6 +3283,7 @@ var authRouter = router({
 
 // routers/users.ts
 import { z as z11 } from "zod";
+init_schema();
 import { TRPCError as TRPCError5 } from "@trpc/server";
 import { eq as eq10 } from "drizzle-orm";
 var usersRouter = router({
@@ -3314,6 +3437,7 @@ var usersRouter = router({
 
 // routers/chat.ts
 import { z as z12 } from "zod";
+init_schema();
 import { eq as eq11, and as and8, desc as desc8, sql as sql9 } from "drizzle-orm";
 import { TRPCError as TRPCError6 } from "@trpc/server";
 var chatRouter = router({
@@ -3434,6 +3558,7 @@ var chatRouter = router({
 });
 
 // routers/notasFiscais.ts
+init_schema();
 import { eq as eq12, and as and9, isNull as isNull8, desc as desc9, sql as sql10 } from "drizzle-orm";
 import { z as z13 } from "zod";
 var nfStatusEnum = z13.enum(["pendente", "entregue", "devolvida", "parcial", "extraviada"]);
@@ -3584,6 +3709,7 @@ var notasFiscaisRouter = router({
 });
 
 // routers/acertosCarga.ts
+init_schema();
 import { eq as eq13, and as and10, isNull as isNull9, desc as desc10 } from "drizzle-orm";
 import { z as z14 } from "zod";
 var statusEnum = z14.enum(["aberto", "em_analise", "fechado", "pago"]);
@@ -3697,6 +3823,7 @@ var acertosCargaRouter = router({
 });
 
 // routers/carregamentos.ts
+init_schema();
 import { eq as eq14, and as and11, isNull as isNull10, desc as desc11 } from "drizzle-orm";
 import { z as z15 } from "zod";
 var statusCarregamentoEnum2 = z15.enum(["montando", "pronto", "em_rota", "retornado", "encerrado"]);
@@ -3961,6 +4088,7 @@ var carregamentosRouter = router({
 
 // routers/grupos.ts
 import { z as z16 } from "zod";
+init_schema();
 import { eq as eq15, and as and12, isNull as isNull11 } from "drizzle-orm";
 var gruposRouter = router({
   // Listar todas as matrizes (empresas que são matriz ou independente)
@@ -4113,6 +4241,161 @@ var gruposRouter = router({
   })
 });
 
+// routers/empresas.ts
+import { z as z17 } from "zod";
+init_schema();
+import { eq as eq16, and as and13, isNull as isNull12, or } from "drizzle-orm";
+import { TRPCError as TRPCError7 } from "@trpc/server";
+import { randomBytes } from "crypto";
+function gerarCodigoConvite() {
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let codigo = "";
+  const bytes = randomBytes(8);
+  for (let i = 0; i < 8; i++) {
+    codigo += chars[bytes[i] % chars.length];
+  }
+  return codigo;
+}
+var empresasRouter = router({
+  list: masterAdminProcedure.query(async () => {
+    const db = await getDb();
+    if (!db) throw new TRPCError7({ code: "INTERNAL_SERVER_ERROR", message: "Banco indispon\xEDvel" });
+    return await db.select().from(empresas).where(isNull12(empresas.deletedAt)).orderBy(empresas.nome);
+  }),
+  getById: protectedProcedure.input(z17.object({ id: z17.number() })).query(async ({ input, ctx }) => {
+    const db = await getDb();
+    if (!db) throw new TRPCError7({ code: "INTERNAL_SERVER_ERROR", message: "Banco indispon\xEDvel" });
+    if (ctx.user.role !== "master_admin" && ctx.user.empresaId !== input.id) {
+      throw new TRPCError7({ code: "FORBIDDEN", message: "Acesso negado" });
+    }
+    const [empresa] = await db.select().from(empresas).where(and13(eq16(empresas.id, input.id), isNull12(empresas.deletedAt))).limit(1);
+    if (!empresa) throw new TRPCError7({ code: "NOT_FOUND", message: "Empresa n\xE3o encontrada" });
+    return empresa;
+  }),
+  validarConvite: protectedProcedure.input(z17.object({ codigo: z17.string() })).query(async ({ input }) => {
+    const db = await getDb();
+    if (!db) throw new TRPCError7({ code: "INTERNAL_SERVER_ERROR", message: "Banco indispon\xEDvel" });
+    const codigoUpper = input.codigo.trim().toUpperCase();
+    const idNumerico = parseInt(input.codigo);
+    const empresa = (await db.select({ id: empresas.id, nome: empresas.nome, codigoConvite: empresas.codigoConvite, ativo: empresas.ativo }).from(empresas).where(
+      and13(
+        isNull12(empresas.deletedAt),
+        eq16(empresas.ativo, true),
+        !isNaN(idNumerico) ? or(eq16(empresas.id, idNumerico), eq16(empresas.codigoConvite, codigoUpper)) : eq16(empresas.codigoConvite, codigoUpper)
+      )
+    ).limit(1))[0];
+    if (!empresa) {
+      return { valido: false, empresa: null };
+    }
+    return {
+      valido: true,
+      empresa: {
+        id: empresa.id,
+        nome: empresa.nome,
+        codigoConvite: empresa.codigoConvite
+      }
+    };
+  }),
+  listarUsuarios: protectedProcedure.input(z17.object({ empresaId: z17.number() })).query(async ({ input, ctx }) => {
+    const db = await getDb();
+    if (!db) throw new TRPCError7({ code: "INTERNAL_SERVER_ERROR", message: "Banco indispon\xEDvel" });
+    if (ctx.user.role !== "master_admin" && ctx.user.empresaId !== input.empresaId) {
+      throw new TRPCError7({ code: "FORBIDDEN", message: "Acesso negado" });
+    }
+    return await db.select({ id: users.id, name: users.name, email: users.email, role: users.role, status: users.status, empresaId: users.empresaId, createdAt: users.createdAt }).from(users).where(eq16(users.empresaId, input.empresaId));
+  }),
+  // ─── CRIAR EMPRESA ───────────────────────────────────────────────────────
+  criar: masterAdminProcedure.input(z17.object({
+    nome: z17.string().min(2, "Nome obrigat\xF3rio"),
+    cnpj: z17.string().optional(),
+    email: z17.string().optional(),
+    telefone: z17.string().optional(),
+    cidade: z17.string().optional(),
+    estado: z17.string().max(2).optional(),
+    tipoEmpresa: z17.enum(["independente", "matriz", "filial"]).default("independente"),
+    matrizId: z17.number().optional()
+  })).mutation(async ({ input }) => {
+    const db = await getDb();
+    if (!db) throw new TRPCError7({ code: "INTERNAL_SERVER_ERROR", message: "Banco indispon\xEDvel" });
+    let codigoConvite = gerarCodigoConvite();
+    for (let i = 0; i < 10; i++) {
+      const existing = await db.select({ id: empresas.id }).from(empresas).where(eq16(empresas.codigoConvite, codigoConvite)).limit(1);
+      if (existing.length === 0) break;
+      codigoConvite = gerarCodigoConvite();
+    }
+    const [nova] = await db.insert(empresas).values({
+      nome: input.nome,
+      cnpj: input.cnpj || null,
+      email: input.email || null,
+      telefone: input.telefone || null,
+      cidade: input.cidade || null,
+      estado: input.estado || null,
+      codigoConvite,
+      tipoEmpresa: input.tipoEmpresa,
+      matrizId: input.matrizId || null,
+      ativo: true,
+      createdAt: /* @__PURE__ */ new Date(),
+      updatedAt: /* @__PURE__ */ new Date()
+    }).returning();
+    return nova;
+  }),
+  // ─── ATUALIZAR EMPRESA ───────────────────────────────────────────────────
+  atualizar: masterAdminProcedure.input(z17.object({
+    id: z17.number(),
+    nome: z17.string().min(2).optional(),
+    cnpj: z17.string().optional(),
+    email: z17.string().optional(),
+    telefone: z17.string().optional(),
+    cidade: z17.string().optional(),
+    estado: z17.string().max(2).optional(),
+    tipoEmpresa: z17.enum(["independente", "matriz", "filial"]).optional(),
+    matrizId: z17.number().nullable().optional()
+  })).mutation(async ({ input }) => {
+    const db = await getDb();
+    if (!db) throw new TRPCError7({ code: "INTERNAL_SERVER_ERROR", message: "Banco indispon\xEDvel" });
+    const { id, ...dados } = input;
+    const [updated] = await db.update(empresas).set({ ...dados, updatedAt: /* @__PURE__ */ new Date() }).where(and13(eq16(empresas.id, id), isNull12(empresas.deletedAt))).returning();
+    if (!updated) throw new TRPCError7({ code: "NOT_FOUND", message: "Empresa n\xE3o encontrada" });
+    return updated;
+  }),
+  // ─── TOGGLE ATIVO/INATIVO ────────────────────────────────────────────────
+  toggleAtivo: masterAdminProcedure.input(z17.object({ id: z17.number() })).mutation(async ({ input }) => {
+    const db = await getDb();
+    if (!db) throw new TRPCError7({ code: "INTERNAL_SERVER_ERROR", message: "Banco indispon\xEDvel" });
+    const [empresa] = await db.select({ id: empresas.id, ativo: empresas.ativo }).from(empresas).where(and13(eq16(empresas.id, input.id), isNull12(empresas.deletedAt))).limit(1);
+    if (!empresa) throw new TRPCError7({ code: "NOT_FOUND", message: "Empresa n\xE3o encontrada" });
+    const [updated] = await db.update(empresas).set({ ativo: !empresa.ativo, updatedAt: /* @__PURE__ */ new Date() }).where(eq16(empresas.id, input.id)).returning();
+    return updated;
+  }),
+  // ─── REGENERAR CÓDIGO DE CONVITE ─────────────────────────────────────────
+  regenerarConvite: masterAdminProcedure.input(z17.object({ id: z17.number() })).mutation(async ({ input }) => {
+    const db = await getDb();
+    if (!db) throw new TRPCError7({ code: "INTERNAL_SERVER_ERROR", message: "Banco indispon\xEDvel" });
+    let codigoConvite = gerarCodigoConvite();
+    for (let i = 0; i < 10; i++) {
+      const existing = await db.select({ id: empresas.id }).from(empresas).where(eq16(empresas.codigoConvite, codigoConvite)).limit(1);
+      if (existing.length === 0) break;
+      codigoConvite = gerarCodigoConvite();
+    }
+    const [updated] = await db.update(empresas).set({ codigoConvite, updatedAt: /* @__PURE__ */ new Date() }).where(and13(eq16(empresas.id, input.id), isNull12(empresas.deletedAt))).returning();
+    if (!updated) throw new TRPCError7({ code: "NOT_FOUND", message: "Empresa n\xE3o encontrada" });
+    return updated;
+  }),
+  // ─── DELETAR EMPRESA (soft delete) ───────────────────────────────────────
+  deletar: masterAdminProcedure.input(z17.object({ id: z17.number(), motivo: z17.string().optional() })).mutation(async ({ input, ctx }) => {
+    const db = await getDb();
+    if (!db) throw new TRPCError7({ code: "INTERNAL_SERVER_ERROR", message: "Banco indispon\xEDvel" });
+    const [deleted] = await db.update(empresas).set({
+      deletedAt: /* @__PURE__ */ new Date(),
+      deletedBy: ctx.user.id,
+      deleteReason: input.motivo || "Removida pelo master admin",
+      updatedAt: /* @__PURE__ */ new Date()
+    }).where(and13(eq16(empresas.id, input.id), isNull12(empresas.deletedAt))).returning();
+    if (!deleted) throw new TRPCError7({ code: "NOT_FOUND", message: "Empresa n\xE3o encontrada" });
+    return { success: true };
+  })
+});
+
 // routers.ts
 var appRouter = router({
   system: systemRouter,
@@ -4130,7 +4413,8 @@ var appRouter = router({
   notasFiscais: notasFiscaisRouter,
   acertosCarga: acertosCargaRouter,
   carregamentos: carregamentosRouter,
-  grupos: gruposRouter
+  grupos: gruposRouter,
+  empresas: empresasRouter
 });
 
 // _core/context.ts
@@ -4286,6 +4570,28 @@ async function runMigrations() {
     await rawDb.unsafe(`ALTER TABLE "empresas" ADD COLUMN IF NOT EXISTS "tipoEmpresa" "tipo_empresa" DEFAULT 'independente' NOT NULL`);
     await rawDb.unsafe(`ALTER TABLE "empresas" ADD COLUMN IF NOT EXISTS "matrizId" INTEGER`);
     await rawDb.unsafe(`CREATE INDEX IF NOT EXISTS "idx_empresas_matrizId" ON "empresas" ("matrizId")`);
+    await rawDb.unsafe(`ALTER TABLE "funcionarios" ADD COLUMN IF NOT EXISTS "empresaId" INTEGER NOT NULL DEFAULT 1`);
+    await rawDb.unsafe(`ALTER TABLE "veiculos" ADD COLUMN IF NOT EXISTS "empresaId" INTEGER NOT NULL DEFAULT 1`);
+    await rawDb.unsafe(`ALTER TABLE "abastecimentos" ADD COLUMN IF NOT EXISTS "empresaId" INTEGER NOT NULL DEFAULT 1`);
+    await rawDb.unsafe(`ALTER TABLE "manutencoes" ADD COLUMN IF NOT EXISTS "empresaId" INTEGER NOT NULL DEFAULT 1`);
+    await rawDb.unsafe(`ALTER TABLE "viagens" ADD COLUMN IF NOT EXISTS "empresaId" INTEGER NOT NULL DEFAULT 1`);
+    await rawDb.unsafe(`ALTER TABLE "checklists" ADD COLUMN IF NOT EXISTS "empresaId" INTEGER NOT NULL DEFAULT 1`);
+    await rawDb.unsafe(`ALTER TABLE "contas_pagar" ADD COLUMN IF NOT EXISTS "empresaId" INTEGER NOT NULL DEFAULT 1`);
+    await rawDb.unsafe(`ALTER TABLE "contas_receber" ADD COLUMN IF NOT EXISTS "empresaId" INTEGER NOT NULL DEFAULT 1`);
+    await rawDb.unsafe(`ALTER TABLE "adiantamentos" ADD COLUMN IF NOT EXISTS "empresaId" INTEGER NOT NULL DEFAULT 1`);
+    await rawDb.unsafe(`ALTER TABLE "controle_tanque" ADD COLUMN IF NOT EXISTS "empresaId" INTEGER NOT NULL DEFAULT 1`);
+    await rawDb.unsafe(`ALTER TABLE "acidentes" ADD COLUMN IF NOT EXISTS "empresaId" INTEGER NOT NULL DEFAULT 1`);
+    await rawDb.unsafe(`ALTER TABLE "chat_conversations" ADD COLUMN IF NOT EXISTS "empresaId" INTEGER NOT NULL DEFAULT 1`);
+    await rawDb.unsafe(`ALTER TABLE "audit_log" ADD COLUMN IF NOT EXISTS "empresaId" INTEGER`);
+    await rawDb.unsafe(`CREATE INDEX IF NOT EXISTS "idx_func_empresa" ON "funcionarios" ("empresaId")`);
+    await rawDb.unsafe(`CREATE INDEX IF NOT EXISTS "idx_veic_empresa" ON "veiculos" ("empresaId")`);
+    await rawDb.unsafe(`CREATE INDEX IF NOT EXISTS "idx_abast_empresa" ON "abastecimentos" ("empresaId")`);
+    await rawDb.unsafe(`CREATE INDEX IF NOT EXISTS "idx_manut_empresa" ON "manutencoes" ("empresaId")`);
+    await rawDb.unsafe(`CREATE INDEX IF NOT EXISTS "idx_viag_empresa" ON "viagens" ("empresaId")`);
+    await rawDb.unsafe(`CREATE INDEX IF NOT EXISTS "idx_cp_empresa" ON "contas_pagar" ("empresaId")`);
+    await rawDb.unsafe(`CREATE INDEX IF NOT EXISTS "idx_cr_empresa" ON "contas_receber" ("empresaId")`);
+    await rawDb.unsafe(`CREATE INDEX IF NOT EXISTS "idx_adiant_empresa" ON "adiantamentos" ("empresaId")`);
+    await rawDb.unsafe(`CREATE INDEX IF NOT EXISTS "idx_acidente_empresa" ON "acidentes" ("empresaId")`);
     console.log("[Migration] Migra\xE7\xF5es aplicadas com sucesso");
   } catch (err) {
     console.error("[Migration] Erro ao aplicar migra\xE7\xF5es:", err);

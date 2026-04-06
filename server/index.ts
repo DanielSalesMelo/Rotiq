@@ -165,6 +165,32 @@ async function runMigrations() {
     await rawDb.unsafe(`ALTER TABLE "empresas" ADD COLUMN IF NOT EXISTS "matrizId" INTEGER`);
     await rawDb.unsafe(`CREATE INDEX IF NOT EXISTS "idx_empresas_matrizId" ON "empresas" ("matrizId")`);
 
+    // ─── Garantir empresaId em todas as tabelas principais ───────────────────
+    // Tabelas originais que podem não ter a coluna empresaId no banco de produção
+    await rawDb.unsafe(`ALTER TABLE "funcionarios" ADD COLUMN IF NOT EXISTS "empresaId" INTEGER NOT NULL DEFAULT 1`);
+    await rawDb.unsafe(`ALTER TABLE "veiculos" ADD COLUMN IF NOT EXISTS "empresaId" INTEGER NOT NULL DEFAULT 1`);
+    await rawDb.unsafe(`ALTER TABLE "abastecimentos" ADD COLUMN IF NOT EXISTS "empresaId" INTEGER NOT NULL DEFAULT 1`);
+    await rawDb.unsafe(`ALTER TABLE "manutencoes" ADD COLUMN IF NOT EXISTS "empresaId" INTEGER NOT NULL DEFAULT 1`);
+    await rawDb.unsafe(`ALTER TABLE "viagens" ADD COLUMN IF NOT EXISTS "empresaId" INTEGER NOT NULL DEFAULT 1`);
+    await rawDb.unsafe(`ALTER TABLE "checklists" ADD COLUMN IF NOT EXISTS "empresaId" INTEGER NOT NULL DEFAULT 1`);
+    await rawDb.unsafe(`ALTER TABLE "contas_pagar" ADD COLUMN IF NOT EXISTS "empresaId" INTEGER NOT NULL DEFAULT 1`);
+    await rawDb.unsafe(`ALTER TABLE "contas_receber" ADD COLUMN IF NOT EXISTS "empresaId" INTEGER NOT NULL DEFAULT 1`);
+    await rawDb.unsafe(`ALTER TABLE "adiantamentos" ADD COLUMN IF NOT EXISTS "empresaId" INTEGER NOT NULL DEFAULT 1`);
+    await rawDb.unsafe(`ALTER TABLE "controle_tanque" ADD COLUMN IF NOT EXISTS "empresaId" INTEGER NOT NULL DEFAULT 1`);
+    await rawDb.unsafe(`ALTER TABLE "acidentes" ADD COLUMN IF NOT EXISTS "empresaId" INTEGER NOT NULL DEFAULT 1`);
+    await rawDb.unsafe(`ALTER TABLE "chat_conversations" ADD COLUMN IF NOT EXISTS "empresaId" INTEGER NOT NULL DEFAULT 1`);
+    await rawDb.unsafe(`ALTER TABLE "audit_log" ADD COLUMN IF NOT EXISTS "empresaId" INTEGER`);
+
+    // Índices de performance para empresaId nas tabelas principais
+    await rawDb.unsafe(`CREATE INDEX IF NOT EXISTS "idx_func_empresa" ON "funcionarios" ("empresaId")`);
+    await rawDb.unsafe(`CREATE INDEX IF NOT EXISTS "idx_veic_empresa" ON "veiculos" ("empresaId")`);
+    await rawDb.unsafe(`CREATE INDEX IF NOT EXISTS "idx_abast_empresa" ON "abastecimentos" ("empresaId")`);
+    await rawDb.unsafe(`CREATE INDEX IF NOT EXISTS "idx_manut_empresa" ON "manutencoes" ("empresaId")`);
+    await rawDb.unsafe(`CREATE INDEX IF NOT EXISTS "idx_viag_empresa" ON "viagens" ("empresaId")`);
+    await rawDb.unsafe(`CREATE INDEX IF NOT EXISTS "idx_cp_empresa" ON "contas_pagar" ("empresaId")`);
+    await rawDb.unsafe(`CREATE INDEX IF NOT EXISTS "idx_cr_empresa" ON "contas_receber" ("empresaId")`);
+    await rawDb.unsafe(`CREATE INDEX IF NOT EXISTS "idx_adiant_empresa" ON "adiantamentos" ("empresaId")`);
+    await rawDb.unsafe(`CREATE INDEX IF NOT EXISTS "idx_acidente_empresa" ON "acidentes" ("empresaId")`);
 
     console.log("[Migration] Migrações aplicadas com sucesso");
   } catch (err) {
