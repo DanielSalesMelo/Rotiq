@@ -104,10 +104,7 @@ export default function Permissoes() {
 
   const togglePermissao = (modulo: string, tipo: keyof Permissao) => {
     if (!perfil) return;
-    if (perfil.nome === "Administrador" && tipo === "ver") {
-      toast.error("Não é possível remover permissão de visualização do Administrador");
-      return;
-    }
+    // Master Admin tem controle total - sem restrições
 
     const atualizados = perfis.map(p => {
       if (p.id !== perfilSelecionado) return p;
