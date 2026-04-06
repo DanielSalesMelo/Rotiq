@@ -72,10 +72,50 @@ export const authRouter = router({
       email: z.string().email(),
       phone: z.string().optional(),
       password: z.string().min(6),
+      companyCode: z.string().optional(),
+      role: z.enum(["user", "admin", "monitor", "dispatcher"]).optional(), // Para criação manual por admin
+      empresaId: z.number().optional(), // Para criação manual por admin
     }))
     .mutation(async ({ input, ctx }) => {
       const db = await getDb();
       if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Banco indisponível" });
+
+      // Se houver um contexto de usuário e for admin, permitir definir role e empresaId
+      const isAdmin = ctx.user && (ctx.user.role === "admin" || ctx.user.role === "master_admin");
+      
+      let targetEmpresaId = input.empresaId;
+      let targetStatus = "pending";
+      let targetRole = input.role || "user";
+
+      // Se for admin criando usuário, já aprova automaticamente
+      if (isAdmin) {
+        targetStatus = "approved";
+        // Se for admin comum, forçar a empresa dele
+        if (ctx.user.role === "admin") {
+          targetEmpresaId = (ctx.user as any).empresaId;
+        }
+      } else if (input.companyCode) {
+        // Fluxo de cadastro por código de empresa
+        const { empresas } = await import("../drizzle/schema");
+        const { or } = await import("drizzle-orm");
+        
+        // Tentar achar por ID ou Código de Convite
+        const companyId = parseInt(input.companyCode);
+        const [empresa] = await db.select().from(empresas)
+          .where(
+            isNaN(companyId) 
+              ? eq(empresas.codigoConvite, input.companyCode)
+              : or(eq(empresas.id, companyId), eq(empresas.codigoConvite, input.companyCode))
+          )
+          .limit(1);
+
+        if (!empresa) {
+          throw new TRPCError({ code: "BAD_REQUEST", message: "Código de empresa ou convite inválido" });
+        }
+        targetEmpresaId = empresa.id;
+        // Se usou código, talvez queira aprovação automática? 
+        // Por segurança, manteremos como pendente, mas vinculado à empresa.
+      }
 
       // Verificar se o nome de usuário já existe
       const [existingUser] = await db.select().from(users).where(eq(users.name, input.name)).limit(1);
@@ -84,16 +124,17 @@ export const authRouter = router({
       }
 
       const hashedPassword = await bcrypt.hash(input.password, 10);
-      
       const openId = `local_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
 
       const [newUser] = await db.insert(users).values({
         name: input.name,
         email: input.email,
+        phone: input.phone,
         password: hashedPassword,
         openId: openId,
-        role: "user",
-        status: "pending", // Sempre começa como pendente
+        role: targetRole as any,
+        status: targetStatus as any,
+        empresaId: targetEmpresaId,
         loginMethod: "local",
       }).returning();
 
@@ -101,10 +142,11 @@ export const authRouter = router({
         throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Erro ao criar usuário" });
       }
 
-      // No cadastro, não fazemos login automático pois precisa de aprovação
       return { 
         success: true, 
-        message: "Cadastro realizado com sucesso! Aguarde a aprovação de um administrador para acessar o sistema." 
+        message: isAdmin 
+          ? "Usuário criado com sucesso!" 
+          : "Cadastro realizado com sucesso! Aguarde a aprovação de um administrador para acessar o sistema." 
       };
     }),
 

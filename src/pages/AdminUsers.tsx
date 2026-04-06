@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
   Users, Edit2, Trash2, CheckCircle, XCircle, Search,
-  AlertCircle, Loader2, Eye, EyeOff,
+  AlertCircle, Loader2, Eye, EyeOff, UserPlus,
 } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import {
@@ -46,7 +46,10 @@ export default function AdminUsers() {
     lastName: "",
     email: "",
     phone: "",
+    role: "user",
+    password: "",
   });
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
 
   // Queries e Mutations
   const { data: allUsers, isLoading, refetch } = trpc.users.listAll.useQuery();
@@ -90,17 +93,51 @@ export default function AdminUsers() {
       lastName: user.lastName,
       email: user.email,
       phone: user.phone,
+      role: user.role,
+      password: "",
     });
     setShowEditDialog(true);
+  };
+
+  const handleCreateClick = () => {
+    setFormData({
+      name: "",
+      lastName: "",
+      email: "",
+      phone: "",
+      role: "user",
+      password: "",
+    });
+    setShowCreateDialog(true);
+  };
+
+  const registerMutation = trpc.auth.register.useMutation();
+
+  const handleSaveCreate = async () => {
+    try {
+      await registerMutation.mutateAsync({
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        password: formData.password || "123456", // Senha padrão se não informada
+        role: formData.role as any,
+      });
+      setShowCreateDialog(false);
+      refetch();
+    } catch (error) {
+      console.error("Erro ao criar usuário:", error);
+    }
   };
 
   const handleSaveEdit = async () => {
     if (!editingUser) return;
 
     try {
+      const { password, ...updateData } = formData;
       await updateMutation.mutateAsync({
         id: editingUser.id,
-        ...formData,
+        ...updateData,
+        role: formData.role as any,
       });
       setShowEditDialog(false);
       setEditingUser(null);
@@ -178,14 +215,20 @@ export default function AdminUsers() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
-          <Users className="h-6 w-6" />
-          Gestão de Usuários
-        </h1>
-        <p className="text-muted-foreground text-sm mt-1">
-          Gerencie usuários, aprove registros e controle permissões
-        </p>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
+            <Users className="h-6 w-6" />
+            Gestão de Usuários
+          </h1>
+          <p className="text-muted-foreground text-sm mt-1">
+            Gerencie usuários, aprove registros e controle permissões
+          </p>
+        </div>
+        <Button onClick={handleCreateClick} className="flex items-center gap-2">
+          <UserPlus className="h-4 w-4" />
+          Novo Usuário
+        </Button>
       </div>
 
       {/* Stats Cards */}
@@ -407,6 +450,20 @@ export default function AdminUsers() {
                 placeholder="(11) 99999-9999"
               />
             </div>
+            <div>
+              <Label htmlFor="role">Cargo</Label>
+              <select
+                id="role"
+                value={formData.role}
+                onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+                className="w-full px-3 py-2 border border-input rounded-md bg-background text-sm"
+              >
+                <option value="user">Usuário</option>
+                <option value="admin">Administrador</option>
+                <option value="monitor">Monitor</option>
+                <option value="dispatcher">Despachante</option>
+              </select>
+            </div>
           </div>
           <DialogFooter>
             <Button
@@ -427,6 +484,71 @@ export default function AdminUsers() {
               ) : (
                 "Salvar"
               )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Create Dialog */}
+      <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Novo Usuário</DialogTitle>
+            <DialogDescription>
+              Cadastre um novo usuário manualmente
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="create-name">Nome</Label>
+              <Input
+                id="create-name"
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                placeholder="Nome do usuário"
+              />
+            </div>
+            <div>
+              <Label htmlFor="create-email">Email</Label>
+              <Input
+                id="create-email"
+                type="email"
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                placeholder="email@example.com"
+              />
+            </div>
+            <div>
+              <Label htmlFor="create-password">Senha</Label>
+              <Input
+                id="create-password"
+                type="password"
+                value={formData.password}
+                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                placeholder="Senha (mín. 6 caracteres)"
+              />
+            </div>
+            <div>
+              <Label htmlFor="create-role">Cargo</Label>
+              <select
+                id="create-role"
+                value={formData.role}
+                onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+                className="w-full px-3 py-2 border border-input rounded-md bg-background text-sm"
+              >
+                <option value="user">Usuário</option>
+                <option value="admin">Administrador</option>
+                <option value="monitor">Monitor</option>
+                <option value="dispatcher">Despachante</option>
+              </select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowCreateDialog(false)}>
+              Cancelar
+            </Button>
+            <Button onClick={handleSaveCreate} disabled={registerMutation.isPending}>
+              {registerMutation.isPending ? "Criando..." : "Criar Usuário"}
             </Button>
           </DialogFooter>
         </DialogContent>

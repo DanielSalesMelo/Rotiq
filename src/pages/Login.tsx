@@ -15,6 +15,7 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
+  const [companyCode, setCompanyCode] = useState("");
   const utils = trpc.useUtils();
 
   const loginMutation = trpc.auth.login.useMutation({
@@ -57,7 +58,7 @@ export default function Login() {
         toast.error("Preencha todos os campos");
         return;
       }
-      registerMutation.mutate({ email, password, name });
+      registerMutation.mutate({ email, password, name, companyCode });
     }
   };
 
@@ -92,19 +93,34 @@ export default function Login() {
             <form onSubmit={handleSubmit} className="space-y-4">
               {/* Name field - only for register */}
               {!isLogin && (
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-slate-200">
-                    Nome
-                  </label>
-                  <Input
-                    type="text"
-                    placeholder="Seu nome"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    disabled={isLoading}
-                    className="bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400"
-                  />
-                </div>
+                <>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-slate-200">
+                      Nome
+                    </label>
+                    <Input
+                      type="text"
+                      placeholder="Seu nome"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      disabled={isLoading}
+                      className="bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-slate-200">
+                      Código da Empresa (ID ou Convite)
+                    </label>
+                    <Input
+                      type="text"
+                      placeholder="Ex: 1 ou CODIGO123"
+                      value={companyCode}
+                      onChange={(e) => setCompanyCode(e.target.value)}
+                      disabled={isLoading}
+                      className="bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400"
+                    />
+                  </div>
+                </>
               )}
 
               {/* Email field */}

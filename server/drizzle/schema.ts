@@ -71,6 +71,7 @@ export const empresas = pgTable("empresas", {
   endereco: text("endereco"),
   cidade: varchar("cidade", { length: 100 }),
   estado: varchar("estado", { length: 2 }),
+  codigoConvite: varchar("codigoConvite", { length: 50 }).unique(),
   // Hierarquia de grupo
   tipoEmpresa: tipoEmpresaEnum("tipoEmpresa").default("independente").notNull(),
   matrizId: integer("matrizId"),  // ID da empresa matriz (se for filial)
