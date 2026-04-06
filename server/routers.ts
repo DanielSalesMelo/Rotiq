@@ -17,6 +17,7 @@ import { notasFiscaisRouter } from "./routers/notasFiscais";
 import { acertosCargaRouter } from "./routers/acertosCarga";
 import { carregamentosRouter } from "./routers/carregamentos";
 import { gruposRouter } from "./routers/grupos";
+import { empresasRouter } from "./routers/empresas";
 
 export const appRouter = router({
   system: systemRouter,
@@ -36,6 +37,7 @@ export const appRouter = router({
   acertosCarga: acertosCargaRouter,
   carregamentos: carregamentosRouter,
   grupos: gruposRouter,
+  empresas: empresasRouter,
 });
 
 export type AppRouter = typeof appRouter;

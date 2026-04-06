@@ -94,27 +94,46 @@ export const authRouter = router({
         if (ctx.user.role === "admin") {
           targetEmpresaId = (ctx.user as any).empresaId;
         }
-      } else if (input.companyCode) {
+      } else {
+        // Cadastro público: OBRIGATÓRIO fornecer código de empresa ou convite
+        if (!input.companyCode || input.companyCode.trim() === "") {
+          throw new TRPCError({ 
+            code: "BAD_REQUEST", 
+            message: "Código de empresa ou convite é obrigatório para se cadastrar. Solicite o código ao administrador da empresa." 
+          });
+        }
+
         // Fluxo de cadastro por código de empresa
         const { empresas } = await import("../drizzle/schema");
         const { or } = await import("drizzle-orm");
         
-        // Tentar achar por ID ou Código de Convite
+        // Tentar achar por ID numérico ou Código de Convite (case-insensitive)
+        const codigoUpper = input.companyCode.trim().toUpperCase();
         const companyId = parseInt(input.companyCode);
         const [empresa] = await db.select().from(empresas)
           .where(
-            isNaN(companyId) 
-              ? eq(empresas.codigoConvite, input.companyCode)
-              : or(eq(empresas.id, companyId), eq(empresas.codigoConvite, input.companyCode))
+            !isNaN(companyId) 
+              ? or(eq(empresas.id, companyId), eq(empresas.codigoConvite, codigoUpper))
+              : eq(empresas.codigoConvite, codigoUpper)
           )
           .limit(1);
 
         if (!empresa) {
-          throw new TRPCError({ code: "BAD_REQUEST", message: "Código de empresa ou convite inválido" });
+          throw new TRPCError({ 
+            code: "BAD_REQUEST", 
+            message: "Código de empresa ou convite inválido. Verifique o código com o administrador da empresa." 
+          });
         }
+
+        if (!empresa.ativo) {
+          throw new TRPCError({ 
+            code: "BAD_REQUEST", 
+            message: "Esta empresa está inativa. Entre em contato com o administrador." 
+          });
+        }
+
         targetEmpresaId = empresa.id;
-        // Se usou código, talvez queira aprovação automática? 
-        // Por segurança, manteremos como pendente, mas vinculado à empresa.
+        // Cadastro via convite: fica pendente até aprovação do admin da empresa
       }
 
       // Verificar se o nome de usuário já existe
