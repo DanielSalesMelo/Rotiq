@@ -407,26 +407,90 @@ interface WinthorRotina {
   codigo: string;
   descricao: string;
   modulo: string;
-  tipo: "relatorio" | "processo" | "consulta";
+  tipo: "relatorio" | "processo" | "consulta" | "cadastro";
   ultimaExecucao?: string;
   status?: "ok" | "erro" | "pendente";
 }
 
 const ROTINAS_PADRAO: WinthorRotina[] = [
-  { codigo: "1401", descricao: "Pedido de Compra", modulo: "Compras", tipo: "processo" },
-  { codigo: "1402", descricao: "Recebimento de Mercadoria", modulo: "Compras", tipo: "processo" },
-  { codigo: "1403", descricao: "Devolução de Compra", modulo: "Compras", tipo: "processo" },
-  { codigo: "1501", descricao: "Pedido de Venda", modulo: "Vendas", tipo: "processo" },
-  { codigo: "1502", descricao: "Faturamento de Pedido", modulo: "Vendas", tipo: "processo" },
-  { codigo: "1503", descricao: "Devolução de Venda", modulo: "Vendas", tipo: "processo" },
-  { codigo: "1601", descricao: "Estoque Atual por Produto", modulo: "Estoque", tipo: "relatorio" },
-  { codigo: "1602", descricao: "Movimentação de Estoque", modulo: "Estoque", tipo: "relatorio" },
-  { codigo: "1701", descricao: "Contas a Pagar", modulo: "Financeiro", tipo: "consulta" },
-  { codigo: "1702", descricao: "Contas a Receber", modulo: "Financeiro", tipo: "consulta" },
-  { codigo: "1703", descricao: "Fluxo de Caixa", modulo: "Financeiro", tipo: "relatorio" },
-  { codigo: "1801", descricao: "Cadastro de Fornecedores", modulo: "Cadastros", tipo: "consulta" },
-  { codigo: "1802", descricao: "Cadastro de Clientes", modulo: "Cadastros", tipo: "consulta" },
-  { codigo: "1803", descricao: "Cadastro de Produtos", modulo: "Cadastros", tipo: "consulta" },
+  // ── Cadastros de Veículos e Motoristas ──────────────────────────────────────
+  { codigo: "521",  descricao: "Cadastrar Veículos", modulo: "Veículos / Motoristas", tipo: "cadastro" },
+  { codigo: "929",  descricao: "Cadastrar Motorista", modulo: "Veículos / Motoristas", tipo: "cadastro" },
+  { codigo: "965",  descricao: "Cadastro de Localizações de Veículos", modulo: "Veículos / Motoristas", tipo: "cadastro" },
+  { codigo: "969",  descricao: "Consultar Motoristas", modulo: "Veículos / Motoristas", tipo: "consulta" },
+  { codigo: "970",  descricao: "Cadastrar Dados do Fornecedor de Frete", modulo: "Veículos / Motoristas", tipo: "cadastro" },
+  { codigo: "971",  descricao: "Cadastrar Frete", modulo: "Veículos / Motoristas", tipo: "cadastro" },
+
+  // ── Carregamento ─────────────────────────────────────────────────────────────
+  { codigo: "901",  descricao: "Montar Carga", modulo: "Carregamento", tipo: "processo" },
+  { codigo: "902",  descricao: "Emitir Mapa de Separação por Rua", modulo: "Carregamento", tipo: "relatorio" },
+  { codigo: "903",  descricao: "Emitir Mapa de Separação por Cidade", modulo: "Carregamento", tipo: "relatorio" },
+  { codigo: "904",  descricao: "Cancelar Carga", modulo: "Carregamento", tipo: "processo" },
+  { codigo: "905",  descricao: "Transferir NF Venda entre Carregamento", modulo: "Carregamento", tipo: "processo" },
+  { codigo: "906",  descricao: "Registrar Saída de Veículo", modulo: "Carregamento", tipo: "processo" },
+  { codigo: "907",  descricao: "Registrar Entrada Veículo", modulo: "Carregamento", tipo: "processo" },
+  { codigo: "908",  descricao: "Acompanhamento de Entregas", modulo: "Carregamento", tipo: "consulta" },
+  { codigo: "909",  descricao: "Cargas em Aberto", modulo: "Carregamento", tipo: "consulta" },
+  { codigo: "910",  descricao: "Pedido por Carregamento", modulo: "Carregamento", tipo: "consulta" },
+  { codigo: "916",  descricao: "Emitir Mapa de Separação por Carregamento", modulo: "Carregamento", tipo: "relatorio" },
+  { codigo: "920",  descricao: "Itens por Carregamento", modulo: "Carregamento", tipo: "consulta" },
+  { codigo: "926",  descricao: "Acessar Montagem de Carga", modulo: "Carregamento", tipo: "processo" },
+  { codigo: "933",  descricao: "Gerar Arquivo de Carregamento", modulo: "Carregamento", tipo: "processo" },
+  { codigo: "939",  descricao: "Importar Cargas Montadas", modulo: "Carregamento", tipo: "processo" },
+  { codigo: "960",  descricao: "Conferir Separação por Carregamento", modulo: "Carregamento", tipo: "processo" },
+  { codigo: "963",  descricao: "Relação de Pedidos por Carregamento", modulo: "Carregamento", tipo: "relatorio" },
+  { codigo: "967",  descricao: "Consultar Carregamento", modulo: "Carregamento", tipo: "consulta" },
+  { codigo: "968",  descricao: "Consultar Corte por Carregamento", modulo: "Carregamento", tipo: "consulta" },
+  { codigo: "972",  descricao: "Conferir Pedidos/Carregamentos Faturados", modulo: "Carregamento", tipo: "processo" },
+  { codigo: "996",  descricao: "Agrupamento de Carregamentos", modulo: "Carregamento", tipo: "processo" },
+
+  // ── Acerto de Carga / Motorista ───────────────────────────────────────────
+  { codigo: "410",  descricao: "Acerto de Carga / Caixa", modulo: "Acerto / Motorista", tipo: "processo" },
+  { codigo: "407",  descricao: "Relatório Fechamento de Carga", modulo: "Acerto / Motorista", tipo: "relatorio" },
+  { codigo: "408",  descricao: "Carga Fechada por Usuário", modulo: "Acerto / Motorista", tipo: "relatorio" },
+  { codigo: "412",  descricao: "Emitir Termo de Responsabilidade", modulo: "Acerto / Motorista", tipo: "relatorio" },
+  { codigo: "414",  descricao: "Comissão de Motorista", modulo: "Acerto / Motorista", tipo: "relatorio" },
+  { codigo: "417",  descricao: "Mapa de Acerto", modulo: "Acerto / Motorista", tipo: "relatorio" },
+  { codigo: "419",  descricao: "Produtividade por Funcionário / Cx. Motorista", modulo: "Acerto / Motorista", tipo: "relatorio" },
+  { codigo: "420",  descricao: "Cargas em Processo de Acerto Cx. Motorista", modulo: "Acerto / Motorista", tipo: "consulta" },
+  { codigo: "421",  descricao: "Lançar Data Canhoto em Nota Fiscal", modulo: "Acerto / Motorista", tipo: "processo" },
+  { codigo: "422",  descricao: "Cad. Comissão Motorista por Distribuição", modulo: "Acerto / Motorista", tipo: "cadastro" },
+
+  // ── Expedição / Separação ───────────────────────────────────────────────
+  { codigo: "931",  descricao: "Emitir Mapa de Separação por Pedido", modulo: "Expedição", tipo: "relatorio" },
+  { codigo: "934",  descricao: "Ficha de Viagem", modulo: "Expedição", tipo: "relatorio" },
+  { codigo: "935",  descricao: "Descarga de Mercadoria", modulo: "Expedição", tipo: "processo" },
+  { codigo: "953",  descricao: "Mapa de Separação", modulo: "Expedição", tipo: "relatorio" },
+  { codigo: "955",  descricao: "Iniciar / Finalizar Expedição de Pedidos", modulo: "Expedição", tipo: "processo" },
+  { codigo: "959",  descricao: "Conf. Sep. Carreg. Por Bairro-Rota-Praça", modulo: "Expedição", tipo: "processo" },
+
+  // ── Rota / Frete ─────────────────────────────────────────────────────────
+  { codigo: "911",  descricao: "Cliente para Roteirizar", modulo: "Rota / Frete", tipo: "consulta" },
+  { codigo: "913",  descricao: "Escala Diária de Entregas", modulo: "Rota / Frete", tipo: "relatorio" },
+  { codigo: "914",  descricao: "Rentabilidade por Rota", modulo: "Rota / Frete", tipo: "relatorio" },
+  { codigo: "917",  descricao: "Simulador de Frete", modulo: "Rota / Frete", tipo: "consulta" },
+  { codigo: "918",  descricao: "Venda por Veículo", modulo: "Rota / Frete", tipo: "relatorio" },
+  { codigo: "919",  descricao: "Simulador de Frete por Carregamento de Cliente", modulo: "Rota / Frete", tipo: "consulta" },
+  { codigo: "921",  descricao: "Comissão por Rota", modulo: "Rota / Frete", tipo: "relatorio" },
+  { codigo: "927",  descricao: "Resumo de Pedido por Rota", modulo: "Rota / Frete", tipo: "relatorio" },
+  { codigo: "928",  descricao: "Resumo Rota/Praça", modulo: "Rota / Frete", tipo: "relatorio" },
+  { codigo: "957",  descricao: "Calcular Frete do Pedido", modulo: "Rota / Frete", tipo: "processo" },
+  { codigo: "964",  descricao: "Consulta Carregamento de Frete por Transportadora", modulo: "Rota / Frete", tipo: "consulta" },
+  { codigo: "966",  descricao: "Consultar Praça", modulo: "Rota / Frete", tipo: "consulta" },
+  { codigo: "981",  descricao: "Cálculo de Frete por Veículo", modulo: "Rota / Frete", tipo: "relatorio" },
+  { codigo: "1407", descricao: "Romaneio Simplificado", modulo: "Rota / Frete", tipo: "relatorio" },
+  { codigo: "1420", descricao: "Gerar Conhecimento de Frete", modulo: "Rota / Frete", tipo: "processo" },
+  { codigo: "1433", descricao: "Emitir Mapa de Carregamento", modulo: "Rota / Frete", tipo: "relatorio" },
+  { codigo: "1441", descricao: "Emitir Conhecimento de Frete", modulo: "Rota / Frete", tipo: "relatorio" },
+  { codigo: "1449", descricao: "Lançar Despesas de Viagem", modulo: "Rota / Frete", tipo: "processo" },
+  { codigo: "1474", descricao: "Emissão de Conhecimento de Transporte Eletrônico (CT-e)", modulo: "Rota / Frete", tipo: "processo" },
+
+  // ── Financeiro / Vendas (referência) ────────────────────────────────────
+  { codigo: "119",  descricao: "Fluxo de Caixa", modulo: "Financeiro", tipo: "relatorio" },
+  { codigo: "316",  descricao: "Digitar Pedido de Venda", modulo: "Vendas", tipo: "processo" },
+  { codigo: "317",  descricao: "Emitir Pedido de Venda", modulo: "Vendas", tipo: "processo" },
+  { codigo: "1425", descricao: "Rel. Pedidos por Carregamento", modulo: "Vendas", tipo: "relatorio" },
+  { codigo: "1428", descricao: "Produto Vendido por Carregamento", modulo: "Vendas", tipo: "relatorio" },
 ];
 
 function WinthorTab() {
@@ -464,7 +528,7 @@ function WinthorTab() {
     setTestando(false);
   };
 
-  const modulos = ["Todos", ...Array.from(new Set(ROTINAS_PADRAO.map(r => r.modulo)))];
+  const modulos = ["Todos", "Veículos / Motoristas", "Carregamento", "Acerto / Motorista", "Expedição", "Rota / Frete", "Vendas", "Financeiro"];
 
   const rotinasFiltradas = ROTINAS_PADRAO.filter(r => {
     const matchBusca = !busca || r.codigo.includes(busca) || r.descricao.toLowerCase().includes(busca.toLowerCase());
@@ -476,6 +540,7 @@ function WinthorTab() {
     relatorio: "bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300",
     processo: "bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-300",
     consulta: "bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-300",
+    cadastro: "bg-orange-100 text-orange-700 dark:bg-orange-950 dark:text-orange-300",
   };
 
   return (
