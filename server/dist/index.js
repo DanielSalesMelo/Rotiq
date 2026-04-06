@@ -669,6 +669,39 @@ var chatMessages = pgTable("chat_messages", {
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   deletedAt: timestamp("deletedAt")
 });
+var statusNfEnum = pgEnum("status_nf", [
+  "pendente",
+  "entregue",
+  "devolvida",
+  "parcial",
+  "extraviada"
+]);
+var notasFiscaisViagem = pgTable("notas_fiscais_viagem", {
+  id: serial("id").primaryKey(),
+  empresaId: integer("empresaId").notNull(),
+  viagemId: integer("viagemId").notNull(),
+  numeroNf: varchar("numeroNf", { length: 20 }).notNull(),
+  serie: varchar("serie", { length: 5 }),
+  chaveAcesso: varchar("chaveAcesso", { length: 44 }),
+  destinatario: varchar("destinatario", { length: 255 }),
+  cnpjDestinatario: varchar("cnpjDestinatario", { length: 18 }),
+  enderecoEntrega: varchar("enderecoEntrega", { length: 500 }),
+  cidade: varchar("cidade", { length: 100 }),
+  uf: varchar("uf", { length: 2 }),
+  valorNf: decimal("valorNf", { precision: 12, scale: 2 }),
+  pesoKg: decimal("pesoKg", { precision: 8, scale: 2 }),
+  volumes: integer("volumes"),
+  status: statusNfEnum("status").default("pendente").notNull(),
+  dataCanhoto: timestamp("dataCanhoto"),
+  dataEntrega: timestamp("dataEntrega"),
+  recebidoPor: varchar("recebidoPor", { length: 255 }),
+  motivoDevolucao: text("motivoDevolucao"),
+  observacoes: text("observacoes"),
+  ordemEntrega: integer("ordemEntrega"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+  deletedAt: timestamp("deletedAt")
+});
 
 // db.ts
 dotenv.config({ path: path.resolve(process.cwd(), "..", ".env") });
@@ -3267,6 +3300,153 @@ var chatRouter = router({
   })
 });
 
+// routers/notasFiscais.ts
+import { eq as eq12, and as and9, isNull as isNull8, desc as desc9, sql as sql10 } from "drizzle-orm";
+import { z as z13 } from "zod";
+var nfStatusEnum = z13.enum(["pendente", "entregue", "devolvida", "parcial", "extraviada"]);
+var nfInput = z13.object({
+  empresaId: z13.number(),
+  viagemId: z13.number(),
+  numeroNf: z13.string().min(1, "N\xFAmero da NF \xE9 obrigat\xF3rio"),
+  serie: z13.string().optional(),
+  chaveAcesso: z13.string().length(44).optional().or(z13.literal("")),
+  destinatario: z13.string().optional(),
+  cnpjDestinatario: z13.string().optional(),
+  enderecoEntrega: z13.string().optional(),
+  cidade: z13.string().optional(),
+  uf: z13.string().max(2).optional(),
+  valorNf: z13.string().optional(),
+  pesoKg: z13.string().optional(),
+  volumes: z13.number().optional(),
+  ordemEntrega: z13.number().optional(),
+  observacoes: z13.string().optional()
+});
+var notasFiscaisRouter = router({
+  // Listar todas as NFs de uma viagem
+  listByViagem: protectedProcedure.input(z13.object({ viagemId: z13.number() })).query(async ({ input }) => {
+    return safeDb(async () => {
+      const db = requireDb(await getDb(), "notasFiscais.listByViagem");
+      return db.select().from(notasFiscaisViagem).where(
+        and9(
+          eq12(notasFiscaisViagem.viagemId, input.viagemId),
+          isNull8(notasFiscaisViagem.deletedAt)
+        )
+      ).orderBy(notasFiscaisViagem.ordemEntrega, notasFiscaisViagem.numeroNf);
+    }, "notasFiscais.listByViagem");
+  }),
+  // Listar NFs de uma empresa com filtros
+  listByEmpresa: protectedProcedure.input(
+    z13.object({
+      empresaId: z13.number(),
+      status: nfStatusEnum.optional(),
+      viagemId: z13.number().optional()
+    })
+  ).query(async ({ input }) => {
+    return safeDb(async () => {
+      const db = requireDb(await getDb(), "notasFiscais.listByEmpresa");
+      const conditions = [
+        eq12(notasFiscaisViagem.empresaId, input.empresaId),
+        isNull8(notasFiscaisViagem.deletedAt)
+      ];
+      if (input.status) conditions.push(eq12(notasFiscaisViagem.status, input.status));
+      if (input.viagemId) conditions.push(eq12(notasFiscaisViagem.viagemId, input.viagemId));
+      return db.select().from(notasFiscaisViagem).where(and9(...conditions)).orderBy(desc9(notasFiscaisViagem.createdAt));
+    }, "notasFiscais.listByEmpresa");
+  }),
+  // Adicionar NF a uma viagem
+  add: protectedProcedure.input(nfInput).mutation(async ({ input }) => {
+    return safeDb(async () => {
+      const db = requireDb(await getDb(), "notasFiscais.add");
+      const [result] = await db.insert(notasFiscaisViagem).values({
+        ...input,
+        chaveAcesso: input.chaveAcesso || null,
+        status: "pendente"
+      });
+      return { id: result.insertId };
+    }, "notasFiscais.add");
+  }),
+  // Atualizar dados de uma NF
+  update: protectedProcedure.input(nfInput.extend({ id: z13.number() })).mutation(async ({ input }) => {
+    return safeDb(async () => {
+      const db = requireDb(await getDb(), "notasFiscais.update");
+      const { id, ...data } = input;
+      await db.update(notasFiscaisViagem).set({ ...data, updatedAt: /* @__PURE__ */ new Date() }).where(eq12(notasFiscaisViagem.id, id));
+      return { success: true };
+    }, "notasFiscais.update");
+  }),
+  // Atualizar status de entrega de uma NF
+  updateStatus: protectedProcedure.input(
+    z13.object({
+      id: z13.number(),
+      status: nfStatusEnum,
+      dataEntrega: z13.string().optional(),
+      dataCanhoto: z13.string().optional(),
+      recebidoPor: z13.string().optional(),
+      motivoDevolucao: z13.string().optional(),
+      observacoes: z13.string().optional()
+    })
+  ).mutation(async ({ input }) => {
+    return safeDb(async () => {
+      const db = requireDb(await getDb(), "notasFiscais.updateStatus");
+      await db.update(notasFiscaisViagem).set({
+        status: input.status,
+        dataEntrega: input.dataEntrega ? new Date(input.dataEntrega) : void 0,
+        dataCanhoto: input.dataCanhoto ? new Date(input.dataCanhoto) : void 0,
+        recebidoPor: input.recebidoPor,
+        motivoDevolucao: input.motivoDevolucao,
+        observacoes: input.observacoes,
+        updatedAt: /* @__PURE__ */ new Date()
+      }).where(eq12(notasFiscaisViagem.id, input.id));
+      return { success: true };
+    }, "notasFiscais.updateStatus");
+  }),
+  // Lançar canhoto (atalho rápido — rotina 421 do Winthor)
+  lancarCanhoto: protectedProcedure.input(
+    z13.object({
+      id: z13.number(),
+      dataCanhoto: z13.string(),
+      recebidoPor: z13.string().optional()
+    })
+  ).mutation(async ({ input }) => {
+    return safeDb(async () => {
+      const db = requireDb(await getDb(), "notasFiscais.lancarCanhoto");
+      await db.update(notasFiscaisViagem).set({
+        dataCanhoto: new Date(input.dataCanhoto),
+        recebidoPor: input.recebidoPor,
+        status: "entregue",
+        dataEntrega: new Date(input.dataCanhoto),
+        updatedAt: /* @__PURE__ */ new Date()
+      }).where(eq12(notasFiscaisViagem.id, input.id));
+      return { success: true };
+    }, "notasFiscais.lancarCanhoto");
+  }),
+  // Remover NF (soft delete)
+  remove: protectedProcedure.input(z13.object({ id: z13.number() })).mutation(async ({ input }) => {
+    return safeDb(async () => {
+      const db = requireDb(await getDb(), "notasFiscais.remove");
+      await db.update(notasFiscaisViagem).set({ deletedAt: /* @__PURE__ */ new Date() }).where(eq12(notasFiscaisViagem.id, input.id));
+      return { success: true };
+    }, "notasFiscais.remove");
+  }),
+  // Resumo de status das NFs de uma viagem (para dashboard)
+  resumoViagem: protectedProcedure.input(z13.object({ viagemId: z13.number() })).query(async ({ input }) => {
+    return safeDb(async () => {
+      const db = requireDb(await getDb(), "notasFiscais.resumoViagem");
+      const rows = await db.select({
+        status: notasFiscaisViagem.status,
+        quantidade: sql10`COUNT(*)`,
+        valorTotal: sql10`SUM(CAST("valorNf" AS DECIMAL))`
+      }).from(notasFiscaisViagem).where(
+        and9(
+          eq12(notasFiscaisViagem.viagemId, input.viagemId),
+          isNull8(notasFiscaisViagem.deletedAt)
+        )
+      ).groupBy(notasFiscaisViagem.status);
+      return rows;
+    }, "notasFiscais.resumoViagem");
+  })
+});
+
 // routers.ts
 var appRouter = router({
   system: systemRouter,
@@ -3280,7 +3460,8 @@ var appRouter = router({
   dashboard: dashboardRouter,
   viagens: viagensRouter,
   custos: custosRouter,
-  multas: multasRouter
+  multas: multasRouter,
+  notasFiscais: notasFiscaisRouter
 });
 
 // _core/context.ts
@@ -3313,6 +3494,36 @@ async function runMigrations() {
     const rawDb = db.$client ?? db.session ?? db;
     await rawDb.unsafe(`ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "empresaId" integer`);
     await rawDb.unsafe(`UPDATE "users" SET "empresaId" = 1 WHERE role = 'admin' AND "empresaId" IS NULL`);
+    await rawDb.unsafe(`DO $$ BEGIN CREATE TYPE "status_nf" AS ENUM ('pendente','entregue','devolvida','parcial','extraviada'); EXCEPTION WHEN duplicate_object THEN null; END $$`);
+    await rawDb.unsafe(`CREATE TABLE IF NOT EXISTS "notas_fiscais_viagem" (
+      "id" SERIAL PRIMARY KEY,
+      "empresaId" INTEGER NOT NULL,
+      "viagemId" INTEGER NOT NULL,
+      "numeroNf" VARCHAR(20) NOT NULL,
+      "serie" VARCHAR(5),
+      "chaveAcesso" VARCHAR(44),
+      "destinatario" VARCHAR(255),
+      "cnpjDestinatario" VARCHAR(18),
+      "enderecoEntrega" VARCHAR(500),
+      "cidade" VARCHAR(100),
+      "uf" VARCHAR(2),
+      "valorNf" DECIMAL(12,2),
+      "pesoKg" DECIMAL(8,2),
+      "volumes" INTEGER,
+      "status" "status_nf" NOT NULL DEFAULT 'pendente',
+      "dataCanhoto" TIMESTAMP,
+      "dataEntrega" TIMESTAMP,
+      "recebidoPor" VARCHAR(255),
+      "motivoDevolucao" TEXT,
+      "observacoes" TEXT,
+      "ordemEntrega" INTEGER,
+      "createdAt" TIMESTAMP NOT NULL DEFAULT NOW(),
+      "updatedAt" TIMESTAMP NOT NULL DEFAULT NOW(),
+      "deletedAt" TIMESTAMP
+    )`);
+    await rawDb.unsafe(`CREATE INDEX IF NOT EXISTS "idx_nfv_viagem" ON "notas_fiscais_viagem" ("viagemId")`);
+    await rawDb.unsafe(`CREATE INDEX IF NOT EXISTS "idx_nfv_empresa" ON "notas_fiscais_viagem" ("empresaId")`);
+    await rawDb.unsafe(`CREATE INDEX IF NOT EXISTS "idx_nfv_numero" ON "notas_fiscais_viagem" ("numeroNf")`);
     console.log("[Migration] Migra\xE7\xF5es aplicadas com sucesso");
   } catch (err) {
     console.error("[Migration] Erro ao aplicar migra\xE7\xF5es:", err);

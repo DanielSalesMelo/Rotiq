@@ -501,3 +501,41 @@ export const chatMessages = pgTable("chat_messages", {
 export type ChatConversation = typeof chatConversations.$inferSelect;
 export type ChatMember = typeof chatMembers.$inferSelect;
 export type ChatMessage = typeof chatMessages.$inferSelect;
+
+// ─── NOTAS FISCAIS POR VIAGEM ─────────────────────────────────────────────────
+export const statusNfEnum = pgEnum("status_nf", [
+  "pendente",
+  "entregue",
+  "devolvida",
+  "parcial",
+  "extraviada",
+]);
+
+export const notasFiscaisViagem = pgTable("notas_fiscais_viagem", {
+  id: serial("id").primaryKey(),
+  empresaId: integer("empresaId").notNull(),
+  viagemId: integer("viagemId").notNull(),
+  numeroNf: varchar("numeroNf", { length: 20 }).notNull(),
+  serie: varchar("serie", { length: 5 }),
+  chaveAcesso: varchar("chaveAcesso", { length: 44 }),
+  destinatario: varchar("destinatario", { length: 255 }),
+  cnpjDestinatario: varchar("cnpjDestinatario", { length: 18 }),
+  enderecoEntrega: varchar("enderecoEntrega", { length: 500 }),
+  cidade: varchar("cidade", { length: 100 }),
+  uf: varchar("uf", { length: 2 }),
+  valorNf: decimal("valorNf", { precision: 12, scale: 2 }),
+  pesoKg: decimal("pesoKg", { precision: 8, scale: 2 }),
+  volumes: integer("volumes"),
+  status: statusNfEnum("status").default("pendente").notNull(),
+  dataCanhoto: timestamp("dataCanhoto"),
+  dataEntrega: timestamp("dataEntrega"),
+  recebidoPor: varchar("recebidoPor", { length: 255 }),
+  motivoDevolucao: text("motivoDevolucao"),
+  observacoes: text("observacoes"),
+  ordemEntrega: integer("ordemEntrega"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+  deletedAt: timestamp("deletedAt"),
+});
+
+export type NotaFiscalViagem = typeof notasFiscaisViagem.$inferSelect;
