@@ -278,13 +278,13 @@ export default function Home() {
 
       {/* Stats */}
       <section className="relative z-10 py-10 px-6 border-y border-white/5">
-        <div className="max-w-4xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8">
+        <div className="max-w-4xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-4">
           {stats.map((s) => (
-            <div key={s.label} className="text-center">
-              <div className="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
+            <div key={s.label} className="text-center px-3 py-5 rounded-2xl bg-white/5 border border-white/10">
+              <div className="text-3xl md:text-4xl font-extrabold text-cyan-400 leading-none">
                 {s.value}
               </div>
-              <div className="text-sm text-white/50 mt-1">{s.label}</div>
+              <div className="text-xs sm:text-sm text-white/60 mt-2 leading-snug">{s.label}</div>
             </div>
           ))}
         </div>
