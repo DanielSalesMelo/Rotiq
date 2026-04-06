@@ -38,6 +38,7 @@ import PainelMaster from "./pages/PainelMaster";
 import Permissoes from "./pages/Permissoes";
 import Chat from "./pages/Chat";
 import Login from "./pages/Login";
+import Trial from "./pages/Trial";
 import Integracoes from "./pages/Integracoes";
 import NotasFiscais from "./pages/NotasFiscais";
 import AcertoCarga from "./pages/AcertoCarga";
@@ -126,6 +127,9 @@ function Router() {
 
       {/* Login page */}
       <Route path="/login" component={Login} />
+
+      {/* Trial / cadastro público */}
+      <Route path="/trial" component={Trial} />
 
       {/* 404 explícito */}
       <Route path="/404" component={NotFound} />

@@ -259,17 +259,17 @@ export default function Home() {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
             <Button
               size="lg"
-              onClick={() => setLocation("/login")}
+              onClick={() => setLocation("/trial")}
               className="bg-blue-600 hover:bg-blue-500 text-white border-0 text-base px-8 py-6 shadow-xl shadow-blue-600/30 rounded-xl"
             >
-              {lang === "pt" ? "Acessar o sistema" : lang === "en" ? "Access the system" : lang === "es" ? "Acceder al sistema" : lang === "fr" ? "Accéder au système" : "訪問系統"}
+              {lang === "pt" ? "Testar grátis por 14 dias" : lang === "en" ? "Try free for 14 days" : lang === "es" ? "Probar gratis 14 días" : lang === "fr" ? "Essai gratuit 14 jours" : "免費試用14天"}
               <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
             <button
               onClick={() => setLocation("/login")}
               className="flex items-center gap-2 text-white/50 hover:text-white/80 transition-colors text-sm"
             >
-              {lang === "pt" ? "Ver demonstração" : lang === "en" ? "View demo" : lang === "es" ? "Ver demostración" : lang === "fr" ? "Voir la démo" : "查看演示"}
+              {lang === "pt" ? "Já tenho conta" : lang === "en" ? "I already have an account" : lang === "es" ? "Ya tengo cuenta" : lang === "fr" ? "J'ai déjà un compte" : "已有帳號"}
               <ChevronRight className="h-4 w-4" />
             </button>
           </div>
