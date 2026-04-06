@@ -17,7 +17,7 @@ import {
   ChevronRight, Calculator, MessageSquare, Scale,
 } from "lucide-react";
 import { useTheme } from "@/contexts/ThemeContext";
-import { ViewAsContext } from "@/contexts/ViewAsContext";
+import { useViewAs } from "@/contexts/ViewAsContext";
 import { SeletorEmpresa } from "./SeletorEmpresa";
 import { useRef, useState } from "react";
 import { DashboardLayoutSkeleton } from "./DashboardLayoutSkeleton";
