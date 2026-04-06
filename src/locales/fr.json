@@ -69,7 +69,9 @@
     "custos_operacionais": "Coûts d'Exploitation",
     "painel_master": "Panneau Maître",
     "permissoes": "Permissions",
-    "integracoes": "Intégrations"
+    "integracoes": "Intégrations",
+    "notas_fiscais": "Notes Fiscales",
+    "acerto_carga": "Règlement de Charge"
   },
   "chat": {
     "messages": "Messages",

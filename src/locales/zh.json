@@ -69,7 +69,9 @@
     "custos_operacionais": "營運成本",
     "painel_master": "主控面板",
     "permissoes": "權限",
-    "integracoes": "整合"
+    "integracoes": "整合",
+    "notas_fiscais": "财务票据",
+    "acerto_carga": "货物结算"
   },
   "chat": {
     "messages": "訊息",

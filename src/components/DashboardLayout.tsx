@@ -14,7 +14,7 @@ import {
   Wallet, BarChart3, Sun, Moon, Monitor, UserCog, Send, RotateCcw,
   Navigation, AlertTriangle, FileText, Bell, Calendar, Gauge,
   ClipboardList, BookOpen, Shield, Settings, Star, ChevronLeft,
-  ChevronRight, Calculator, MessageSquare,
+  ChevronRight, Calculator, MessageSquare, Scale,
 } from "lucide-react";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useViewAs } from "@/contexts/ViewAsContext";
@@ -49,6 +49,7 @@ const getMenuGroups = (t: any): MenuGroup[] => [
     items: [
       { icon: Navigation, label: t("pages.viagens"), path: "/viagens" },
       { icon: FileText, label: t("pages.notas_fiscais") || "Notas Fiscais", path: "/notas-fiscais" },
+      { icon: Scale, label: t("pages.acerto_carga") || "Acerto de Carga", path: "/acerto-carga" },
       { icon: Fuel, label: t("pages.abastecimentos"), path: "/abastecimentos" },
       { icon: Calculator, label: t("pages.simulador_viagem"), path: "/simulador-viagem" },
     ],

@@ -56,6 +56,40 @@ async function runMigrations() {
     await rawDb.unsafe(`CREATE INDEX IF NOT EXISTS "idx_nfv_empresa" ON "notas_fiscais_viagem" ("empresaId")`);
     await rawDb.unsafe(`CREATE INDEX IF NOT EXISTS "idx_nfv_numero" ON "notas_fiscais_viagem" ("numeroNf")`);
 
+    // Cria enum status_acerto_carga se não existir
+    await rawDb.unsafe(`DO $$ BEGIN CREATE TYPE "status_acerto_carga" AS ENUM ('aberto','em_analise','fechado','pago'); EXCEPTION WHEN duplicate_object THEN null; END $$`);
+
+    // Cria tabela acertos_carga se não existir
+    await rawDb.unsafe(`CREATE TABLE IF NOT EXISTS "acertos_carga" (
+      "id" SERIAL PRIMARY KEY,
+      "empresaId" INTEGER NOT NULL,
+      "viagemId" INTEGER NOT NULL,
+      "motoristaId" INTEGER,
+      "dataAcerto" DATE,
+      "status" "status_acerto_carga" NOT NULL DEFAULT 'aberto',
+      "adiantamentoConcedido" DECIMAL(10,2) DEFAULT 0,
+      "freteRecebido" DECIMAL(10,2) DEFAULT 0,
+      "despesasPedagio" DECIMAL(10,2) DEFAULT 0,
+      "despesasCombustivel" DECIMAL(10,2) DEFAULT 0,
+      "despesasAlimentacao" DECIMAL(10,2) DEFAULT 0,
+      "despesasEstacionamento" DECIMAL(10,2) DEFAULT 0,
+      "despesasOutras" DECIMAL(10,2) DEFAULT 0,
+      "descricaoOutras" TEXT,
+      "valorDevolvido" DECIMAL(10,2) DEFAULT 0,
+      "percentualComissao" DECIMAL(5,2) DEFAULT 0,
+      "valorComissao" DECIMAL(10,2) DEFAULT 0,
+      "saldoFinal" DECIMAL(10,2) DEFAULT 0,
+      "observacoes" TEXT,
+      "aprovadoPor" VARCHAR(255),
+      "dataAprovacao" TIMESTAMP,
+      "createdAt" TIMESTAMP NOT NULL DEFAULT NOW(),
+      "updatedAt" TIMESTAMP NOT NULL DEFAULT NOW(),
+      "deletedAt" TIMESTAMP
+    )`);
+    await rawDb.unsafe(`CREATE INDEX IF NOT EXISTS "idx_acerto_viagem" ON "acertos_carga" ("viagemId")`);
+    await rawDb.unsafe(`CREATE INDEX IF NOT EXISTS "idx_acerto_empresa" ON "acertos_carga" ("empresaId")`);
+    await rawDb.unsafe(`CREATE INDEX IF NOT EXISTS "idx_acerto_motorista" ON "acertos_carga" ("motoristaId")`);
+
     console.log("[Migration] Migrações aplicadas com sucesso");
   } catch (err) {
     console.error("[Migration] Erro ao aplicar migrações:", err);

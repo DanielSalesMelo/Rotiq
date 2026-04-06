@@ -69,7 +69,9 @@
     "custos_operacionais": "Costos Operacionales",
     "painel_master": "Panel Maestro",
     "permissoes": "Permisos",
-    "integracoes": "Integraciones"
+    "integracoes": "Integraciones",
+    "notas_fiscais": "Notas Fiscales",
+    "acerto_carga": "Liquidación de Carga"
   },
   "chat": {
     "messages": "Mensajes",

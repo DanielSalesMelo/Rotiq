@@ -702,6 +702,54 @@ var notasFiscaisViagem = pgTable("notas_fiscais_viagem", {
   updatedAt: timestamp("updatedAt").defaultNow().notNull(),
   deletedAt: timestamp("deletedAt")
 });
+var statusAcertoCargaEnum = pgEnum("status_acerto_carga", [
+  "aberto",
+  // viagem concluída mas acerto ainda não feito
+  "em_analise",
+  // conferindo valores
+  "fechado",
+  // acerto finalizado e aprovado
+  "pago"
+  // motorista recebeu o saldo
+]);
+var acertosCarga = pgTable("acertos_carga", {
+  id: serial("id").primaryKey(),
+  empresaId: integer("empresaId").notNull(),
+  viagemId: integer("viagemId").notNull(),
+  motoristaId: integer("motoristaId"),
+  // Identificação
+  dataAcerto: date("dataAcerto"),
+  status: statusAcertoCargaEnum("status").default("aberto").notNull(),
+  // ─── O que o motorista levou ───────────────────────────────────────────────
+  adiantamentoConcedido: decimal("adiantamentoConcedido", { precision: 10, scale: 2 }).default("0"),
+  // ─── O que o motorista recebeu em campo ───────────────────────────────────
+  freteRecebido: decimal("freteRecebido", { precision: 10, scale: 2 }).default("0"),
+  // dinheiro recebido de clientes
+  // ─── Despesas do motorista em campo ───────────────────────────────────────
+  despesasPedagio: decimal("despesasPedagio", { precision: 10, scale: 2 }).default("0"),
+  despesasCombustivel: decimal("despesasCombustivel", { precision: 10, scale: 2 }).default("0"),
+  despesasAlimentacao: decimal("despesasAlimentacao", { precision: 10, scale: 2 }).default("0"),
+  despesasEstacionamento: decimal("despesasEstacionamento", { precision: 10, scale: 2 }).default("0"),
+  despesasOutras: decimal("despesasOutras", { precision: 10, scale: 2 }).default("0"),
+  descricaoOutras: text("descricaoOutras"),
+  // ─── Devoluções ───────────────────────────────────────────────────────────
+  valorDevolvido: decimal("valorDevolvido", { precision: 10, scale: 2 }).default("0"),
+  // dinheiro devolvido pelo motorista
+  // ─── Comissão ─────────────────────────────────────────────────────────────
+  percentualComissao: decimal("percentualComissao", { precision: 5, scale: 2 }).default("0"),
+  valorComissao: decimal("valorComissao", { precision: 10, scale: 2 }).default("0"),
+  // ─── Saldo calculado ──────────────────────────────────────────────────────
+  // saldo = freteRecebido - adiantamentoConcedido - totalDespesas - valorDevolvido + valorComissao
+  saldoFinal: decimal("saldoFinal", { precision: 10, scale: 2 }).default("0"),
+  // ─── Observações e aprovação ──────────────────────────────────────────────
+  observacoes: text("observacoes"),
+  aprovadoPor: varchar("aprovadoPor", { length: 255 }),
+  dataAprovacao: timestamp("dataAprovacao"),
+  // ─── Auditoria ────────────────────────────────────────────────────────────
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+  deletedAt: timestamp("deletedAt")
+});
 
 // db.ts
 dotenv.config({ path: path.resolve(process.cwd(), "..", ".env") });
@@ -3447,6 +3495,119 @@ var notasFiscaisRouter = router({
   })
 });
 
+// routers/acertosCarga.ts
+import { eq as eq13, and as and10, isNull as isNull9, desc as desc10 } from "drizzle-orm";
+import { z as z14 } from "zod";
+var statusEnum = z14.enum(["aberto", "em_analise", "fechado", "pago"]);
+var acertoInput = z14.object({
+  empresaId: z14.number(),
+  viagemId: z14.number(),
+  motoristaId: z14.number().optional(),
+  dataAcerto: z14.string().optional(),
+  adiantamentoConcedido: z14.string().default("0"),
+  freteRecebido: z14.string().default("0"),
+  despesasPedagio: z14.string().default("0"),
+  despesasCombustivel: z14.string().default("0"),
+  despesasAlimentacao: z14.string().default("0"),
+  despesasEstacionamento: z14.string().default("0"),
+  despesasOutras: z14.string().default("0"),
+  descricaoOutras: z14.string().optional(),
+  valorDevolvido: z14.string().default("0"),
+  percentualComissao: z14.string().default("0"),
+  valorComissao: z14.string().default("0"),
+  observacoes: z14.string().optional()
+});
+function calcularSaldo(data) {
+  const n = (v) => Number(v) || 0;
+  const totalDespesas = n(data.despesasPedagio) + n(data.despesasCombustivel) + n(data.despesasAlimentacao) + n(data.despesasEstacionamento) + n(data.despesasOutras);
+  const saldo = n(data.freteRecebido) - n(data.adiantamentoConcedido) - totalDespesas - n(data.valorDevolvido) + n(data.valorComissao);
+  return saldo.toFixed(2);
+}
+var acertosCargaRouter = router({
+  // Listar acertos de uma empresa
+  list: protectedProcedure.input(
+    z14.object({
+      empresaId: z14.number(),
+      status: statusEnum.optional(),
+      motoristaId: z14.number().optional()
+    })
+  ).query(async ({ input }) => {
+    return safeDb(async () => {
+      const db = requireDb(await getDb(), "acertosCarga.list");
+      const conditions = [
+        eq13(acertosCarga.empresaId, input.empresaId),
+        isNull9(acertosCarga.deletedAt)
+      ];
+      if (input.status) conditions.push(eq13(acertosCarga.status, input.status));
+      if (input.motoristaId) conditions.push(eq13(acertosCarga.motoristaId, input.motoristaId));
+      return db.select().from(acertosCarga).where(and10(...conditions)).orderBy(desc10(acertosCarga.createdAt));
+    }, "acertosCarga.list");
+  }),
+  // Buscar acerto por viagem
+  getByViagem: protectedProcedure.input(z14.object({ viagemId: z14.number() })).query(async ({ input }) => {
+    return safeDb(async () => {
+      const db = requireDb(await getDb(), "acertosCarga.getByViagem");
+      const rows = await db.select().from(acertosCarga).where(
+        and10(
+          eq13(acertosCarga.viagemId, input.viagemId),
+          isNull9(acertosCarga.deletedAt)
+        )
+      ).limit(1);
+      return rows[0] ?? null;
+    }, "acertosCarga.getByViagem");
+  }),
+  // Criar acerto
+  create: protectedProcedure.input(acertoInput).mutation(async ({ input }) => {
+    return safeDb(async () => {
+      const db = requireDb(await getDb(), "acertosCarga.create");
+      const saldoFinal = calcularSaldo(input);
+      const [result] = await db.insert(acertosCarga).values({
+        ...input,
+        saldoFinal,
+        status: "aberto"
+      });
+      return { id: result.insertId, saldoFinal };
+    }, "acertosCarga.create");
+  }),
+  // Atualizar acerto
+  update: protectedProcedure.input(acertoInput.extend({ id: z14.number() })).mutation(async ({ input }) => {
+    return safeDb(async () => {
+      const db = requireDb(await getDb(), "acertosCarga.update");
+      const { id, ...data } = input;
+      const saldoFinal = calcularSaldo(data);
+      await db.update(acertosCarga).set({ ...data, saldoFinal, updatedAt: /* @__PURE__ */ new Date() }).where(eq13(acertosCarga.id, id));
+      return { success: true, saldoFinal };
+    }, "acertosCarga.update");
+  }),
+  // Atualizar status
+  updateStatus: protectedProcedure.input(
+    z14.object({
+      id: z14.number(),
+      status: statusEnum,
+      aprovadoPor: z14.string().optional()
+    })
+  ).mutation(async ({ input }) => {
+    return safeDb(async () => {
+      const db = requireDb(await getDb(), "acertosCarga.updateStatus");
+      await db.update(acertosCarga).set({
+        status: input.status,
+        aprovadoPor: input.aprovadoPor,
+        dataAprovacao: input.status === "fechado" || input.status === "pago" ? /* @__PURE__ */ new Date() : void 0,
+        updatedAt: /* @__PURE__ */ new Date()
+      }).where(eq13(acertosCarga.id, input.id));
+      return { success: true };
+    }, "acertosCarga.updateStatus");
+  }),
+  // Remover (soft delete)
+  remove: protectedProcedure.input(z14.object({ id: z14.number() })).mutation(async ({ input }) => {
+    return safeDb(async () => {
+      const db = requireDb(await getDb(), "acertosCarga.remove");
+      await db.update(acertosCarga).set({ deletedAt: /* @__PURE__ */ new Date() }).where(eq13(acertosCarga.id, input.id));
+      return { success: true };
+    }, "acertosCarga.remove");
+  })
+});
+
 // routers.ts
 var appRouter = router({
   system: systemRouter,
@@ -3461,7 +3622,8 @@ var appRouter = router({
   viagens: viagensRouter,
   custos: custosRouter,
   multas: multasRouter,
-  notasFiscais: notasFiscaisRouter
+  notasFiscais: notasFiscaisRouter,
+  acertosCarga: acertosCargaRouter
 });
 
 // _core/context.ts
@@ -3524,6 +3686,36 @@ async function runMigrations() {
     await rawDb.unsafe(`CREATE INDEX IF NOT EXISTS "idx_nfv_viagem" ON "notas_fiscais_viagem" ("viagemId")`);
     await rawDb.unsafe(`CREATE INDEX IF NOT EXISTS "idx_nfv_empresa" ON "notas_fiscais_viagem" ("empresaId")`);
     await rawDb.unsafe(`CREATE INDEX IF NOT EXISTS "idx_nfv_numero" ON "notas_fiscais_viagem" ("numeroNf")`);
+    await rawDb.unsafe(`DO $$ BEGIN CREATE TYPE "status_acerto_carga" AS ENUM ('aberto','em_analise','fechado','pago'); EXCEPTION WHEN duplicate_object THEN null; END $$`);
+    await rawDb.unsafe(`CREATE TABLE IF NOT EXISTS "acertos_carga" (
+      "id" SERIAL PRIMARY KEY,
+      "empresaId" INTEGER NOT NULL,
+      "viagemId" INTEGER NOT NULL,
+      "motoristaId" INTEGER,
+      "dataAcerto" DATE,
+      "status" "status_acerto_carga" NOT NULL DEFAULT 'aberto',
+      "adiantamentoConcedido" DECIMAL(10,2) DEFAULT 0,
+      "freteRecebido" DECIMAL(10,2) DEFAULT 0,
+      "despesasPedagio" DECIMAL(10,2) DEFAULT 0,
+      "despesasCombustivel" DECIMAL(10,2) DEFAULT 0,
+      "despesasAlimentacao" DECIMAL(10,2) DEFAULT 0,
+      "despesasEstacionamento" DECIMAL(10,2) DEFAULT 0,
+      "despesasOutras" DECIMAL(10,2) DEFAULT 0,
+      "descricaoOutras" TEXT,
+      "valorDevolvido" DECIMAL(10,2) DEFAULT 0,
+      "percentualComissao" DECIMAL(5,2) DEFAULT 0,
+      "valorComissao" DECIMAL(10,2) DEFAULT 0,
+      "saldoFinal" DECIMAL(10,2) DEFAULT 0,
+      "observacoes" TEXT,
+      "aprovadoPor" VARCHAR(255),
+      "dataAprovacao" TIMESTAMP,
+      "createdAt" TIMESTAMP NOT NULL DEFAULT NOW(),
+      "updatedAt" TIMESTAMP NOT NULL DEFAULT NOW(),
+      "deletedAt" TIMESTAMP
+    )`);
+    await rawDb.unsafe(`CREATE INDEX IF NOT EXISTS "idx_acerto_viagem" ON "acertos_carga" ("viagemId")`);
+    await rawDb.unsafe(`CREATE INDEX IF NOT EXISTS "idx_acerto_empresa" ON "acertos_carga" ("empresaId")`);
+    await rawDb.unsafe(`CREATE INDEX IF NOT EXISTS "idx_acerto_motorista" ON "acertos_carga" ("motoristaId")`);
     console.log("[Migration] Migra\xE7\xF5es aplicadas com sucesso");
   } catch (err) {
     console.error("[Migration] Erro ao aplicar migra\xE7\xF5es:", err);

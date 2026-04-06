@@ -69,7 +69,9 @@
     "custos_operacionais": "Operating Costs",
     "painel_master": "Master Panel",
     "permissoes": "Permissions",
-    "integracoes": "Integrations"
+    "integracoes": "Integrations",
+    "notas_fiscais": "Fiscal Notes",
+    "acerto_carga": "Load Settlement"
   },
   "chat": {
     "messages": "Messages",

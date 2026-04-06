@@ -539,3 +539,50 @@ export const notasFiscaisViagem = pgTable("notas_fiscais_viagem", {
 });
 
 export type NotaFiscalViagem = typeof notasFiscaisViagem.$inferSelect;
+
+// ─── ACERTO DE CARGA DO MOTORISTA ─────────────────────────────────────────────
+export const statusAcertoCargaEnum = pgEnum("status_acerto_carga", [
+  "aberto",      // viagem concluída mas acerto ainda não feito
+  "em_analise",  // conferindo valores
+  "fechado",     // acerto finalizado e aprovado
+  "pago",        // motorista recebeu o saldo
+]);
+
+export const acertosCarga = pgTable("acertos_carga", {
+  id: serial("id").primaryKey(),
+  empresaId: integer("empresaId").notNull(),
+  viagemId: integer("viagemId").notNull(),
+  motoristaId: integer("motoristaId"),
+  // Identificação
+  dataAcerto: date("dataAcerto"),
+  status: statusAcertoCargaEnum("status").default("aberto").notNull(),
+  // ─── O que o motorista levou ───────────────────────────────────────────────
+  adiantamentoConcedido: decimal("adiantamentoConcedido", { precision: 10, scale: 2 }).default("0"),
+  // ─── O que o motorista recebeu em campo ───────────────────────────────────
+  freteRecebido: decimal("freteRecebido", { precision: 10, scale: 2 }).default("0"),       // dinheiro recebido de clientes
+  // ─── Despesas do motorista em campo ───────────────────────────────────────
+  despesasPedagio: decimal("despesasPedagio", { precision: 10, scale: 2 }).default("0"),
+  despesasCombustivel: decimal("despesasCombustivel", { precision: 10, scale: 2 }).default("0"),
+  despesasAlimentacao: decimal("despesasAlimentacao", { precision: 10, scale: 2 }).default("0"),
+  despesasEstacionamento: decimal("despesasEstacionamento", { precision: 10, scale: 2 }).default("0"),
+  despesasOutras: decimal("despesasOutras", { precision: 10, scale: 2 }).default("0"),
+  descricaoOutras: text("descricaoOutras"),
+  // ─── Devoluções ───────────────────────────────────────────────────────────
+  valorDevolvido: decimal("valorDevolvido", { precision: 10, scale: 2 }).default("0"),     // dinheiro devolvido pelo motorista
+  // ─── Comissão ─────────────────────────────────────────────────────────────
+  percentualComissao: decimal("percentualComissao", { precision: 5, scale: 2 }).default("0"),
+  valorComissao: decimal("valorComissao", { precision: 10, scale: 2 }).default("0"),
+  // ─── Saldo calculado ──────────────────────────────────────────────────────
+  // saldo = freteRecebido - adiantamentoConcedido - totalDespesas - valorDevolvido + valorComissao
+  saldoFinal: decimal("saldoFinal", { precision: 10, scale: 2 }).default("0"),
+  // ─── Observações e aprovação ──────────────────────────────────────────────
+  observacoes: text("observacoes"),
+  aprovadoPor: varchar("aprovadoPor", { length: 255 }),
+  dataAprovacao: timestamp("dataAprovacao"),
+  // ─── Auditoria ────────────────────────────────────────────────────────────
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+  deletedAt: timestamp("deletedAt"),
+});
+
+export type AcertoCarga = typeof acertosCarga.$inferSelect;

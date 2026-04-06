@@ -40,6 +40,7 @@ import Chat from "./pages/Chat";
 import Login from "./pages/Login";
 import Integracoes from "./pages/Integracoes";
 import NotasFiscais from "./pages/NotasFiscais";
+import AcertoCarga from "./pages/AcertoCarga";
 
 function DashboardRoutes() {
   return (
@@ -57,6 +58,7 @@ function DashboardRoutes() {
         {/* Operacional */}
         <Route path="/viagens" component={Viagens} />
         <Route path="/notas-fiscais" component={NotasFiscais} />
+        <Route path="/acerto-carga" component={AcertoCarga} />
         <Route path="/abastecimentos" component={Abastecimentos} />
 
         {/* Frota */}
