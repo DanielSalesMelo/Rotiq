@@ -42,6 +42,8 @@ import Integracoes from "./pages/Integracoes";
 import NotasFiscais from "./pages/NotasFiscais";
 import AcertoCarga from "./pages/AcertoCarga";
 import Carregamento from "./pages/Carregamento";
+import ImportExport from "./pages/ImportExport";
+import RelatoriosAvancados from "./pages/RelatoriosAvancados";
 
 function DashboardRoutes() {
   return (
@@ -98,6 +100,10 @@ function DashboardRoutes() {
         <Route path="/integracoes" component={Integracoes} />
         <Route path="/integracoes/arquivei" component={Integracoes} />
         <Route path="/integracoes/winthor" component={Integracoes} />
+
+        {/* Relatórios e Dados */}
+        <Route path="/relatorios-avancados" component={RelatoriosAvancados} />
+        <Route path="/import-export" component={ImportExport} />
 
         {/* Master */}
         <Route path="/master/painel" component={PainelMaster} />
