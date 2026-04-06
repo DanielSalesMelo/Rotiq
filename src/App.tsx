@@ -4,6 +4,7 @@ import NotFound from "@/pages/NotFound";
 import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
+import { ViewAsProvider } from "./contexts/ViewAsContext";
 import DashboardLayout from "./components/DashboardLayout";
 import Home from "./pages/Home";
 import Dashboard from "./pages/Dashboard";
@@ -37,6 +38,7 @@ import PainelMaster from "./pages/PainelMaster";
 import Permissoes from "./pages/Permissoes";
 import Chat from "./pages/Chat";
 import Login from "./pages/Login";
+import Integracoes from "./pages/Integracoes";
 
 function DashboardRoutes() {
   return (
@@ -86,6 +88,11 @@ function DashboardRoutes() {
         <Route path="/custos" component={Custos} />
         <Route path="/simulador-viagem" component={SimuladorViagem} />
 
+        {/* Integrações */}
+        <Route path="/integracoes" component={Integracoes} />
+        <Route path="/integracoes/arquivei" component={Integracoes} />
+        <Route path="/integracoes/winthor" component={Integracoes} />
+
         {/* Master */}
         <Route path="/master/painel" component={PainelMaster} />
         <Route path="/master/permissoes" component={Permissoes} />
@@ -121,10 +128,12 @@ function App() {
   return (
     <ErrorBoundary>
       <ThemeProvider defaultTheme="dark" switchable={true}>
-        <TooltipProvider>
-          <Toaster />
-          <Router />
-        </TooltipProvider>
+        <ViewAsProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Router />
+          </TooltipProvider>
+        </ViewAsProvider>
       </ThemeProvider>
     </ErrorBoundary>
   );

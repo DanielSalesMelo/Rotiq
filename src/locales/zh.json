@@ -39,7 +39,8 @@
     "gestao": "管理",
     "sistema": "系統",
     "financeiro": "財務",
-    "master": "主管理"
+    "master": "主管理",
+    "integracoes": "整合"
   },
   "pages": {
     "saida_entrega": "交貨派遣",
@@ -67,7 +68,8 @@
     "adiantamentos": "預付款",
     "custos_operacionais": "營運成本",
     "painel_master": "主控面板",
-    "permissoes": "權限"
+    "permissoes": "權限",
+    "integracoes": "整合"
   },
   "chat": {
     "messages": "訊息",

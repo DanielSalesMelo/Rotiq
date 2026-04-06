@@ -10,14 +10,16 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { Crown, Building2, Users, Truck, Shield, Settings, Plus, Search, CheckCircle, XCircle, Activity } from "lucide-react";
+import { Crown, Building2, Users, Truck, Shield, Settings, Plus, Search, CheckCircle, XCircle, Activity, Eye } from "lucide-react";
 import { toast } from "sonner";
+import { useViewAs } from "@/contexts/ViewAsContext";
 
 const EMPRESA_ID = 1;
 
 export default function PainelMaster() {
   const { t } = useTranslation();
   const { user, loading } = useAuth();
+  const { enterAdminView, isSimulating } = useViewAs();
   const [, navigate] = useLocation();
 
   // Todos os hooks DEVEM ser chamados antes de qualquer return condicional
@@ -272,9 +274,24 @@ export default function PainelMaster() {
                             </Badge>
                           </td>
                           <td className="px-4 py-3">
-                            <Button size="sm" variant="outline" className="text-xs h-7" onClick={() => toggleStatusEmpresa(e.id)}>
-                              {e.status === "ativa" ? "Desativar" : "Ativar"}
-                            </Button>
+                            <div className="flex items-center gap-1.5">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="text-xs h-7 gap-1"
+                                onClick={() => {
+                                  enterAdminView(e.id, e.nome);
+                                  navigate("/dashboard");
+                                  toast.success(`Visualizando como Admin da ${e.nome}`);
+                                }}
+                              >
+                                <Eye className="h-3 w-3" />
+                                Ver como Admin
+                              </Button>
+                              <Button size="sm" variant="ghost" className="text-xs h-7" onClick={() => toggleStatusEmpresa(e.id)}>
+                                {e.status === "ativa" ? "Desativar" : "Ativar"}
+                              </Button>
+                            </div>
                           </td>
                         </tr>
                       );

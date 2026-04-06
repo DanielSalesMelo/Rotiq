@@ -39,7 +39,8 @@
     "gestao": "Management",
     "sistema": "System",
     "financeiro": "Financial",
-    "master": "Master"
+    "master": "Master",
+    "integracoes": "Integrations"
   },
   "pages": {
     "saida_entrega": "Delivery Dispatch",
@@ -67,7 +68,8 @@
     "adiantamentos": "Advances",
     "custos_operacionais": "Operating Costs",
     "painel_master": "Master Panel",
-    "permissoes": "Permissions"
+    "permissoes": "Permissions",
+    "integracoes": "Integrations"
   },
   "chat": {
     "messages": "Messages",

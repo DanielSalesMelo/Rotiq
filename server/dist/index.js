@@ -256,6 +256,8 @@ var users = pgTable("users", {
   role: userRoleEnum("role").default("user").notNull(),
   status: varchar("status", { length: 20 }).default("pending").notNull(),
   // pending, approved, rejected
+  empresaId: integer("empresaId"),
+  // null = master_admin sem empresa fixa
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().$onUpdateFn(() => /* @__PURE__ */ new Date()).notNull(),
   lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull()
@@ -2994,6 +2996,7 @@ var authRouter = router({
 // routers/users.ts
 import { z as z11 } from "zod";
 import { TRPCError as TRPCError5 } from "@trpc/server";
+import { eq as eq10 } from "drizzle-orm";
 var usersRouter = router({
   // Listar todos os usuários (apenas para admins)
   listAll: publicProcedure.query(async ({ ctx }) => {
@@ -3005,7 +3008,8 @@ var usersRouter = router({
     }
     try {
       const allUsers = await getAllUsers();
-      return allUsers.map((user) => ({
+      const filtered = ctx.user.role === "master_admin" ? allUsers : allUsers.filter((u) => u.empresaId === ctx.user.empresaId);
+      return filtered.map((user) => ({
         id: user.id,
         name: user.name || "",
         lastName: user.lastName || "",
@@ -3013,6 +3017,7 @@ var usersRouter = router({
         phone: user.phone || "",
         role: user.role,
         status: user.status,
+        empresaId: user.empresaId ?? null,
         createdAt: user.createdAt,
         updatedAt: user.updatedAt
       }));
@@ -3027,7 +3032,9 @@ var usersRouter = router({
     name: z11.string().optional(),
     lastName: z11.string().optional(),
     email: z11.string().email().optional(),
-    phone: z11.string().optional()
+    phone: z11.string().optional(),
+    role: z11.enum(["user", "admin", "master_admin", "monitor", "dispatcher"]).optional(),
+    empresaId: z11.number().nullable().optional()
   })).mutation(async ({ input, ctx }) => {
     if (!ctx.user) {
       throw new TRPCError5({ code: "UNAUTHORIZED", message: "N\xE3o autenticado" });
@@ -3041,6 +3048,13 @@ var usersRouter = router({
       if (input.lastName !== void 0) updateData.lastName = input.lastName;
       if (input.email !== void 0) updateData.email = input.email;
       if (input.phone !== void 0) updateData.phone = input.phone;
+      if (input.role !== void 0) {
+        if (input.role === "master_admin" && ctx.user.role !== "master_admin") {
+          throw new TRPCError5({ code: "FORBIDDEN", message: "Apenas master_admin pode promover a master_admin" });
+        }
+        updateData.role = input.role;
+      }
+      if (input.empresaId !== void 0) updateData.empresaId = input.empresaId;
       await updateUser(input.id, updateData);
       return { success: true };
     } catch (error) {
@@ -3050,7 +3064,8 @@ var usersRouter = router({
   }),
   // Aprovar usuário (mudar status de pending para approved)
   approve: publicProcedure.input(z11.object({
-    id: z11.number()
+    id: z11.number(),
+    empresaId: z11.number().optional()
   })).mutation(async ({ input, ctx }) => {
     if (!ctx.user) {
       throw new TRPCError5({ code: "UNAUTHORIZED", message: "N\xE3o autenticado" });
@@ -3059,7 +3074,13 @@ var usersRouter = router({
       throw new TRPCError5({ code: "FORBIDDEN", message: "Acesso negado" });
     }
     try {
-      await updateUser(input.id, { status: "approved" });
+      const updateData = { status: "approved" };
+      if (ctx.user.role === "admin" && ctx.user.empresaId) {
+        updateData.empresaId = ctx.user.empresaId;
+      } else if (input.empresaId) {
+        updateData.empresaId = input.empresaId;
+      }
+      await updateUser(input.id, updateData);
       return { success: true };
     } catch (error) {
       console.error("Erro ao aprovar usu\xE1rio:", error);
@@ -3101,12 +3122,33 @@ var usersRouter = router({
       console.error("Erro ao deletar usu\xE1rio:", error);
       throw new TRPCError5({ code: "INTERNAL_SERVER_ERROR", message: "Erro ao deletar usu\xE1rio" });
     }
+  }),
+  // Vincular usuário a uma empresa (master_admin only)
+  setEmpresa: publicProcedure.input(z11.object({
+    userId: z11.number(),
+    empresaId: z11.number().nullable()
+  })).mutation(async ({ input, ctx }) => {
+    if (!ctx.user) {
+      throw new TRPCError5({ code: "UNAUTHORIZED", message: "N\xE3o autenticado" });
+    }
+    if (ctx.user.role !== "master_admin") {
+      throw new TRPCError5({ code: "FORBIDDEN", message: "Apenas master_admin pode vincular empresas" });
+    }
+    try {
+      const db = await getDb();
+      if (!db) throw new TRPCError5({ code: "INTERNAL_SERVER_ERROR", message: "Banco indispon\xEDvel" });
+      await db.update(users).set({ empresaId: input.empresaId }).where(eq10(users.id, input.userId));
+      return { success: true };
+    } catch (error) {
+      if (error instanceof TRPCError5) throw error;
+      throw new TRPCError5({ code: "INTERNAL_SERVER_ERROR", message: "Erro ao vincular empresa" });
+    }
   })
 });
 
 // routers/chat.ts
 import { z as z12 } from "zod";
-import { eq as eq10, and as and8, desc as desc8, sql as sql9 } from "drizzle-orm";
+import { eq as eq11, and as and8, desc as desc8, sql as sql9 } from "drizzle-orm";
 import { TRPCError as TRPCError6 } from "@trpc/server";
 var chatRouter = router({
   // Listar conversas do usuário logado
@@ -3119,7 +3161,7 @@ var chatRouter = router({
       name: chatConversations.name,
       isGroup: chatConversations.isGroup,
       lastMessageAt: chatConversations.lastMessageAt
-    }).from(chatConversations).innerJoin(chatMembers, eq10(chatConversations.id, chatMembers.conversationId)).where(eq10(chatMembers.userId, ctx.user.id)).orderBy(desc8(chatConversations.lastMessageAt));
+    }).from(chatConversations).innerJoin(chatMembers, eq11(chatConversations.id, chatMembers.conversationId)).where(eq11(chatMembers.userId, ctx.user.id)).orderBy(desc8(chatConversations.lastMessageAt));
     const conversationsWithDetails = await Promise.all(
       userConversations.map(async (conv) => {
         if (!conv.isGroup) {
@@ -3127,9 +3169,9 @@ var chatRouter = router({
             name: users.name,
             lastName: users.lastName,
             email: users.email
-          }).from(chatMembers).innerJoin(users, eq10(chatMembers.userId, users.id)).where(
+          }).from(chatMembers).innerJoin(users, eq11(chatMembers.userId, users.id)).where(
             and8(
-              eq10(chatMembers.conversationId, conv.id),
+              eq11(chatMembers.conversationId, conv.id),
               sql9`${chatMembers.userId} != ${ctx.user.id}`
             )
           ).limit(1);
@@ -3151,8 +3193,8 @@ var chatRouter = router({
     if (!db) throw new TRPCError6({ code: "INTERNAL_SERVER_ERROR" });
     const isMemberResult = await db.select().from(chatMembers).where(
       and8(
-        eq10(chatMembers.conversationId, input.conversationId),
-        eq10(chatMembers.userId, ctx.user.id)
+        eq11(chatMembers.conversationId, input.conversationId),
+        eq11(chatMembers.userId, ctx.user.id)
       )
     ).limit(1);
     if (isMemberResult.length === 0) throw new TRPCError6({ code: "FORBIDDEN", message: "Voc\xEA n\xE3o faz parte desta conversa" });
@@ -3162,7 +3204,7 @@ var chatRouter = router({
       senderId: chatMessages.senderId,
       createdAt: chatMessages.createdAt,
       senderName: users.name
-    }).from(chatMessages).innerJoin(users, eq10(chatMessages.senderId, users.id)).where(eq10(chatMessages.conversationId, input.conversationId)).orderBy(desc8(chatMessages.createdAt)).limit(50);
+    }).from(chatMessages).innerJoin(users, eq11(chatMessages.senderId, users.id)).where(eq11(chatMessages.conversationId, input.conversationId)).orderBy(desc8(chatMessages.createdAt)).limit(50);
     return messages.reverse();
   }),
   // Enviar mensagem
@@ -3178,7 +3220,7 @@ var chatRouter = router({
       senderId: ctx.user.id,
       content: input.content
     });
-    await db.update(chatConversations).set({ lastMessageAt: /* @__PURE__ */ new Date() }).where(eq10(chatConversations.id, input.conversationId));
+    await db.update(chatConversations).set({ lastMessageAt: /* @__PURE__ */ new Date() }).where(eq11(chatConversations.id, input.conversationId));
     return { success: true };
   }),
   // Iniciar ou buscar conversa privada com outro usuário
@@ -3261,6 +3303,21 @@ import cors from "cors";
 if (typeof globalThis.crypto === "undefined") {
   globalThis.crypto = webcrypto;
 }
+async function runMigrations() {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Migration] DB indispon\xEDvel, pulando migra\xE7\xF5es");
+    return;
+  }
+  try {
+    const rawDb = db.$client ?? db.session ?? db;
+    await rawDb.unsafe(`ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "empresaId" integer`);
+    await rawDb.unsafe(`UPDATE "users" SET "empresaId" = 1 WHERE role = 'admin' AND "empresaId" IS NULL`);
+    console.log("[Migration] Migra\xE7\xF5es aplicadas com sucesso");
+  } catch (err) {
+    console.error("[Migration] Erro ao aplicar migra\xE7\xF5es:", err);
+  }
+}
 var app = express();
 var port = process.env.PORT || 3e3;
 app.use(cors({
@@ -3284,6 +3341,13 @@ app.use(
 app.get("/health", (req, res) => {
   res.json({ status: "ok" });
 });
-app.listen(port, () => {
-  console.log(`[Server] Rotiq Backend running on port ${port}`);
+runMigrations().then(() => {
+  app.listen(port, () => {
+    console.log(`[Server] Rotiq Backend running on port ${port}`);
+  });
+}).catch((err) => {
+  console.error("[Server] Falha nas migra\xE7\xF5es, iniciando mesmo assim:", err);
+  app.listen(port, () => {
+    console.log(`[Server] Rotiq Backend running on port ${port}`);
+  });
 });

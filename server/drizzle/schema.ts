@@ -52,6 +52,7 @@ export const users = pgTable("users", {
   password: varchar("password", { length: 255 }), // Hash bcrypt
   role: userRoleEnum("role").default("user").notNull(),
   status: varchar("status", { length: 20 }).default("pending").notNull(), // pending, approved, rejected
+  empresaId: integer("empresaId"), // null = master_admin sem empresa fixa
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().$onUpdateFn(() => new Date()).notNull(),
   lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull(),

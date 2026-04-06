@@ -39,7 +39,8 @@
     "gestao": "Gestion",
     "sistema": "Système",
     "financeiro": "Financier",
-    "master": "Maître"
+    "master": "Maître",
+    "integracoes": "Intégrations"
   },
   "pages": {
     "saida_entrega": "Expédition de Livraison",
@@ -67,7 +68,8 @@
     "adiantamentos": "Avances",
     "custos_operacionais": "Coûts d'Exploitation",
     "painel_master": "Panneau Maître",
-    "permissoes": "Permissions"
+    "permissoes": "Permissions",
+    "integracoes": "Intégrations"
   },
   "chat": {
     "messages": "Messages",

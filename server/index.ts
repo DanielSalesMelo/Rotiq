@@ -9,6 +9,23 @@ import * as trpcExpress from "@trpc/server/adapters/express";
 import { appRouter } from "./routers";
 import { createContext } from "./_core/context";
 import cors from "cors";
+import { getDb } from "./db";
+
+// Aplica migrações pendentes ao iniciar o servidor
+async function runMigrations() {
+  const db = await getDb();
+  if (!db) { console.warn("[Migration] DB indisponível, pulando migrações"); return; }
+  try {
+    const rawDb = (db as any).$client ?? (db as any).session ?? (db as any);
+    // Adiciona empresaId na tabela users se não existir
+    await rawDb.unsafe(`ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "empresaId" integer`);
+    // Vincula admins existentes à empresa 1 (empresa padrão)
+    await rawDb.unsafe(`UPDATE "users" SET "empresaId" = 1 WHERE role = 'admin' AND "empresaId" IS NULL`);
+    console.log("[Migration] Migrações aplicadas com sucesso");
+  } catch (err) {
+    console.error("[Migration] Erro ao aplicar migrações:", err);
+  }
+}
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -48,7 +65,14 @@ app.get("/health", (req, res) => {
   res.json({ status: "ok" });
 });
 
-// 5. Iniciar o servidor
-app.listen(port, () => {
-  console.log(`[Server] Rotiq Backend running on port ${port}`);
+// 5. Iniciar o servidor (após migrações)
+runMigrations().then(() => {
+  app.listen(port, () => {
+    console.log(`[Server] Rotiq Backend running on port ${port}`);
+  });
+}).catch((err) => {
+  console.error("[Server] Falha nas migrações, iniciando mesmo assim:", err);
+  app.listen(port, () => {
+    console.log(`[Server] Rotiq Backend running on port ${port}`);
+  });
 });

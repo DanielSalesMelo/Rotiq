@@ -223,7 +223,7 @@ function ContaReceberForm({ onSave, onClose }: { onSave: (d: any) => void; onClo
 export default function Financeiro() {
   const { t } = useTranslation();
   const [location] = useLocation();
-  const defaultTab = location.includes("receber") ? "receber" : location.includes("adiantamentos") ? "adiantamentos" : "pagar";
+  const activeTab = location.includes("receber") ? "receber" : location.includes("adiantamentos") ? "adiantamentos" : "pagar";
   const [openPagar, setOpenPagar] = useState(false);
   const [openReceber, setOpenReceber] = useState(false);
   const utils = trpc.useUtils();
@@ -298,7 +298,7 @@ export default function Financeiro() {
         </div>
 
         {/* Tabs */}
-        <Tabs defaultValue={defaultTab}>
+        <Tabs value={activeTab}>
           <div className="flex items-center justify-between gap-4">
             <TabsList>
               <TabsTrigger value="pagar">Contas a Pagar</TabsTrigger>

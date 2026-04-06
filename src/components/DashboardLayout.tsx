@@ -17,11 +17,12 @@ import {
   ChevronRight, Calculator, MessageSquare,
 } from "lucide-react";
 import { useTheme } from "@/contexts/ThemeContext";
+import { useViewAs } from "@/contexts/ViewAsContext";
 import { useRef, useState } from "react";
 import { DashboardLayoutSkeleton } from "./DashboardLayoutSkeleton";
 import { Button } from "./ui/button";
 import { useTranslation } from "react-i18next";
-import { Globe } from "lucide-react";
+import { Globe, Plug } from "lucide-react";
 
 // Grupos de menu com controle de acesso por role
 type MenuGroup = {
@@ -90,6 +91,13 @@ const getMenuGroups = (t: any): MenuGroup[] => [
       { icon: TrendingUp, label: t("pages.contas_receber"), path: "/financeiro/receber" },
       { icon: Wallet, label: t("pages.adiantamentos"), path: "/financeiro/adiantamentos" },
       { icon: BarChart3, label: t("pages.custos_operacionais"), path: "/custos" },
+    ],
+  },
+  {
+    label: t("menu.integracoes") || "Integrações",
+    requiredRole: "admin_or_master",
+    items: [
+      { icon: Plug, label: t("pages.integracoes") || "Integrações", path: "/integracoes" },
     ],
   },
   {
@@ -176,7 +184,7 @@ function Sidebar({
 
       {/* Menu items */}
       <nav ref={navRef} className="flex-1 overflow-y-auto py-2">
-        {menuGroups.filter(group => !group.requiredRole || user?.role === group.requiredRole).map((group) => (
+        {menuGroups.filter(group => !group.requiredRole || user?.role === group.requiredRole || (group.requiredRole === "admin_or_master" && (user?.role === "admin" || user?.role === "master_admin"))).map((group) => (
           <div key={group.label}>
             {!collapsed && (
               <div className="px-4 pt-3 pb-1">
@@ -317,6 +325,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
 function AppShell({ children }: { children: React.ReactNode }) {
   const { user, logout } = useAuth();
+  const { viewAs, exitAdminView, isSimulating } = useViewAs();
   const [location, setLocation] = useLocation();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -387,6 +396,19 @@ function AppShell({ children }: { children: React.ReactNode }) {
             <Menu className="h-5 w-5" />
           </button>
           <div className="flex-1" />
+          {/* Indicador de modo simulação */}
+          {isSimulating && (
+            <div className="flex items-center gap-2 bg-amber-500/15 border border-amber-500/40 text-amber-600 dark:text-amber-400 rounded-lg px-3 py-1.5 text-xs font-medium">
+              <Shield className="h-3.5 w-3.5" />
+              <span>Visualizando como Admin — {viewAs.empresaNome}</span>
+              <button
+                onClick={exitAdminView}
+                className="ml-1 underline hover:no-underline text-amber-700 dark:text-amber-300"
+              >
+                Sair
+              </button>
+            </div>
+          )}
         </header>
         <main className="flex-1 overflow-auto p-4 md:p-6">
           {children}

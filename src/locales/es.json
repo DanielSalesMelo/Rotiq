@@ -39,7 +39,8 @@
     "gestao": "Gestión",
     "sistema": "Sistema",
     "financeiro": "Financiero",
-    "master": "Maestro"
+    "master": "Maestro",
+    "integracoes": "Integraciones"
   },
   "pages": {
     "saida_entrega": "Despacho de Entrega",
@@ -67,7 +68,8 @@
     "adiantamentos": "Anticipos",
     "custos_operacionais": "Costos Operacionales",
     "painel_master": "Panel Maestro",
-    "permissoes": "Permisos"
+    "permissoes": "Permisos",
+    "integracoes": "Integraciones"
   },
   "chat": {
     "messages": "Mensajes",
