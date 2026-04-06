@@ -1,4 +1,4 @@
-import { masterAdminProcedure, protectedProcedure, router } from "../_core/trpc";
+import { masterAdminProcedure, protectedProcedure, adminProcedure, router } from "../_core/trpc";
 import { z } from "zod";
 import { getDb } from "../db";
 import { empresas, users } from "../drizzle/schema";
