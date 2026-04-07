@@ -122,8 +122,8 @@ export const viagensRouter = router({
           saldoViagem: input.saldoViagem?.toString() ?? null,
           totalDespesas: input.totalDespesas?.toString() ?? null,
           mediaConsumo: input.mediaConsumo?.toString() ?? null,
-          dataSaida: input.dataSaida ? new Date(input.dataSaida) : null,
-          dataChegada: input.dataChegada ? new Date(input.dataChegada) : null,
+          dataSaida: input.dataSaida ? new Date(input.dataSaida).toISOString().split("T")[0] : null,
+          dataChegada: input.dataChegada ? new Date(input.dataChegada).toISOString().split("T")[0] : null,
           status: input.status ?? "planejada",
         }).returning({ id: viagens.id });
         return { id: result.id };
