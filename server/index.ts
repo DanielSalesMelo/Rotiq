@@ -21,8 +21,15 @@ const ALLOWED_ORIGINS = [
   ...(process.env.FRONTEND_URL ? [process.env.FRONTEND_URL] : []),
 ];
 
-const isOriginAllowed = (origin: string) => {
-  return true; // LIBERADO TOTALMENTE para resolver o problema de deploy
+// Aceita qualquer subdomínio do Vercel do projeto (hashes dinâmicos de preview)
+const VERCEL_PREVIEW_REGEX = /^https:\/\/rotiq-[a-z0-9-]+-daniels-projects-[a-z0-9]+\.vercel\.app$/;
+
+const isOriginAllowed = (origin: string): boolean => {
+  // Origens explícitas na lista
+  if (ALLOWED_ORIGINS.includes(origin)) return true;
+  // Preview deploys do Vercel com hash dinâmico
+  if (VERCEL_PREVIEW_REGEX.test(origin)) return true;
+  return false;
 };
 
 // Aplica migrações pendentes ao iniciar o servidor
