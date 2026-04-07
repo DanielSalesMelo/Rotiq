@@ -117,8 +117,8 @@ export const viagensRouter = router({
           dataSaida: input.dataSaida ? new Date(input.dataSaida) : null,
           dataChegada: input.dataChegada ? new Date(input.dataChegada) : null,
           status: input.status ?? "planejada",
-        });
-        return { id: (result as any).insertId };
+        }).returning({ id: viagens.id });
+        return { id: result.id };
       }, "viagens.create");
     }),
 
@@ -214,7 +214,7 @@ export const viagensRouter = router({
         const [result] = await db.insert(despesasViagem).values({
           ...input,
           data: input.data ? new Date(input.data) : null,
-        });
+        }).returning({ id: despesasViagem.id });
         // Atualizar total de despesas na viagem
         const totalRows = await db.select({
           total: sql<number>`SUM(${despesasViagem.valor})`,
@@ -223,7 +223,7 @@ export const viagensRouter = router({
         const novoTotal = String(Number(totalRows[0]?.total) || 0);
         await db.update(viagens).set({ totalDespesas: novoTotal, updatedAt: new Date() })
           .where(eq(viagens.id, input.viagemId));
-        return { id: (result as any).insertId };
+        return { id: result.id };
       }, "viagens.addDespesa");
     }),
 

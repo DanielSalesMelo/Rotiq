@@ -58,8 +58,8 @@ export const financeiroRouter = router({
             ...input,
             dataVencimento: new Date(input.dataVencimento),
             dataPagamento: parseDate(input.dataPagamento),
-          });
-          return { id: (result as any).insertId };
+          }).returning({ id: contasPagar.id });
+          return { id: result.id };
         }, "financeiro.pagar.create");
       }),
 
@@ -179,8 +179,8 @@ export const financeiroRouter = router({
             ...input,
             dataVencimento: new Date(input.dataVencimento),
             dataRecebimento: parseDate(input.dataRecebimento),
-          });
-          return { id: (result as any).insertId };
+          }).returning({ id: contasReceber.id });
+          return { id: result.id };
         }, "financeiro.receber.create");
       }),
 
@@ -296,9 +296,8 @@ export const financeiroRouter = router({
           const [result] = await db.insert(adiantamentos).values({
             ...input,
             data: new Date(input.data),
-            status: "pendente",
-          });
-          return { id: (result as any).insertId };
+          }).returning({ id: adiantamentos.id });
+          return { id: result.id };
         }, "financeiro.adiantamentos.create");
       }),
 

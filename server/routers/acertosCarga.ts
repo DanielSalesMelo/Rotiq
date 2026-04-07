@@ -115,8 +115,8 @@ export const acertosCargaRouter = router({
           ...input,
           saldoFinal,
           status: "aberto",
-        });
-        return { id: (result as any).insertId, saldoFinal };
+        }).returning({ id: acertosCarga.id });
+        return { id: result.id, saldoFinal };
       }, "acertosCarga.create");
     }),
 

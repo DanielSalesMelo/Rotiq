@@ -95,8 +95,8 @@ export const veiculosRouter = router({
           vencimentoCrlv: parseDate(input.vencimentoCrlv),
           vencimentoSeguro: parseDate(input.vencimentoSeguro),
           ativo: true,
-        });
-        return { id: (result as any).insertId };
+        }).returning({ id: veiculos.id });
+        return { id: result.id };
       }, "veiculos.create");
     }),
 

@@ -69,8 +69,8 @@ export const frotaRouter = router({
           const [result] = await db.insert(abastecimentos).values({
             ...input,
             data: new Date(input.data),
-          });
-          return { id: (result as any).insertId };
+          }).returning({ id: abastecimentos.id });
+          return { id: result.id };
         }, "abastecimentos.create");
       }),
 
@@ -205,8 +205,8 @@ export const frotaRouter = router({
             ...input,
             data: new Date(input.data),
             proximaManutencaoData: parseDate(input.proximaManutencaoData),
-          });
-          return { id: (result as any).insertId };
+          }).returning({ id: manutencoes.id });
+          return { id: result.id };
         }, "manutencoes.create");
       }),
 
@@ -322,8 +322,8 @@ export const frotaRouter = router({
           const [result] = await db.insert(controleTanque).values({
             ...input,
             data: new Date(input.data),
-          });
-          return { id: (result as any).insertId };
+          }).returning({ id: controleTanque.id });
+          return { id: result.id };
         }, "tanque.create");
       }),
 

@@ -81,8 +81,8 @@ export const notasFiscaisRouter = router({
           ...input,
           chaveAcesso: input.chaveAcesso || null,
           status: "pendente",
-        });
-        return { id: (result as any).insertId };
+        }).returning({ id: notasFiscaisViagem.id });
+        return { id: result.id };
       }, "notasFiscais.add");
     }),
 

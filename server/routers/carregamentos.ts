@@ -144,8 +144,8 @@ export const carregamentosRouter = router({
           ...input,
           numero,
           status: "montando",
-        });
-        return { id: (result as any).insertId, numero };
+        }).returning({ id: carregamentos.id });
+        return { id: result.id, numero };
       }, "carregamentos.create");
     }),
 
@@ -302,9 +302,9 @@ export const carregamentosRouter = router({
         const [result] = await db.insert(itensCarregamento).values({
           ...input,
           status: "pendente",
-        });
+        }).returning({ id: itensCarregamento.id });
         await recalcularTotais(db, input.carregamentoId);
-        return { id: (result as any).insertId };
+        return { id: result.id };
       }, "carregamentos.addItem");
     }),
 

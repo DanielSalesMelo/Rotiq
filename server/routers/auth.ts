@@ -195,6 +195,11 @@ export const authRouter = router({
         throw new TRPCError({ code: "CONFLICT", message: "Este nome de usuário já está em uso" });
       }
 
+      const [existingEmail] = await db.select().from(users).where(eq(users.email, input.email)).limit(1);
+      if (existingEmail) {
+        throw new TRPCError({ code: "CONFLICT", message: "Este e-mail já está cadastrado" });
+      }
+
       const hashedPassword = await bcrypt.hash(input.password, 10);
       const openId = `local_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
 
