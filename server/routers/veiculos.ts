@@ -155,10 +155,10 @@ export const veiculosRouter = router({
         // Busca o maior KM entre viagens, abastecimentos e odômetro do veículo
         const rows = await db.execute(sql`
           SELECT GREATEST(
-            COALESCE((SELECT MAX(kmChegada) FROM viagens WHERE veiculoId = ${input.veiculoId} AND kmChegada IS NOT NULL), 0),
-            COALESCE((SELECT MAX(kmSaida) FROM viagens WHERE veiculoId = ${input.veiculoId} AND kmSaida IS NOT NULL), 0),
-            COALESCE((SELECT MAX(kmAtual) FROM abastecimentos WHERE veiculoId = ${input.veiculoId} AND kmAtual IS NOT NULL), 0),
-            COALESCE((SELECT kmAtual FROM veiculos WHERE id = ${input.veiculoId}), 0)
+            COALESCE((SELECT MAX("kmChegada") FROM viagens WHERE "veiculoId" = ${input.veiculoId} AND "kmChegada" IS NOT NULL), 0),
+            COALESCE((SELECT MAX("kmSaida") FROM viagens WHERE "veiculoId" = ${input.veiculoId} AND "kmSaida" IS NOT NULL), 0),
+            COALESCE((SELECT MAX("kmAtual") FROM abastecimentos WHERE "veiculoId" = ${input.veiculoId} AND "kmAtual" IS NOT NULL), 0),
+            COALESCE((SELECT "kmAtual" FROM veiculos WHERE id = ${input.veiculoId}), 0)
           ) as ultimoKm
         `);
         const r = ((rows as unknown as [any[]])[0] ?? [])[0] ?? {};
