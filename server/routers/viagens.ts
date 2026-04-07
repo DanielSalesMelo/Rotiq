@@ -114,8 +114,16 @@ export const viagensRouter = router({
         const db = requireDb(await getDb(), "viagens.create");
         const [result] = await db.insert(viagens).values({
           ...input,
-          dataSaida: input.dataSaida || null,
-          dataChegada: input.dataChegada || null,
+          pesoCarga: input.pesoCarga?.toString() ?? null,
+          freteTotalIda: input.freteTotalIda?.toString() ?? null,
+          freteTotalVolta: input.freteTotalVolta?.toString() ?? null,
+          freteTotal: input.freteTotal?.toString() ?? null,
+          adiantamento: input.adiantamento?.toString() ?? null,
+          saldoViagem: input.saldoViagem?.toString() ?? null,
+          totalDespesas: input.totalDespesas?.toString() ?? null,
+          mediaConsumo: input.mediaConsumo?.toString() ?? null,
+          dataSaida: input.dataSaida ? new Date(input.dataSaida) : null,
+          dataChegada: input.dataChegada ? new Date(input.dataChegada) : null,
           status: input.status ?? "planejada",
         }).returning({ id: viagens.id });
         return { id: result.id };
