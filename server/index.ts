@@ -21,12 +21,14 @@ const ALLOWED_ORIGINS = [
   ...(process.env.FRONTEND_URL ? [process.env.FRONTEND_URL] : []),
 ];
 
-// Aceita QUALQUER domínio *.vercel.app (universal e definitivo)
+// Aceita QUALQUER domínio vercel.app (universal e definitivo)
 const ANY_VERCEL_REGEX = /^https:\/\/.*\.vercel\.app$/;
 
-const isOriginAllowed = (origin: string): boolean => {
+const isOriginAllowed = (origin: string | undefined): boolean => {
+  if (!origin) return true; // allow non-browser requests (health checks, native apps)
   if (ALLOWED_ORIGINS.includes(origin)) return true;
   if (ANY_VERCEL_REGEX.test(origin)) return true;
+  if (origin.startsWith("http://localhost")) return true;
   return false;
 };
 
@@ -37,8 +39,8 @@ async function runMigrations() {
   try {
     const rawDb = (db as any).$client ?? (db as any).session ?? (db as any);
 
-    // (todo o bloco de migrações permanece igual)
-
+    // (mantenha aqui todo o bloco de migrações que você já tem)
+    // ... seu código de migrações ...
     console.log("[Migration] Migrações aplicadas com sucesso");
   } catch (err) {
     console.error("[Migration] Erro ao aplicar migrações:", err);
@@ -60,8 +62,6 @@ app.use(
 app.use(
   cors({
     origin: (origin, callback) => {
-      if (!origin) return callback(null, true); // mobile, railway, etc.
-
       if (isOriginAllowed(origin)) {
         callback(null, true);
       } else {
