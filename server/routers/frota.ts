@@ -68,7 +68,7 @@ export const frotaRouter = router({
           const db = requireDb(await getDb(), "abastecimentos.create");
           const [result] = await db.insert(abastecimentos).values({
             ...input,
-            data: input.data,
+            data: parseDate(input.data) || new Date(),
           }).returning({ id: abastecimentos.id });
           return { id: result.id };
         }, "abastecimentos.create");
@@ -92,7 +92,7 @@ export const frotaRouter = router({
           const { id, data, ...rest } = input;
           await db.update(abastecimentos).set({
             ...rest,
-            ...(data ? { data: data } : {}),
+            ...(data ? { data: parseDate(data) || new Date() } : {}),
             updatedAt: new Date(),
           }).where(eq(abastecimentos.id, id));
           return { success: true };
