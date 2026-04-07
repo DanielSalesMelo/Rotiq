@@ -9,8 +9,8 @@ import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
 import cors from "cors";
 
-// Aceita qualquer domínio *.vercel.app
-const ANY_VERCEL_REGEX = /^https:\/\/[a-z0-9-]+\.vercel\.app$/;
+// Aceita QUALQUER domínio *.vercel.app (universal e definitivo)
+const ANY_VERCEL_REGEX = /^https:\/\/.*\.vercel\.app$/;
 
 const isOriginAllowed = (origin: string): boolean => {
   if (!origin) return true; // mobile, railway, etc.
@@ -42,7 +42,7 @@ async function startServer() {
   const app = express();
   const server = createServer(app);
 
-  // CORS corrigido
+  // CORS corrigido (versão final)
   app.use(
     cors({
       origin: (origin, callback) => {
