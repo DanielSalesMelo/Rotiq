@@ -9,10 +9,10 @@ import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
 import cors from "cors";
 
-// Aceita QUALQUER domínio *.vercel.app (universal e definitivo)
+// Aceita QUALQUER domínio vercel.app (universal e definitivo)
 const ANY_VERCEL_REGEX = /^https:\/\/.*\.vercel\.app$/;
 
-const isOriginAllowed = (origin: string): boolean => {
+const isOriginAllowed = (origin: string | undefined): boolean => {
   if (!origin) return true; // mobile, railway, etc.
   if (origin.startsWith("http://localhost")) return true;
   if (ANY_VERCEL_REGEX.test(origin)) return true;
