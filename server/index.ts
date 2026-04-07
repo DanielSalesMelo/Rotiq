@@ -25,6 +25,8 @@ const isOriginAllowed = (origin: string) => {
   if (ALLOWED_ORIGINS.includes(origin)) return true;
   // Permite domínios de preview da Vercel para o projeto Rotiq
   if (origin.startsWith("https://rotiq-cbhi-") && origin.endsWith(".vercel.app")) return true;
+  // Permite qualquer subdomínio do projeto no Vercel para evitar bloqueios em novos deploys
+  if (origin.includes("daniels-projects-8ab6d431.vercel.app")) return true;
   return false;
 };
 

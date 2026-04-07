@@ -122,8 +122,8 @@ export const notasFiscaisRouter = router({
           .update(notasFiscaisViagem)
           .set({
             status: input.status,
-            dataEntrega: input.dataEntrega ? new Date(input.dataEntrega) : undefined,
-            dataCanhoto: input.dataCanhoto ? new Date(input.dataCanhoto) : undefined,
+            dataEntrega: input.dataEntrega || undefined,
+            dataCanhoto: input.dataCanhoto || undefined,
             recebidoPor: input.recebidoPor,
             motivoDevolucao: input.motivoDevolucao,
             observacoes: input.observacoes,
@@ -150,10 +150,10 @@ export const notasFiscaisRouter = router({
         await db
           .update(notasFiscaisViagem)
           .set({
-            dataCanhoto: new Date(input.dataCanhoto),
+            dataCanhoto: input.dataCanhoto,
             recebidoPor: input.recebidoPor,
             status: "entregue",
-            dataEntrega: new Date(input.dataCanhoto),
+            dataEntrega: input.dataCanhoto,
             updatedAt: new Date(),
           })
           .where(eq(notasFiscaisViagem.id, input.id));

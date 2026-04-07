@@ -194,7 +194,7 @@ export const carregamentosRouter = router({
           .update(carregamentos)
           .set({
             status: "em_rota",
-            dataSaida: new Date(input.dataSaida),
+            dataSaida: input.dataSaida,
             kmSaida: input.kmSaida,
             updatedAt: new Date(),
           })
@@ -220,7 +220,7 @@ export const carregamentosRouter = router({
           .update(carregamentos)
           .set({
             status: "retornado",
-            dataRetorno: new Date(input.dataRetorno),
+            dataRetorno: input.dataRetorno,
             kmRetorno: input.kmRetorno,
             observacoes: input.observacoes,
             updatedAt: new Date(),
@@ -345,7 +345,7 @@ export const carregamentosRouter = router({
           .update(itensCarregamento)
           .set({
             ...data,
-            dataCanhoto: data.dataCanhoto ? new Date(data.dataCanhoto) : undefined,
+            dataCanhoto: data.dataCanhoto || undefined,
             updatedAt: new Date(),
           })
           .where(eq(itensCarregamento.id, id));

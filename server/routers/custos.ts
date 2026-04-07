@@ -41,8 +41,8 @@ export const custosRouter = router({
       return safeDb(async () => {
         const db = requireDb(await getDb(), "custos.custoPorKm");
 
-        const dataInicio = input.dataInicio ? new Date(input.dataInicio) : new Date(new Date().getFullYear(), 0, 1);
-        const dataFim = input.dataFim ? new Date(input.dataFim) : new Date();
+        const dataInicio = input.dataInicio || new Date(new Date().getFullYear(), 0, 1).toISOString().split('T')[0];
+        const dataFim = input.dataFim || new Date().toISOString().split('T')[0];
 
         // 1. Combustível no período
         const combustivelRows = await db.select({

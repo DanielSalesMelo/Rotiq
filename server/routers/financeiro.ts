@@ -56,8 +56,8 @@ export const financeiroRouter = router({
           const db = requireDb(await getDb(), "financeiro.pagar.create");
           const [result] = await db.insert(contasPagar).values({
             ...input,
-            dataVencimento: new Date(input.dataVencimento),
-            dataPagamento: parseDate(input.dataPagamento),
+            dataVencimento: input.dataVencimento,
+            dataPagamento: input.dataPagamento || null,
           }).returning({ id: contasPagar.id });
           return { id: result.id };
         }, "financeiro.pagar.create");
@@ -79,8 +79,8 @@ export const financeiroRouter = router({
           const { id, dataVencimento, dataPagamento, ...rest } = input;
           await db.update(contasPagar).set({
             ...rest,
-            ...(dataVencimento ? { dataVencimento: new Date(dataVencimento) } : {}),
-            ...(dataPagamento !== undefined ? { dataPagamento: parseDate(dataPagamento) } : {}),
+            ...(dataVencimento ? { dataVencimento: dataVencimento } : {}),
+            ...(dataPagamento !== undefined ? { dataPagamento: dataPagamento || null } : {}),
             updatedAt: new Date(),
           }).where(eq(contasPagar.id, id));
           return { success: true };
@@ -177,8 +177,8 @@ export const financeiroRouter = router({
           const db = requireDb(await getDb(), "financeiro.receber.create");
           const [result] = await db.insert(contasReceber).values({
             ...input,
-            dataVencimento: new Date(input.dataVencimento),
-            dataRecebimento: parseDate(input.dataRecebimento),
+            dataVencimento: input.dataVencimento,
+            dataRecebimento: input.dataRecebimento || null,
           }).returning({ id: contasReceber.id });
           return { id: result.id };
         }, "financeiro.receber.create");
@@ -200,8 +200,8 @@ export const financeiroRouter = router({
           const { id, dataVencimento, dataRecebimento, ...rest } = input;
           await db.update(contasReceber).set({
             ...rest,
-            ...(dataVencimento ? { dataVencimento: new Date(dataVencimento) } : {}),
-            ...(dataRecebimento !== undefined ? { dataRecebimento: parseDate(dataRecebimento) } : {}),
+            ...(dataVencimento ? { dataVencimento: dataVencimento } : {}),
+            ...(dataRecebimento !== undefined ? { dataRecebimento: dataRecebimento || null } : {}),
             updatedAt: new Date(),
           }).where(eq(contasReceber.id, id));
           return { success: true };

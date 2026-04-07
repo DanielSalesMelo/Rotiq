@@ -114,8 +114,8 @@ export const viagensRouter = router({
         const db = requireDb(await getDb(), "viagens.create");
         const [result] = await db.insert(viagens).values({
           ...input,
-          dataSaida: input.dataSaida ? new Date(input.dataSaida) : null,
-          dataChegada: input.dataChegada ? new Date(input.dataChegada) : null,
+          dataSaida: input.dataSaida || null,
+          dataChegada: input.dataChegada || null,
           status: input.status ?? "planejada",
         }).returning({ id: viagens.id });
         return { id: result.id };
@@ -130,8 +130,8 @@ export const viagensRouter = router({
         const { id, ...data } = input;
         await db.update(viagens).set({
           ...data,
-          dataSaida: data.dataSaida !== undefined ? (data.dataSaida ? new Date(data.dataSaida) : null) : undefined,
-          dataChegada: data.dataChegada !== undefined ? (data.dataChegada ? new Date(data.dataChegada) : null) : undefined,
+          dataSaida: data.dataSaida !== undefined ? (data.dataSaida || null) : undefined,
+          dataChegada: data.dataChegada !== undefined ? (data.dataChegada || null) : undefined,
           updatedAt: new Date(),
         }).where(eq(viagens.id, id));
         return { success: true };
@@ -151,7 +151,7 @@ export const viagensRouter = router({
         await db.update(viagens).set({
           status: input.status,
           kmChegada: input.kmChegada,
-          dataChegada: input.dataChegada ? new Date(input.dataChegada) : undefined,
+          dataChegada: input.dataChegada || undefined,
           updatedAt: new Date(),
         }).where(eq(viagens.id, input.id));
         return { success: true };
@@ -213,7 +213,7 @@ export const viagensRouter = router({
         const db = requireDb(await getDb(), "viagens.addDespesa");
         const [result] = await db.insert(despesasViagem).values({
           ...input,
-          data: input.data ? new Date(input.data) : null,
+          data: input.data || null,
         }).returning({ id: despesasViagem.id });
         // Atualizar total de despesas na viagem
         const totalRows = await db.select({
