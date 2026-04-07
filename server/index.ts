@@ -21,15 +21,11 @@ const ALLOWED_ORIGINS = [
   ...(process.env.FRONTEND_URL ? [process.env.FRONTEND_URL] : []),
 ];
 
-// Aceita QUALQUER domínio *.vercel.app do seu projeto
-const VERCEL_PREVIEW_REGEX = /^https:\/\/rotiq-[a-z0-9-]+-daniels-projects-[a-z0-9]+\.vercel\.app$/;
-
-// Aceita QUALQUER domínio *.vercel.app (universal)
-const ANY_VERCEL_REGEX = /^https:\/\/[a-z0-9-]+\.vercel\.app$/;
+// Aceita QUALQUER domínio *.vercel.app (universal e definitivo)
+const ANY_VERCEL_REGEX = /^https:\/\/.*\.vercel\.app$/;
 
 const isOriginAllowed = (origin: string): boolean => {
   if (ALLOWED_ORIGINS.includes(origin)) return true;
-  if (VERCEL_PREVIEW_REGEX.test(origin)) return true;
   if (ANY_VERCEL_REGEX.test(origin)) return true;
   return false;
 };
@@ -42,9 +38,6 @@ async function runMigrations() {
     const rawDb = (db as any).$client ?? (db as any).session ?? (db as any);
 
     // (todo o bloco de migrações permanece igual)
-    // ...
-    // ...
-    // (não removi nada aqui)
 
     console.log("[Migration] Migrações aplicadas com sucesso");
   } catch (err) {
@@ -63,7 +56,7 @@ app.use(
   })
 );
 
-// 2. CORS — versão corrigida e compatível com Vercel
+// 2. CORS — versão FINAL e compatível com TODOS os domínios da Vercel
 app.use(
   cors({
     origin: (origin, callback) => {
