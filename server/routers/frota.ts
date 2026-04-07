@@ -517,11 +517,11 @@ export const frotaRouter = router({
         const db = requireDb(await getDb(), "frota.listSimulacoes");
         const rows = await db.execute(sql`
           SELECT * FROM simulacoes_viagem
-          WHERE empresaId = ${input.empresaId}
-          ORDER BY createdAt DESC
+          WHERE "empresaId" = ${input.empresaId}
+          ORDER BY "createdAt" DESC
           LIMIT 50
         `);
-        return ((rows as unknown as [any[]])[0] ?? []) as any[];
+        return (rows as unknown as any[]) ?? [];
       }, "frota.listSimulacoes");
     }),
 
@@ -545,7 +545,7 @@ export const frotaRouter = router({
         const db = requireDb(await getDb(), "frota.salvarSimulacao");
         await db.execute(sql`
           INSERT INTO simulacoes_viagem
-            (empresaId, veiculoId, descricao, origem, destino, distanciaKm, valorFrete, custoTotal, margemBruta, margemPct, detalhes, observacoes, createdBy)
+            ("empresaId", "veiculoId", "descricao", "origem", "destino", "distanciaKm", "valorFrete", "custoTotal", "margemBruta", "margemPct", "detalhes", "observacoes", "createdBy")
           VALUES
             (${input.empresaId}, ${input.veiculoId ?? null}, ${input.descricao}, ${input.origem ?? null}, ${input.destino ?? null},
              ${input.distanciaKm}, ${input.valorFrete}, ${input.custoTotal}, ${input.margemBruta}, ${input.margemPct},

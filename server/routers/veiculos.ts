@@ -161,7 +161,7 @@ export const veiculosRouter = router({
             COALESCE((SELECT "kmAtual" FROM veiculos WHERE id = ${input.veiculoId}), 0)
           ) as ultimoKm
         `);
-        const r = ((rows as unknown as [any[]])[0] ?? [])[0] ?? {};
+        const r = (rows as unknown as any[])[0] ?? {};
         const km = Number(r.ultimoKm) || null;
         return { kmAtual: km };
       }, "veiculos.getUltimoKm");

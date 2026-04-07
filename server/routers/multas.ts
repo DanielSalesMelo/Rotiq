@@ -20,7 +20,7 @@ export const multasRouter = router({
           WHERE m."empresaId" = ${input.empresaId} AND m."deletedAt" IS NULL
           ORDER BY m."data" DESC
         `);
-        return (rows as unknown as [any[]])[0] ?? [];
+        return (rows as unknown as any[]) ?? [];
       });
     }),
 
@@ -88,7 +88,7 @@ export const multasRouter = router({
             SUM(CASE WHEN "status" = 'pendente' THEN "valor" ELSE 0 END) as valorPendente
           FROM multas WHERE "empresaId" = ${input.empresaId} AND "deletedAt" IS NULL
         `);
-        const r = ((rows as unknown as [any[]])[0] ?? [])[0] ?? {};
+        const r = (rows as unknown as any[])[0] ?? {};
         return {
           total: Number(r.total) || 0,
           totalValor: Number(r.totalValor) || 0,

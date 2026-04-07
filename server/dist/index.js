@@ -1234,7 +1234,7 @@ var veiculosRouter = router({
             COALESCE((SELECT "kmAtual" FROM veiculos WHERE id = ${input.veiculoId}), 0)
           ) as ultimoKm
         `);
-      const r = (rows[0] ?? [])[0] ?? {};
+      const r = rows[0] ?? {};
       const km = Number(r.ultimoKm) || null;
       return { kmAtual: km };
     }, "veiculos.getUltimoKm");
@@ -1856,11 +1856,11 @@ var frotaRouter = router({
       const db = requireDb(await getDb(), "frota.listSimulacoes");
       const rows = await db.execute(sql2`
           SELECT * FROM simulacoes_viagem
-          WHERE empresaId = ${input.empresaId}
-          ORDER BY createdAt DESC
+          WHERE "empresaId" = ${input.empresaId}
+          ORDER BY "createdAt" DESC
           LIMIT 50
         `);
-      return rows[0] ?? [];
+      return rows ?? [];
     }, "frota.listSimulacoes");
   }),
   salvarSimulacao: protectedProcedure.input(z4.object({
@@ -1881,7 +1881,7 @@ var frotaRouter = router({
       const db = requireDb(await getDb(), "frota.salvarSimulacao");
       await db.execute(sql2`
           INSERT INTO simulacoes_viagem
-            (empresaId, veiculoId, descricao, origem, destino, distanciaKm, valorFrete, custoTotal, margemBruta, margemPct, detalhes, observacoes, createdBy)
+            ("empresaId", "veiculoId", "descricao", "origem", "destino", "distanciaKm", "valorFrete", "custoTotal", "margemBruta", "margemPct", "detalhes", "observacoes", "createdBy")
           VALUES
             (${input.empresaId}, ${input.veiculoId ?? null}, ${input.descricao}, ${input.origem ?? null}, ${input.destino ?? null},
              ${input.distanciaKm}, ${input.valorFrete}, ${input.custoTotal}, ${input.margemBruta}, ${input.margemPct},
@@ -2966,7 +2966,7 @@ var multasRouter = router({
           WHERE m."empresaId" = ${input.empresaId} AND m."deletedAt" IS NULL
           ORDER BY m."data" DESC
         `);
-      return rows[0] ?? [];
+      return rows ?? [];
     });
   }),
   create: protectedProcedure.input(z9.object({
@@ -3022,7 +3022,7 @@ var multasRouter = router({
             SUM(CASE WHEN "status" = 'pendente' THEN "valor" ELSE 0 END) as valorPendente
           FROM multas WHERE "empresaId" = ${input.empresaId} AND "deletedAt" IS NULL
         `);
-      const r = (rows[0] ?? [])[0] ?? {};
+      const r = rows[0] ?? {};
       return {
         total: Number(r.total) || 0,
         totalValor: Number(r.totalValor) || 0,
