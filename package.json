@@ -1,7 +1,7 @@
 {
   "type": "module",
   "name": "rotiq-frontend",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": true,
   "scripts": {
     "dev": "vite",
