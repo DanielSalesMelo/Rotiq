@@ -1,4 +1,4 @@
-import { protectedProcedure, router } from "../_core/trpc";
+import { protectedProcedure, router, adminProcedure } from "../_core/trpc";
 import { getDb } from "../db";
 import { veiculos, funcionarios } from "../drizzle/schema";
 import { eq, and, isNull, isNotNull, desc, sql } from "drizzle-orm";
@@ -117,7 +117,7 @@ export const veiculosRouter = router({
       }, "veiculos.update");
     }),
 
-  softDelete: protectedProcedure
+  softDelete: adminProcedure
     .input(z.object({ id: z.number(), reason: z.string().min(1, "Informe o motivo da exclusão") }))
     .mutation(async ({ input, ctx }) => {
       return safeDb(async () => {
@@ -132,7 +132,7 @@ export const veiculosRouter = router({
       }, "veiculos.softDelete");
     }),
 
-  restore: protectedProcedure
+  restore: adminProcedure
     .input(z.object({ id: z.number() }))
     .mutation(async ({ input }) => {
       return safeDb(async () => {

@@ -1,4 +1,4 @@
-import { publicProcedure, router } from "../_core/trpc";
+import { publicProcedure, router, adminProcedure } from "../_core/trpc";
 import { z } from "zod";
 import { getAllUsers, updateUser, deleteUser, getDb } from "../db";
 import { TRPCError } from "@trpc/server";
@@ -7,14 +7,7 @@ import { eq } from "drizzle-orm";
 
 export const usersRouter = router({
   // Listar todos os usuários (apenas para admins)
-  listAll: publicProcedure.query(async ({ ctx }) => {
-    if (!ctx.user) {
-      throw new TRPCError({ code: "UNAUTHORIZED", message: "Não autenticado" });
-    }
-
-    if (ctx.user.role !== "admin" && ctx.user.role !== "master_admin") {
-      throw new TRPCError({ code: "FORBIDDEN", message: "Acesso negado" });
-    }
+  listAll: adminProcedure.query(async ({ ctx }) => {
 
     try {
       const allUsers = await getAllUsers();
@@ -41,7 +34,7 @@ export const usersRouter = router({
   }),
 
   // Atualizar dados do usuário
-  update: publicProcedure
+  update: adminProcedure
     .input(z.object({
       id: z.number(),
       name: z.string().optional(),
@@ -52,13 +45,6 @@ export const usersRouter = router({
       empresaId: z.number().nullable().optional(),
     }))
     .mutation(async ({ input, ctx }) => {
-      if (!ctx.user) {
-        throw new TRPCError({ code: "UNAUTHORIZED", message: "Não autenticado" });
-      }
-
-      if (ctx.user.role !== "admin" && ctx.user.role !== "master_admin") {
-        throw new TRPCError({ code: "FORBIDDEN", message: "Acesso negado" });
-      }
 
       try {
         const updateData: Record<string, unknown> = {};
@@ -83,19 +69,12 @@ export const usersRouter = router({
     }),
 
   // Aprovar usuário (mudar status de pending para approved)
-  approve: publicProcedure
+  approve: adminProcedure
     .input(z.object({
       id: z.number(),
       empresaId: z.number().optional(),
     }))
     .mutation(async ({ input, ctx }) => {
-      if (!ctx.user) {
-        throw new TRPCError({ code: "UNAUTHORIZED", message: "Não autenticado" });
-      }
-
-      if (ctx.user.role !== "admin" && ctx.user.role !== "master_admin") {
-        throw new TRPCError({ code: "FORBIDDEN", message: "Acesso negado" });
-      }
 
       try {
         const updateData: Record<string, unknown> = { status: "approved" };
@@ -113,18 +92,11 @@ export const usersRouter = router({
     }),
 
   // Rejeitar usuário (mudar status de pending para rejected)
-  reject: publicProcedure
+  reject: adminProcedure
     .input(z.object({
       id: z.number(),
     }))
     .mutation(async ({ input, ctx }) => {
-      if (!ctx.user) {
-        throw new TRPCError({ code: "UNAUTHORIZED", message: "Não autenticado" });
-      }
-
-      if (ctx.user.role !== "admin" && ctx.user.role !== "master_admin") {
-        throw new TRPCError({ code: "FORBIDDEN", message: "Acesso negado" });
-      }
 
       try {
         await updateUser(input.id, { status: "rejected" });
@@ -136,18 +108,11 @@ export const usersRouter = router({
     }),
 
   // Deletar usuário
-  delete: publicProcedure
+  delete: adminProcedure
     .input(z.object({
       id: z.number(),
     }))
     .mutation(async ({ input, ctx }) => {
-      if (!ctx.user) {
-        throw new TRPCError({ code: "UNAUTHORIZED", message: "Não autenticado" });
-      }
-
-      if (ctx.user.role !== "admin" && ctx.user.role !== "master_admin") {
-        throw new TRPCError({ code: "FORBIDDEN", message: "Acesso negado" });
-      }
 
       try {
         await deleteUser(input.id);

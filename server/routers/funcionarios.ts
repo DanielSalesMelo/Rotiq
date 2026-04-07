@@ -1,4 +1,4 @@
-import { protectedProcedure, router } from "../_core/trpc";
+import { protectedProcedure, router, adminProcedure } from "../_core/trpc";
 import { getDb } from "../db";
 import { funcionarios } from "../drizzle/schema";
 import { eq, and, isNull, isNotNull, desc } from "drizzle-orm";
@@ -138,7 +138,7 @@ export const funcionariosRouter = router({
     .mutation(async ({ input }) => {
       return safeDb(async () => {
         const db = requireDb(await getDb(), "funcionarios.create");
-        const [result] = await db.insert(funcionarios).values({
+        const results = await db.insert(funcionarios).values({
           ...input,
           email: input.email || null,
           salario: input.salario ?? null,
@@ -153,6 +153,11 @@ export const funcionariosRouter = router({
           vencimentoAso: parseDate(input.vencimentoAso),
           ativo: true,
         }).returning({ id: funcionarios.id });
+        
+        const result = results[0];
+        if (!result) {
+          throw new Error("Falha ao criar funcionário: nenhum resultado retornado");
+        }
         return { id: result.id };
       }, "funcionarios.create");
     }),
@@ -179,7 +184,7 @@ export const funcionariosRouter = router({
       }, "funcionarios.update");
     }),
 
-  softDelete: protectedProcedure
+  softDelete: adminProcedure
     .input(z.object({ id: z.number(), reason: z.string().min(1, "Informe o motivo da exclusão") }))
     .mutation(async ({ input, ctx }) => {
       return safeDb(async () => {
@@ -194,7 +199,7 @@ export const funcionariosRouter = router({
       }, "funcionarios.softDelete");
     }),
 
-  restore: protectedProcedure
+  restore: adminProcedure
     .input(z.object({ id: z.number() }))
     .mutation(async ({ input }) => {
       return safeDb(async () => {
