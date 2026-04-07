@@ -22,10 +22,7 @@ const ALLOWED_ORIGINS = [
 ];
 
 const isOriginAllowed = (origin: string) => {
-  if (!origin) return true;
-  if (ALLOWED_ORIGINS.includes(origin)) return true;
-  if (origin.includes(".vercel.app")) return true;
-  return true; // Fallback total para garantir funcionamento
+  return true; // LIBERADO TOTALMENTE para resolver o problema de deploy
 };
 
 // Aplica migrações pendentes ao iniciar o servidor
