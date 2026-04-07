@@ -5,10 +5,12 @@ import { eq, and, isNull, isNotNull, desc, gte, lte, sql } from "drizzle-orm";
 import { z } from "zod";
 import { safeDb, requireDb } from "../helpers/errorHandler";
 
-function parseDate(d: string | null | undefined): Date | null {
+function parseDate(d: string | null | undefined): string | null {
   if (!d) return null;
   const parsed = new Date(d);
-  return isNaN(parsed.getTime()) ? null : parsed;
+  if (isNaN(parsed.getTime())) return null;
+  // Retorna só a data (YYYY-MM-DD) para campos do tipo date no Postgres
+  return parsed.toISOString().split("T")[0];
 }
 
 export const frotaRouter = router({
@@ -68,7 +70,7 @@ export const frotaRouter = router({
           const db = requireDb(await getDb(), "abastecimentos.create");
           const [result] = await db.insert(abastecimentos).values({
             ...input, quantidade: input.quantidade.toString(), valorUnitario: input.valorUnitario?.toString() ?? null, valorTotal: input.valorTotal?.toString() ?? null, mediaConsumo: input.mediaConsumo?.toString() ?? null,
-            data: parseDate(input.data) || new Date(),
+            data: parseDate(input.data) ?? new Date().toISOString().split("T")[0],
           }).returning({ id: abastecimentos.id });
           return { id: result.id };
         }, "abastecimentos.create");
@@ -92,7 +94,7 @@ export const frotaRouter = router({
           const { id, data, ...rest } = input;
           await db.update(abastecimentos).set({
             ...rest,
-            ...(data ? { data: parseDate(data) || new Date() } : {}),
+            ...(data ? { data: parseDate(data) ?? new Date().toISOString().split("T")[0] } : {}),
             updatedAt: new Date(),
           }).where(eq(abastecimentos.id, id));
           return { success: true };
