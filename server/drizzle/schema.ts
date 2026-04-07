@@ -671,3 +671,94 @@ export const itensCarregamento = pgTable("itens_carregamento", {
 
 export type Carregamento = typeof carregamentos.$inferSelect;
 export type ItemCarregamento = typeof itensCarregamento.$inferSelect;
+
+// ─── LICENCIAMENTO SaaS ───────────────────────────────────────────────────────
+export const planoCodEnum = pgEnum("plano_cod", ["trial", "basico", "pro", "enterprise"]);
+export const statusLicencaEnum = pgEnum("status_licenca", ["trial", "ativa", "suspensa", "vencida", "cancelada"]);
+export const cicloCobrancaEnum = pgEnum("ciclo_cobranca", ["mensal", "trimestral", "semestral", "anual"]);
+export const statusCobrancaEnum = pgEnum("status_cobranca", ["pendente", "pago", "vencido", "cancelado", "estornado"]);
+export const formaPagamentoSaasEnum = pgEnum("forma_pagamento_saas", ["pix", "boleto", "cartao_credito", "transferencia", "cortesia"]);
+
+// Tabela de planos (configurável pelo master)
+export const planos = pgTable("planos", {
+  id: serial("id").primaryKey(),
+  codigo: planoCodEnum("codigo").notNull().unique(),
+  nome: varchar("nome", { length: 100 }).notNull(),
+  descricao: text("descricao"),
+  // Preços
+  precoMensal: decimal("precoMensal", { precision: 10, scale: 2 }).notNull().default("0"),
+  precoTrimestral: decimal("precoTrimestral", { precision: 10, scale: 2 }),
+  precoSemestral: decimal("precoSemestral", { precision: 10, scale: 2 }),
+  precoAnual: decimal("precoAnual", { precision: 10, scale: 2 }),
+  // Limites
+  limiteUsuarios: integer("limiteUsuarios").default(5),
+  limiteVeiculos: integer("limiteVeiculos").default(10),
+  limiteMotoristas: integer("limiteMotoristas").default(10),
+  // Funcionalidades
+  modulosAtivos: text("modulosAtivos").default("basico"), // JSON array de módulos
+  temIntegracaoWinthor: boolean("temIntegracaoWinthor").default(false),
+  temIntegracaoArquivei: boolean("temIntegracaoArquivei").default(false),
+  temRelatoriosAvancados: boolean("temRelatoriosAvancados").default(false),
+  temMultiEmpresa: boolean("temMultiEmpresa").default(false),
+  temSuportePrioritario: boolean("temSuportePrioritario").default(false),
+  // Trial
+  diasTrial: integer("diasTrial").default(14),
+  ativo: boolean("ativo").default(true),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+});
+export type Plano = typeof planos.$inferSelect;
+
+// Tabela de licenças (uma por empresa)
+export const licencas = pgTable("licencas", {
+  id: serial("id").primaryKey(),
+  empresaId: integer("empresaId").notNull().unique(), // 1 licença por empresa
+  planoCod: planoCodEnum("planoCod").notNull().default("trial"),
+  status: statusLicencaEnum("status").notNull().default("trial"),
+  ciclo: cicloCobrancaEnum("ciclo").default("mensal"),
+  // Datas
+  dataInicio: timestamp("dataInicio").defaultNow().notNull(),
+  dataFim: timestamp("dataFim"),                         // null = sem vencimento (enterprise)
+  dataTrialFim: timestamp("dataTrialFim"),               // fim do período de teste
+  dataUltimoPagamento: timestamp("dataUltimoPagamento"),
+  dataProximoVencimento: timestamp("dataProximoVencimento"),
+  // Valores
+  valorContratado: decimal("valorContratado", { precision: 10, scale: 2 }),
+  descontoPercent: decimal("descontoPercent", { precision: 5, scale: 2 }).default("0"),
+  // Controle
+  observacoes: text("observacoes"),
+  motivoSuspensao: text("motivoSuspensao"),
+  criadoPor: integer("criadoPor"),
+  updatedBy: integer("updatedBy"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+});
+export type Licenca = typeof licencas.$inferSelect;
+
+// Tabela de cobranças (histórico financeiro por empresa)
+export const cobrancas = pgTable("cobrancas", {
+  id: serial("id").primaryKey(),
+  empresaId: integer("empresaId").notNull(),
+  licencaId: integer("licencaId").notNull(),
+  planoCod: planoCodEnum("planoCod").notNull(),
+  ciclo: cicloCobrancaEnum("ciclo").notNull().default("mensal"),
+  // Período de referência
+  periodoInicio: timestamp("periodoInicio").notNull(),
+  periodoFim: timestamp("periodoFim").notNull(),
+  // Valores
+  valorBruto: decimal("valorBruto", { precision: 10, scale: 2 }).notNull(),
+  desconto: decimal("desconto", { precision: 10, scale: 2 }).default("0"),
+  valorLiquido: decimal("valorLiquido", { precision: 10, scale: 2 }).notNull(),
+  // Pagamento
+  status: statusCobrancaEnum("status").notNull().default("pendente"),
+  formaPagamento: formaPagamentoSaasEnum("formaPagamento"),
+  dataPagamento: timestamp("dataPagamento"),
+  dataVencimento: timestamp("dataVencimento").notNull(),
+  comprovante: varchar("comprovante", { length: 500 }),
+  observacoes: text("observacoes"),
+  // Controle
+  criadoPor: integer("criadoPor"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+});
+export type Cobranca = typeof cobrancas.$inferSelect;
