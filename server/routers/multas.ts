@@ -15,10 +15,10 @@ export const multasRouter = router({
             v.placa as veiculoPlaca, v.modelo as veiculoModelo,
             f.nome as motoristaNome
           FROM multas m
-          LEFT JOIN veiculos v ON v.id = m.veiculoId
-          LEFT JOIN funcionarios f ON f.id = m.motoristaId
-          WHERE m.empresaId = ${input.empresaId} AND m.deletedAt IS NULL
-          ORDER BY m.data DESC
+          LEFT JOIN veiculos v ON v.id = m."veiculoId"
+          LEFT JOIN funcionarios f ON f.id = m."motoristaId"
+          WHERE m."empresaId" = ${input.empresaId} AND m."deletedAt" IS NULL
+          ORDER BY m."data" DESC
         `);
         return (rows as unknown as [any[]])[0] ?? [];
       });
@@ -44,7 +44,7 @@ export const multasRouter = router({
       return safeDb(async () => {
         const db = requireDb(await getDb(), "multas.create");
         await db.execute(sql`
-          INSERT INTO multas (empresaId, veiculoId, motoristaId, data, local, descricao, numeroAuto, pontos, valor, vencimento, status, responsavel, observacoes)
+          INSERT INTO multas ("empresaId", "veiculoId", "motoristaId", "data", "local", "descricao", "numeroAuto", "pontos", "valor", "vencimento", "status", "responsavel", "observacoes")
           VALUES (${input.empresaId}, ${input.veiculoId}, ${input.motoristaId ?? null}, ${input.data}, ${input.local ?? null}, ${input.descricao}, ${input.numeroAuto ?? null}, ${input.pontos}, ${input.valor}, ${input.vencimento ?? null}, ${input.status}, ${input.responsavel}, ${input.observacoes ?? null})
         `);
         return { success: true };
@@ -69,7 +69,7 @@ export const multasRouter = router({
     .mutation(async ({ input }) => {
       return safeDb(async () => {
         const db = requireDb(await getDb(), "multas.delete");
-        await db.execute(sql`UPDATE multas SET deletedAt = NOW(), deletedBy = ${input.userId}, deleteReason = ${input.reason ?? null} WHERE id = ${input.id}`);
+        await db.execute(sql`UPDATE multas SET "deletedAt" = NOW(), "deletedBy" = ${input.userId}, "deleteReason" = ${input.reason ?? null} WHERE id = ${input.id}`);
         return { success: true };
       });
     }),
@@ -82,11 +82,11 @@ export const multasRouter = router({
         const rows = await db.execute(sql`
           SELECT 
             COUNT(*) as total,
-            SUM(valor) as totalValor,
-            SUM(pontos) as totalPontos,
-            SUM(CASE WHEN status = 'pendente' THEN 1 ELSE 0 END) as pendentes,
-            SUM(CASE WHEN status = 'pendente' THEN valor ELSE 0 END) as valorPendente
-          FROM multas WHERE empresaId = ${input.empresaId} AND deletedAt IS NULL
+            SUM("valor") as totalValor,
+            SUM("pontos") as totalPontos,
+            SUM(CASE WHEN "status" = 'pendente' THEN 1 ELSE 0 END) as pendentes,
+            SUM(CASE WHEN "status" = 'pendente' THEN "valor" ELSE 0 END) as valorPendente
+          FROM multas WHERE "empresaId" = ${input.empresaId} AND "deletedAt" IS NULL
         `);
         const r = ((rows as unknown as [any[]])[0] ?? [])[0] ?? {};
         return {
