@@ -6,10 +6,11 @@ import { z } from "zod";
 import { safeDb, requireDb } from "../helpers/errorHandler";
 import { TRPCError } from "@trpc/server";
 
-function parseDate(d: string | null | undefined): Date | null {
+function parseDate(d: string | null | undefined): string | null {
   if (!d) return null;
   const parsed = new Date(d);
-  return isNaN(parsed.getTime()) ? null : parsed;
+  if (isNaN(parsed.getTime())) return null;
+  return parsed.toISOString().split("T")[0];
 }
 
 export const financeiroRouter = router({
@@ -295,7 +296,7 @@ export const financeiroRouter = router({
           const db = requireDb(await getDb(), "financeiro.adiantamentos.create");
           const [result] = await db.insert(adiantamentos).values({
             ...input,
-            data: new Date(input.data),
+            data: parseDate(input.data) ?? new Date().toISOString().split("T")[0],
           }).returning({ id: adiantamentos.id });
           return { id: result.id };
         }, "financeiro.adiantamentos.create");
@@ -320,7 +321,7 @@ export const financeiroRouter = router({
           const saldo = Number(adiant.valor) - Number(input.valorAcertado);
           await db.update(adiantamentos).set({
             valorAcertado: input.valorAcertado,
-            dataAcerto: new Date(input.dataAcerto),
+            dataAcerto: parseDate(input.dataAcerto),
             saldo: String(saldo),
             status: "acertado",
             observacoes: input.observacoes,
