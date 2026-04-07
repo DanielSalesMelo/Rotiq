@@ -67,7 +67,7 @@ export const frotaRouter = router({
         return safeDb(async () => {
           const db = requireDb(await getDb(), "abastecimentos.create");
           const [result] = await db.insert(abastecimentos).values({
-            ...input,
+            ...input, quantidade: input.quantidade.toString(), valorUnitario: input.valorUnitario?.toString() ?? null, valorTotal: input.valorTotal?.toString() ?? null, mediaConsumo: input.mediaConsumo?.toString() ?? null,
             data: parseDate(input.data) || new Date(),
           }).returning({ id: abastecimentos.id });
           return { id: result.id };
