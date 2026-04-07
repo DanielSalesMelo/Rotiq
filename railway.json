@@ -2,7 +2,7 @@
   "$schema": "https://railway.app/railway.schema.json",
   "build": {
     "builder": "nixpacks",
-    "buildCommand": "npm install && cd server && npm install && cd .. && npm run build"
+    "buildCommand": "npm install && cd server && npm install && npx esbuild index.ts --bundle --platform=node --target=node20 --format=esm --outfile=dist/index.js && cd .. && npm run build"
   },
   "deploy": {
     "numReplicas": 1,
