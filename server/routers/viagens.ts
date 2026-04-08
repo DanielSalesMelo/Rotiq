@@ -94,11 +94,15 @@ export const viagensRouter = router({
 
   getById: protectedProcedure
     .input(z.object({ id: z.number() }))
-    .query(async ({ input }) => {
+    .query(async ({ input, ctx }) => {
       return safeDb(async () => {
         const db = requireDb(await getDb(), "viagens.getById");
         const rows = await db.select().from(viagens)
-          .where(and(eq(viagens.id, input.id), isNull(viagens.deletedAt)))
+          .where(and(
+            eq(viagens.id, input.id),
+            isNull(viagens.deletedAt),
+            ctx.user.role !== "master_admin" ? eq(viagens.empresaId, ctx.user.empresaId!) : undefined
+          ))
           .limit(1);
         if (!rows[0]) return null;
         const despesas = await db.select().from(despesasViagem)
@@ -109,11 +113,13 @@ export const viagensRouter = router({
 
   create: protectedProcedure
     .input(viagemInput)
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
       return safeDb(async () => {
         const db = requireDb(await getDb(), "viagens.create");
+        const empresaId = ctx.user.role !== "master_admin" ? ctx.user.empresaId! : input.empresaId;
         const [result] = await db.insert(viagens).values({
           ...input,
+          empresaId,
           pesoCarga: input.pesoCarga?.toString() ?? null,
           freteTotalIda: input.freteTotalIda?.toString() ?? null,
           freteTotalVolta: input.freteTotalVolta?.toString() ?? null,
@@ -132,16 +138,21 @@ export const viagensRouter = router({
 
   update: protectedProcedure
     .input(z.object({ id: z.number() }).merge(viagemInput.partial()))
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
       return safeDb(async () => {
         const db = requireDb(await getDb(), "viagens.update");
         const { id, ...data } = input;
-        await db.update(viagens).set({
+        const whereClause = [eq(viagens.id, id)];
+        if (ctx.user.role !== "master_admin") {
+          whereClause.push(eq(viagens.empresaId, ctx.user.empresaId!));
+        }
+        const [updated] = await db.update(viagens).set({
           ...data,
           dataSaida: data.dataSaida !== undefined ? (data.dataSaida || null) : undefined,
           dataChegada: data.dataChegada !== undefined ? (data.dataChegada || null) : undefined,
           updatedAt: new Date(),
-        }).where(eq(viagens.id, id));
+        }).where(and(...whereClause)).returning();
+        if (!updated) throw new Error("Viagem não encontrada ou sem permissão");
         return { success: true };
       }, "viagens.update");
     }),

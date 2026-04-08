@@ -102,11 +102,15 @@ export const funcionariosRouter = router({
 
   getById: protectedProcedure
     .input(z.object({ id: z.number() }))
-    .query(async ({ input }) => {
+    .query(async ({ input, ctx }) => {
       return safeDb(async () => {
         const db = requireDb(await getDb(), "funcionarios.getById");
         const rows = await db.select().from(funcionarios)
-          .where(and(eq(funcionarios.id, input.id), isNull(funcionarios.deletedAt)))
+          .where(and(
+            eq(funcionarios.id, input.id),
+            isNull(funcionarios.deletedAt),
+            ctx.user.role !== "master_admin" ? eq(funcionarios.empresaId, ctx.user.empresaId!) : undefined
+          ))
           .limit(1);
         return rows[0] ?? null;
       }, "funcionarios.getById");
@@ -135,11 +139,13 @@ export const funcionariosRouter = router({
 
   create: protectedProcedure
     .input(funcionarioInput)
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
       return safeDb(async () => {
         const db = requireDb(await getDb(), "funcionarios.create");
+        const empresaId = ctx.user.role !== "master_admin" ? ctx.user.empresaId! : input.empresaId;
         const results = await db.insert(funcionarios).values({
           ...input,
+          empresaId,
           email: input.email || null,
           salario: input.salario ?? null,
           valorDiaria: input.valorDiaria ?? null,
@@ -164,11 +170,15 @@ export const funcionariosRouter = router({
 
   update: protectedProcedure
     .input(z.object({ id: z.number() }).merge(funcionarioInput.partial()))
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
       return safeDb(async () => {
         const db = requireDb(await getDb(), "funcionarios.update");
         const { id, ...data } = input;
-        await db.update(funcionarios).set({
+        const whereClause = [eq(funcionarios.id, id)];
+        if (ctx.user.role !== "master_admin") {
+          whereClause.push(eq(funcionarios.empresaId, ctx.user.empresaId!));
+        }
+        const [updated] = await db.update(funcionarios).set({
           ...data,
           email: data.email !== undefined ? (data.email || null) : undefined,
           dataAdmissao: data.dataAdmissao !== undefined ? parseDate(data.dataAdmissao) : undefined,
@@ -179,7 +189,8 @@ export const funcionariosRouter = router({
           vencimentoMopp: data.vencimentoMopp !== undefined ? parseDate(data.vencimentoMopp) : undefined,
           vencimentoAso: data.vencimentoAso !== undefined ? parseDate(data.vencimentoAso) : undefined,
           updatedAt: new Date(),
-        }).where(eq(funcionarios.id, id));
+        }).where(and(...whereClause)).returning();
+        if (!updated) throw new Error("Funcionário não encontrado ou sem permissão");
         return { success: true };
       }, "funcionarios.update");
     }),

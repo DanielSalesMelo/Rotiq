@@ -65,11 +65,17 @@ export const frotaRouter = router({
         notaFiscal: z.string().optional(),
         observacoes: z.string().optional(),
       }))
-      .mutation(async ({ input }) => {
+      .mutation(async ({ input, ctx }) => {
         return safeDb(async () => {
           const db = requireDb(await getDb(), "abastecimentos.create");
+          const empresaId = ctx.user.role !== "master_admin" ? ctx.user.empresaId! : input.empresaId;
           const [result] = await db.insert(abastecimentos).values({
-            ...input, quantidade: input.quantidade.toString(), valorUnitario: input.valorUnitario?.toString() ?? null, valorTotal: input.valorTotal?.toString() ?? null, mediaConsumo: input.mediaConsumo?.toString() ?? null,
+            ...input,
+            empresaId,
+            quantidade: input.quantidade.toString(),
+            valorUnitario: input.valorUnitario?.toString() ?? null,
+            valorTotal: input.valorTotal?.toString() ?? null,
+            mediaConsumo: input.mediaConsumo?.toString() ?? null,
             data: parseDate(input.data) ?? new Date().toISOString().split("T")[0],
           }).returning({ id: abastecimentos.id });
           return { id: result.id };
@@ -88,15 +94,20 @@ export const frotaRouter = router({
         local: z.string().optional(),
         observacoes: z.string().optional(),
       }))
-      .mutation(async ({ input }) => {
+      .mutation(async ({ input, ctx }) => {
         return safeDb(async () => {
           const db = requireDb(await getDb(), "abastecimentos.update");
           const { id, data, ...rest } = input;
-          await db.update(abastecimentos).set({
+          const whereClause = [eq(abastecimentos.id, id)];
+          if (ctx.user.role !== "master_admin") {
+            whereClause.push(eq(abastecimentos.empresaId, ctx.user.empresaId!));
+          }
+          const [updated] = await db.update(abastecimentos).set({
             ...rest,
             ...(data ? { data: parseDate(data) ?? new Date().toISOString().split("T")[0] } : {}),
             updatedAt: new Date(),
-          }).where(eq(abastecimentos.id, id));
+          }).where(and(...whereClause)).returning();
+          if (!updated) throw new Error("Abastecimento não encontrado ou sem permissão");
           return { success: true };
         }, "abastecimentos.update");
       }),

@@ -1,4 +1,5 @@
-import { publicProcedure, router } from "../_core/trpc";
+import { protectedProcedure, router } from "../_core/trpc";
+import { requireDb } from "../helpers/errorHandler";
 import { z } from "zod";
 import { getDb } from "../db";
 import { chatConversations, chatMembers, chatMessages, users } from "../drizzle/schema";
@@ -98,15 +99,29 @@ export const chatRouter = router({
     }),
 
   // Enviar mensagem
-  sendMessage: publicProcedure
+  sendMessage: protectedProcedure
     .input(z.object({
       conversationId: z.number(),
       content: z.string().min(1),
     }))
     .mutation(async ({ input, ctx }) => {
-      if (!ctx.user) throw new TRPCError({ code: "UNAUTHORIZED" });
-      const db = await getDb();
-      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+      const db = requireDb(await getDb(), "chat.sendMessage");
+
+      // Verificar se o usuário é membro da conversa
+      const isMember = await db
+        .select()
+        .from(chatMembers)
+        .where(
+          and(
+            eq(chatMembers.conversationId, input.conversationId),
+            eq(chatMembers.userId, ctx.user.id)
+          )
+        )
+        .limit(1);
+
+      if (isMember.length === 0) {
+        throw new TRPCError({ code: "FORBIDDEN", message: "Você não faz parte desta conversa" });
+      }
 
       // Inserir mensagem
       await db.insert(chatMessages).values({
@@ -125,12 +140,10 @@ export const chatRouter = router({
     }),
 
   // Iniciar ou buscar conversa privada com outro usuário
-  getOrCreatePrivateConversation: publicProcedure
+  getOrCreatePrivateConversation: protectedProcedure
     .input(z.object({ targetUserId: z.number() }))
     .mutation(async ({ input, ctx }) => {
-      if (!ctx.user) throw new TRPCError({ code: "UNAUTHORIZED" });
-      const db = await getDb();
-      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+      const db = requireDb(await getDb(), "chat.getOrCreatePrivateConversation");
 
       // Buscar se já existe uma conversa privada entre os dois
       const existingConv = await db.execute(sql`
@@ -144,13 +157,14 @@ export const chatRouter = router({
         LIMIT 1
       `);
 
-      if (existingConv.length > 0) {
-        return { conversationId: Number(existingConv[0].id) };
+      const rows = existingConv as unknown as any[];
+      if (rows.length > 0) {
+        return { conversationId: Number(rows[0].id) };
       }
 
       // Criar nova conversa
       const newConvResult = await db.insert(chatConversations).values({
-        empresaId: 1, // Default para agora
+        empresaId: ctx.user.empresaId || 1,
         isGroup: false,
       }).returning();
       
@@ -166,10 +180,8 @@ export const chatRouter = router({
     }),
 
   // Listar todos os usuários para iniciar novo chat
-  listUsers: publicProcedure.query(async ({ ctx }) => {
-    if (!ctx.user) throw new TRPCError({ code: "UNAUTHORIZED" });
-    const db = await getDb();
-    if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+  listUsers: protectedProcedure.query(async ({ ctx }) => {
+    const db = requireDb(await getDb(), "chat.listUsers");
 
     return await db
       .select({
@@ -179,7 +191,12 @@ export const chatRouter = router({
         email: users.email,
       })
       .from(users)
-      .where(sql`${users.id} != ${ctx.user.id}`)
+      .where(
+        and(
+          sql`${users.id} != ${ctx.user.id}`,
+          ctx.user.role !== "master_admin" ? eq(users.empresaId, ctx.user.empresaId!) : undefined
+        )
+      )
       .limit(100);
   }),
 });

@@ -1,4 +1,4 @@
-import { publicProcedure, router, adminProcedure } from "../_core/trpc";
+import { publicProcedure, router, adminProcedure, masterAdminProcedure } from "../_core/trpc";
 import { z } from "zod";
 import { getAllUsers, updateUser, deleteUser, getDb } from "../db";
 import { TRPCError } from "@trpc/server";
@@ -124,18 +124,12 @@ export const usersRouter = router({
     }),
 
   // Vincular usuário a uma empresa (master_admin only)
-  setEmpresa: publicProcedure
+  setEmpresa: masterAdminProcedure
     .input(z.object({
       userId: z.number(),
       empresaId: z.number().nullable(),
     }))
-    .mutation(async ({ input, ctx }) => {
-      if (!ctx.user) {
-        throw new TRPCError({ code: "UNAUTHORIZED", message: "Não autenticado" });
-      }
-      if (ctx.user.role !== "master_admin") {
-        throw new TRPCError({ code: "FORBIDDEN", message: "Apenas master_admin pode vincular empresas" });
-      }
+    .mutation(async ({ input }) => {
       try {
         const db = await getDb();
         if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Banco indisponível" });

@@ -73,11 +73,15 @@ export const veiculosRouter = router({
 
   getById: protectedProcedure
     .input(z.object({ id: z.number() }))
-    .query(async ({ input }) => {
+    .query(async ({ input, ctx }) => {
       return safeDb(async () => {
         const db = requireDb(await getDb(), "veiculos.getById");
         const rows = await db.select().from(veiculos)
-          .where(and(eq(veiculos.id, input.id), isNull(veiculos.deletedAt)))
+          .where(and(
+            eq(veiculos.id, input.id),
+            isNull(veiculos.deletedAt),
+            ctx.user.role !== "master_admin" ? eq(veiculos.empresaId, ctx.user.empresaId!) : undefined
+          ))
           .limit(1);
         return rows[0] ?? null;
       }, "veiculos.getById");
@@ -85,11 +89,13 @@ export const veiculosRouter = router({
 
   create: protectedProcedure
     .input(veiculoInput)
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
       return safeDb(async () => {
         const db = requireDb(await getDb(), "veiculos.create");
+        const empresaId = ctx.user.role !== "master_admin" ? ctx.user.empresaId! : input.empresaId;
         const [result] = await db.insert(veiculos).values({
           ...input,
+          empresaId,
           capacidadeCarga: input.capacidadeCarga ?? null,
           mediaConsumo: input.mediaConsumo ?? null,
           vencimentoCrlv: parseDate(input.vencimentoCrlv),
@@ -102,17 +108,22 @@ export const veiculosRouter = router({
 
   update: protectedProcedure
     .input(z.object({ id: z.number() }).merge(veiculoInput.partial()))
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
       return safeDb(async () => {
         const db = requireDb(await getDb(), "veiculos.update");
         const { id, ...data } = input;
-        await db.update(veiculos).set({
+        const whereClause = [eq(veiculos.id, id)];
+        if (ctx.user.role !== "master_admin") {
+          whereClause.push(eq(veiculos.empresaId, ctx.user.empresaId!));
+        }
+        const [updated] = await db.update(veiculos).set({
           ...data,
           placa: data.placa ? data.placa.toUpperCase().trim() : undefined,
           vencimentoCrlv: data.vencimentoCrlv !== undefined ? parseDate(data.vencimentoCrlv) : undefined,
           vencimentoSeguro: data.vencimentoSeguro !== undefined ? parseDate(data.vencimentoSeguro) : undefined,
           updatedAt: new Date(),
-        }).where(eq(veiculos.id, id));
+        }).where(and(...whereClause)).returning();
+        if (!updated) throw new Error("Veículo não encontrado ou sem permissão");
         return { success: true };
       }, "veiculos.update");
     }),
