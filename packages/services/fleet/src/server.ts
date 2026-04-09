@@ -37,6 +37,38 @@ app.get('/drivers', async (req: Request, res: Response) => {
   res.status(200).json(drivers);
 });
 
+
+// --- Rotas de Viagens ---
+app.post('/trips', async (req: Request, res: Response) => {
+  try {
+    const { driverId, vehicleId, ...tripData } = req.body;
+    const newTrip = await prisma.trip.create({
+      data: {
+        ...tripData,
+        driver: { connect: { id: driverId } },
+        vehicle: { connect: { id: vehicleId } },
+      },
+      include: { // Inclui os dados do motorista e do veículo na resposta
+        driver: true,
+        vehicle: true,
+      }
+    });
+    res.status(201).json(newTrip);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Falha ao criar viagem', details: error });
+  }
+});
+
+app.get('/trips', async (req: Request, res: Response) => {
+  const trips = await prisma.trip.findMany({
+    include: {
+      driver: true,
+      vehicle: true,
+    }
+  });
+  res.status(200).json(trips);
+});
 app.listen(PORT, () => {
   console.log(`🚀 Servidor do Módulo de Frota rodando na porta ${PORT}`);
 });

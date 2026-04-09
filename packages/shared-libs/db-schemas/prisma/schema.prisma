@@ -29,6 +29,8 @@ model Vehicle {
   status          String    @default("AVAILABLE") // AVAILABLE, IN_USE, MAINTENANCE
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
+
+  trips           Trip[]
 }
 
 model Driver {
@@ -39,4 +41,26 @@ model Driver {
   status          String    @default("ACTIVE") // ACTIVE, INACTIVE, ON_VACATION
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
+
+  trips           Trip[]
+}
+
+// Modelo de Viagem para o Módulo Frota
+model Trip {
+  id            String    @id @default(cuid())
+  origin        String
+  destination   String
+  startDate     DateTime  @default(now())
+  endDate       DateTime?
+  status        String    @default("IN_PROGRESS") // IN_PROGRESS, COMPLETED, CANCELED
+
+  // Relacionamentos
+  driverId      String
+  driver        Driver    @relation(fields: [driverId], references: [id])
+
+  vehicleId     String
+  vehicle       Vehicle   @relation(fields: [vehicleId], references: [id])
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 }
