@@ -374,9 +374,24 @@ export const contasReceber = pgTable("contas_receber", {
   deletedAt: timestamp("deletedAt"),
   deletedBy: integer("deletedBy"),
   deleteReason: text("deleteReason"),
-});
-
-// ─── ADIANTAMENTOS (dinheiro para motorista viajar) ───────────────────────────
+  ativo: boolean("ativo").default(true),
+  // Novos campos de RH
+  dataNascimento: date("dataNascimento"),
+  estadoCivil: varchar("estadoCivil", { length: 20 }),
+  escolaridade: varchar("escolaridade", { length: 50 }),
+  tituloEleitor: varchar("tituloEleitor", { length: 20 }),
+  pis: varchar("pis", { length: 20 }),
+  ctps: varchar("ctps", { length: 20 }),
+  serieCtps: varchar("serieCtps", { length: 10 }),
+  ufCtps: varchar("ufCtps", { length: 2 }),
+  dataExpedicaoRg: date("dataExpedicaoRg"),
+  orgaoEmissorRg: varchar("orgaoEmissorRg", { length: 20 }),
+  // Benefícios
+  temPlanoSaude: boolean("temPlanoSaude").default(false),
+  temValeRefeicao: boolean("temValeRefeicao").default(false),
+  temValeTransporte: boolean("temValeTransporte").default(false),
+  valorValeRefeicao: decimal("valorValeRefeicao", { precision: 10, scale: 2 }),
+});orista viajar) ───────────────────────────
 export const adiantamentos = pgTable("adiantamentos", {
   id: serial("id").primaryKey(),
   empresaId: integer("empresaId").notNull(),
