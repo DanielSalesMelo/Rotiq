@@ -98,6 +98,7 @@ const getMenuGroups = (t: any): MenuGroup[] => [
       { icon: TrendingUp, label: t("pages.contas_receber"), path: "/financeiro/receber" },
       { icon: Wallet, label: t("pages.adiantamentos"), path: "/financeiro/adiantamentos" },
       { icon: BarChart3, label: t("pages.custos_operacionais"), path: "/custos" },
+      { icon: Calculator, label: "DRE por Placa", path: "/financeiro/dre" },
     ],
   },
   {

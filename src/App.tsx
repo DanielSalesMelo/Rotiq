@@ -45,6 +45,7 @@ import AcertoCarga from "./pages/AcertoCarga";
 import Carregamento from "./pages/Carregamento";
 import ImportExport from "./pages/ImportExport";
 import RelatoriosAvancados from "./pages/RelatoriosAvancados";
+import DrePorPlaca from "./pages/DrePorPlaca";
 import Ajuda from "./pages/Ajuda";
 
 function DashboardRoutes() {
@@ -96,6 +97,7 @@ function DashboardRoutes() {
         <Route path="/financeiro/adiantamentos" component={Adiantamentos} />
         <Route path="/adiantamentos" component={Adiantamentos} />
         <Route path="/custos" component={Custos} />
+        <Route path="/financeiro/dre" component={DrePorPlaca} />
         <Route path="/simulador-viagem" component={SimuladorViagem} />
 
         {/* Integrações */}
