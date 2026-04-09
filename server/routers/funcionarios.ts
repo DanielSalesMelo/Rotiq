@@ -4,6 +4,7 @@ import { funcionarios } from "../drizzle/schema";
 import { eq, and, isNull, isNotNull, desc } from "drizzle-orm";
 import { z } from "zod";
 import { safeDb, requireDb } from "../helpers/errorHandler";
+import { createAuditLog } from "../_core/audit";
 
 // Apenas nome e função são obrigatórios — todo o resto é opcional
 const funcionarioInput = z.object({
@@ -41,6 +42,22 @@ const funcionarioInput = z.object({
   chavePix: z.string().max(255).optional(),
   observacoes: z.string().optional(),
   foto: z.string().optional(),
+  // Novos campos de RH
+  dataNascimento: z.string().nullable().optional(),
+  estadoCivil: z.string().max(20).optional(),
+  escolaridade: z.string().max(50).optional(),
+  tituloEleitor: z.string().max(20).optional(),
+  pis: z.string().max(20).optional(),
+  ctps: z.string().max(20).optional(),
+  serieCtps: z.string().max(10).optional(),
+  ufCtps: z.string().max(2).optional(),
+  dataExpedicaoRg: z.string().nullable().optional(),
+  orgaoEmissorRg: z.string().max(20).optional(),
+  // Benefícios
+  temPlanoSaude: z.boolean().optional(),
+  temValeRefeicao: z.boolean().optional(),
+  temValeTransporte: z.boolean().optional(),
+  valorValeRefeicao: z.string().nullable().optional(),
 });
 
 function parseDate(d: string | null | undefined): Date | null {
@@ -157,6 +174,8 @@ export const funcionariosRouter = router({
           vencimentoCnh: input.vencimentoCnh || null,
           vencimentoMopp: input.vencimentoMopp || null,
           vencimentoAso: input.vencimentoAso || null,
+          dataNascimento: input.dataNascimento || null,
+          dataExpedicaoRg: input.dataExpedicaoRg || null,
           ativo: true,
         }).returning({ id: funcionarios.id });
         
@@ -164,6 +183,14 @@ export const funcionariosRouter = router({
         if (!result) {
           throw new Error("Falha ao criar funcionário: nenhum resultado retornado");
         }
+
+        await createAuditLog(ctx, {
+          acao: "CREATE",
+          tabela: "funcionarios",
+          registroId: result.id,
+          dadosDepois: input,
+        });
+
         return { id: result.id };
       }, "funcionarios.create");
     }),
@@ -178,6 +205,10 @@ export const funcionariosRouter = router({
         if (ctx.user.role !== "master_admin") {
           whereClause.push(eq(funcionarios.empresaId, ctx.user.empresaId!));
         }
+
+        const [oldData] = await db.select().from(funcionarios).where(and(...whereClause)).limit(1);
+        if (!oldData) throw new Error("Funcionário não encontrado ou sem permissão");
+
         const [updated] = await db.update(funcionarios).set({
           ...data,
           email: data.email !== undefined ? (data.email || null) : undefined,
@@ -190,9 +221,64 @@ export const funcionariosRouter = router({
           vencimentoAso: data.vencimentoAso !== undefined ? parseDate(data.vencimentoAso) : undefined,
           updatedAt: new Date(),
         }).where(and(...whereClause)).returning();
-        if (!updated) throw new Error("Funcionário não encontrado ou sem permissão");
+
+        await createAuditLog(ctx, {
+          acao: "UPDATE",
+          tabela: "funcionarios",
+          registroId: id,
+          dadosAntes: oldData,
+          dadosDepois: updated,
+        });
+
         return { success: true };
       }, "funcionarios.update");
+    }),
+
+  // Integração RH -> Financeiro: Lançar folha de pagamento
+  lancarFolha: adminProcedure
+    .input(z.object({
+      empresaId: z.number(),
+      mes: z.number().min(1).max(12),
+      ano: z.number(),
+      dataVencimento: z.string(),
+    }))
+    .mutation(async ({ input, ctx }) => {
+      return safeDb(async () => {
+        const db = requireDb(await getDb(), "funcionarios.lancarFolha");
+        const { contasPagar } = await import("../drizzle/schema");
+
+        // Buscar todos os funcionários ativos da empresa que têm salário definido
+        const funcs = await db.select().from(funcionarios)
+          .where(and(
+            eq(funcionarios.empresaId, input.empresaId),
+            eq(funcionarios.ativo, true),
+            isNull(funcionarios.deletedAt),
+            isNotNull(funcionarios.salario)
+          ));
+
+        let lancados = 0;
+        for (const f of funcs) {
+          await db.insert(contasPagar).values({
+            empresaId: input.empresaId,
+            descricao: `Salário ${f.nome} - Ref: ${input.mes}/${input.ano}`,
+            categoria: "salario",
+            valor: f.salario!,
+            dataVencimento: input.dataVencimento,
+            status: "pendente",
+            funcionarioId: f.id,
+          });
+          lancados++;
+        }
+
+        await createAuditLog(ctx, {
+          acao: "CREATE",
+          tabela: "contas_pagar",
+          registroId: 0,
+          dadosDepois: { mes: input.mes, ano: input.ano, totalLancados: lancados },
+        });
+
+        return { success: true, totalLancados: lancados };
+      }, "funcionarios.lancarFolha");
     }),
 
   softDelete: adminProcedure
