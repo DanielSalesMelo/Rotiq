@@ -176,7 +176,7 @@ function Sidebar({
           <Truck className="h-4 w-4 text-primary-foreground" />
         </div>
         {!collapsed && (
-          <span className="font-bold text-foreground tracking-tight">Rotiq</span>
+          <span className="font-bold text-foreground tracking-tight">Rotiq 360</span>
         )}
         {!collapsed && (
           <button

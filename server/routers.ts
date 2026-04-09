@@ -20,6 +20,7 @@ import { carregamentosRouter } from "./routers/carregamentos";
 import { gruposRouter } from "./routers/grupos";
 import { empresasRouter } from "./routers/empresas";
 import { licenciamentoRouter } from "./routers/licenciamento";
+import { documentosRouter } from "./routers/documentos";
 
 export const appRouter = router({
   system: systemRouter,
@@ -42,6 +43,7 @@ export const appRouter = router({
   grupos: gruposRouter,
   empresas: empresasRouter,
   licenciamento: licenciamentoRouter,
+  documentos: documentosRouter,
 });
 
 export type AppRouter = typeof appRouter;

@@ -3,13 +3,13 @@
  */
 export const APP_CONFIG = {
   // Nome atual do sistema (mude aqui para refletir em todo o backend)
-  name: "Rotiq",
+  name: "Rotiq 360",
   
   // Versão do sistema
   version: "1.0.0",
   
   // Configurações de exibição
-  displayName: "Rotiq - Gestão de Logística 360",
+  displayName: "Rotiq 360 - Gestão de Logística",
   
   // Módulos habilitados por padrão
   modules: {

@@ -820,3 +820,34 @@ export const historicoPneus = pgTable("historico_pneus", {
 
 export type Pneu = typeof pneus.$inferSelect;
 export type HistoricoPneu = typeof historicoPneus.$inferSelect;
+
+// ─── GESTÃO DE DOCUMENTOS (GED) ──────────────────────────────────────────────
+export const tipoDocumentoEnum = pgEnum("tipo_documento", ["cnh", "crlv", "aso", "mopp", "nota_fiscais", "seguro", "licenciamento", "contrato", "outro"]);
+
+export const documentos = pgTable("documentos", {
+  id: serial("id").primaryKey(),
+  empresaId: integer("empresaId").notNull(),
+  tipo: tipoDocumentoEnum("tipo").notNull(),
+  nome: varchar("nome", { length: 255 }).notNull(),
+  url: text("url").notNull(), // URL do S3 ou local
+  extensao: varchar("extensao", { length: 10 }),
+  tamanho: integer("tamanho"), // em bytes
+  
+  // Relacionamentos (opcionais)
+  veiculoId: integer("veiculoId"),
+  funcionarioId: integer("funcionarioId"),
+  viagemId: integer("viagemId"),
+  manutencaoId: integer("manutencaoId"),
+  
+  // Metadados
+  dataVencimento: date("dataVencimento"),
+  observacoes: text("observacoes"),
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+  deletedAt: timestamp("deletedAt"),
+  deletedBy: integer("deletedBy"),
+});
+
+export type Documento = typeof documentos.$inferSelect;
+export type InsertDocumento = typeof documentos.$inferInsert;
