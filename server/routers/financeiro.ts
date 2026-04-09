@@ -5,6 +5,7 @@ import { eq, and, isNull, isNotNull, desc, sql, gte, lte } from "drizzle-orm";
 import { z } from "zod";
 import { safeDb, requireDb } from "../helpers/errorHandler";
 import { TRPCError } from "@trpc/server";
+import { createAuditLog } from "../_core/audit";
 
 function parseDate(d: string | null | undefined): string | null {
   if (!d) return null;
@@ -52,14 +53,24 @@ export const financeiroRouter = router({
         viagemId: z.number().nullable().optional(),
         observacoes: z.string().optional(),
       }))
-      .mutation(async ({ input }) => {
+      .mutation(async ({ input, ctx }) => {
         return safeDb(async () => {
           const db = requireDb(await getDb(), "financeiro.pagar.create");
+          const empresaId = ctx.user.role !== "master_admin" ? ctx.user.empresaId! : input.empresaId;
           const [result] = await db.insert(contasPagar).values({
             ...input,
+            empresaId,
             dataVencimento: input.dataVencimento,
             dataPagamento: input.dataPagamento || null,
           }).returning({ id: contasPagar.id });
+
+          await createAuditLog(ctx, {
+            acao: "CREATE",
+            tabela: "contas_pagar",
+            registroId: result.id,
+            dadosDepois: input,
+          });
+
           return { id: result.id };
         }, "financeiro.pagar.create");
       }),
@@ -74,16 +85,32 @@ export const financeiroRouter = router({
         status: z.enum(["pendente", "pago", "vencido", "cancelado"]).optional(),
         observacoes: z.string().optional(),
       }))
-      .mutation(async ({ input }) => {
+      .mutation(async ({ input, ctx }) => {
         return safeDb(async () => {
           const db = requireDb(await getDb(), "financeiro.pagar.update");
           const { id, dataVencimento, dataPagamento, ...rest } = input;
-          await db.update(contasPagar).set({
+          const whereClause = [eq(contasPagar.id, id)];
+          if (ctx.user.role !== "master_admin") {
+            whereClause.push(eq(contasPagar.empresaId, ctx.user.empresaId!));
+          }
+          const [oldData] = await db.select().from(contasPagar).where(and(...whereClause)).limit(1);
+          if (!oldData) throw new TRPCError({ code: "NOT_FOUND", message: "Conta não encontrada" });
+
+          const [updated] = await db.update(contasPagar).set({
             ...rest,
             ...(dataVencimento ? { dataVencimento: dataVencimento } : {}),
             ...(dataPagamento !== undefined ? { dataPagamento: dataPagamento || null } : {}),
             updatedAt: new Date(),
-          }).where(eq(contasPagar.id, id));
+          }).where(and(...whereClause)).returning();
+
+          await createAuditLog(ctx, {
+            acao: "UPDATE",
+            tabela: "contas_pagar",
+            registroId: id,
+            dadosAntes: oldData,
+            dadosDepois: updated,
+          });
+
           return { success: true };
         }, "financeiro.pagar.update");
       }),
