@@ -3,6 +3,7 @@ import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, router } from "./_core/trpc";
 import { veiculosRouter } from "./routers/veiculos";
+import { checklistsRouter } from "./routers/checklists";
 import { funcionariosRouter } from "./routers/funcionarios";
 import { frotaRouter } from "./routers/frota";
 import { financeiroRouter } from "./routers/financeiro";
@@ -27,6 +28,7 @@ export const appRouter = router({
   chat: chatRouter,
 
   veiculos: veiculosRouter,
+  checklists: checklistsRouter,
   funcionarios: funcionariosRouter,
   frota: frotaRouter,
   financeiro: financeiroRouter,
