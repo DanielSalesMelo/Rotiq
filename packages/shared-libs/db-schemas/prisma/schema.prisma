@@ -1,5 +1,4 @@
-// Arquivo de Schema Prisma principal.
-// Defina aqui seus geradores e fontes de dados.
+// v11 - Formato para Prisma 4.x
 generator client {
   provider = "prisma-client-js"
 }
@@ -9,14 +8,13 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// Módulo TI Service Desk
 model Ticket {
-  id          String    @id @default(uuid())
+  id          String   @id @default(cuid())
   title       String
   description String?
-  status      String    @default("OPEN")
-  priority    String    @default("MEDIUM")
+  status      String   @default("OPEN")
+  priority    String   @default("MEDIUM")
   requesterId String
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
