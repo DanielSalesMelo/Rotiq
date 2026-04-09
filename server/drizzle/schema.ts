@@ -391,7 +391,9 @@ export const contasReceber = pgTable("contas_receber", {
   temValeRefeicao: boolean("temValeRefeicao").default(false),
   temValeTransporte: boolean("temValeTransporte").default(false),
   valorValeRefeicao: decimal("valorValeRefeicao", { precision: 10, scale: 2 }),
-});orista viajar) ───────────────────────────
+});
+
+// ─── ADIANTAMENTOS (para o motorista viajar) ───────────────────────────
 export const adiantamentos = pgTable("adiantamentos", {
   id: serial("id").primaryKey(),
   empresaId: integer("empresaId").notNull(),
