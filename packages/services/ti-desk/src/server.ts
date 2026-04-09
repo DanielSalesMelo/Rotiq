@@ -1,39 +1,54 @@
-
-import * as Sentry from "@sentry/node";
-import { ProfilingIntegration } from "@sentry/profiling-node";
-
-import express from 'express';
+import express, { Request, Response } from 'express';
+import { PrismaClient } from '@prisma/client';
 
 const app = express();
+const PORT = process.env.PORT || 3001; // Porta para o serviço de TI
 
-Sentry.init({
-  dsn: "https://957618949ffa16249287972895a19cde@o4511192032739328.ingest.us.sentry.io/4511192079925248",
-  integrations: [
-    new Sentry.Integrations.Http({ tracing: true }),
-    new ProfilingIntegration(),
-  ],
-  tracesSampleRate: 1.0,
-  profilesSampleRate: 1.0,
-});
-
-app.use(Sentry.Handlers.requestHandler());
-app.use(Sentry.Handlers.tracingHandler());
-
-const PORT = process.env.PORT || 3002;
+// Inicializa o Prisma Client
+const prisma = new PrismaClient();
 
 app.use(express.json());
 
-app.get('/tickets', (req, res) => {
-    res.json([{ id: 1, title: "Impressora quebrada" }]);
+// Rota para criar um novo ticket
+app.post('/tickets', async (req: Request, res: Response) => {
+  try {
+    const { title, description, requesterId, priority } = req.body;
+
+    if (!title || !requesterId) {
+      return res.status(400).json({ error: 'Título e ID do solicitante são obrigatórios.' });
+    }
+
+    const newTicket = await prisma.ticket.create({
+      data: {
+        title,
+        description,
+        requesterId,
+        priority,
+      },
+    });
+
+    res.status(201).json(newTicket);
+  } catch (error) {
+    console.error("Erro ao criar ticket:", error);
+    res.status(500).json({ error: 'Não foi possível criar o ticket.' });
+  }
 });
 
-app.post('/tickets', (req, res) => {
-    res.status(201).json({ message: "Ticket criado", data: req.body });
+// Rota para listar todos os tickets
+app.get('/tickets', async (req: Request, res: Response) => {
+  try {
+    const tickets = await prisma.ticket.findMany({
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+    res.status(200).json(tickets);
+  } catch (error) {
+    console.error("Erro ao listar tickets:", error);
+    res.status(500).json({ error: 'Não foi possível listar os tickets.' });
+  }
 });
-
-
-app.use(Sentry.Handlers.errorHandler());
 
 app.listen(PORT, () => {
-    console.log(`🚀 Módulo de TI rodando na porta ${PORT}`);
+  console.log(`🚀 Servidor do Módulo de TI rodando na porta ${PORT}`);
 });

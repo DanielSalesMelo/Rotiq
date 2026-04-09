@@ -12,6 +12,7 @@
   "license": "ISC",
   "packageManager": "pnpm@10.32.1",
   "dependencies": {
+    "@prisma/client": "4.16.2",
     "@sentry/node": "^10.48.0",
     "@sentry/profiling-node": "^10.48.0",
     "express": "^5.2.1"
