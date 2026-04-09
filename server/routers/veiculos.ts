@@ -1,4 +1,5 @@
 import { protectedProcedure, router, adminProcedure } from "../_core/trpc";
+import { createAuditLog } from "../_core/audit";
 import { getDb } from "../db";
 import { veiculos, funcionarios } from "../drizzle/schema";
 import { eq, and, isNull, isNotNull, desc, sql } from "drizzle-orm";
@@ -102,6 +103,14 @@ export const veiculosRouter = router({
           vencimentoSeguro: parseDate(input.vencimentoSeguro),
           ativo: true,
         }).returning({ id: veiculos.id });
+
+        await createAuditLog(ctx, {
+          acao: "CREATE",
+          tabela: "veiculos",
+          registroId: result.id,
+          dadosDepois: input,
+        });
+
         return { id: result.id };
       }, "veiculos.create");
     }),
@@ -116,6 +125,7 @@ export const veiculosRouter = router({
         if (ctx.user.role !== "master_admin") {
           whereClause.push(eq(veiculos.empresaId, ctx.user.empresaId!));
         }
+        const [oldData] = await db.select().from(veiculos).where(eq(veiculos.id, id)).limit(1);
         const [updated] = await db.update(veiculos).set({
           ...data,
           placa: data.placa ? data.placa.toUpperCase().trim() : undefined,
@@ -124,6 +134,15 @@ export const veiculosRouter = router({
           updatedAt: new Date(),
         }).where(and(...whereClause)).returning();
         if (!updated) throw new Error("Veículo não encontrado ou sem permissão");
+
+        await createAuditLog(ctx, {
+          acao: "UPDATE",
+          tabela: "veiculos",
+          registroId: id,
+          dadosAntes: oldData,
+          dadosDepois: updated,
+        });
+
         return { success: true };
       }, "veiculos.update");
     }),
@@ -133,12 +152,20 @@ export const veiculosRouter = router({
     .mutation(async ({ input, ctx }) => {
       return safeDb(async () => {
         const db = requireDb(await getDb(), "veiculos.softDelete");
-        await db.update(veiculos).set({
+        const [deleted] = await db.update(veiculos).set({
           deletedAt: new Date(),
           deletedBy: ctx.user!.id,
           deleteReason: input.reason,
           ativo: false,
-        }).where(eq(veiculos.id, input.id));
+        }).where(eq(veiculos.id, input.id)).returning();
+
+        await createAuditLog(ctx, {
+          acao: "DELETE",
+          tabela: "veiculos",
+          registroId: input.id,
+          dadosAntes: { reason: input.reason },
+        });
+
         return { success: true };
       }, "veiculos.softDelete");
     }),

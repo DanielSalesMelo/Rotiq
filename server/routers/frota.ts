@@ -1,4 +1,5 @@
 import { protectedProcedure, router } from "../_core/trpc";
+import { createAuditLog } from "../_core/audit";
 import { getDb } from "../db";
 import { abastecimentos, manutencoes, controleTanque, veiculos, funcionarios } from "../drizzle/schema";
 import { eq, and, isNull, isNotNull, desc, gte, lte, sql } from "drizzle-orm";
@@ -78,6 +79,14 @@ export const frotaRouter = router({
             mediaConsumo: input.mediaConsumo?.toString() ?? null,
             data: parseDate(input.data) ?? new Date().toISOString().split("T")[0],
           }).returning({ id: abastecimentos.id });
+
+          await createAuditLog(ctx, {
+            acao: "CREATE",
+            tabela: "abastecimentos",
+            registroId: result.id,
+            dadosDepois: input,
+          });
+
           return { id: result.id };
         }, "abastecimentos.create");
       }),
@@ -102,12 +111,22 @@ export const frotaRouter = router({
           if (ctx.user.role !== "master_admin") {
             whereClause.push(eq(abastecimentos.empresaId, ctx.user.empresaId!));
           }
+          const [oldData] = await db.select().from(abastecimentos).where(eq(abastecimentos.id, id)).limit(1);
           const [updated] = await db.update(abastecimentos).set({
             ...rest,
             ...(data ? { data: parseDate(data) ?? new Date().toISOString().split("T")[0] } : {}),
             updatedAt: new Date(),
           }).where(and(...whereClause)).returning();
           if (!updated) throw new Error("Abastecimento não encontrado ou sem permissão");
+
+          await createAuditLog(ctx, {
+            acao: "UPDATE",
+            tabela: "abastecimentos",
+            registroId: id,
+            dadosAntes: oldData,
+            dadosDepois: updated,
+          });
+
           return { success: true };
         }, "abastecimentos.update");
       }),
@@ -117,11 +136,19 @@ export const frotaRouter = router({
       .mutation(async ({ input, ctx }) => {
         return safeDb(async () => {
           const db = requireDb(await getDb(), "abastecimentos.softDelete");
-          await db.update(abastecimentos).set({
+          const [deleted] = await db.update(abastecimentos).set({
             deletedAt: new Date(),
             deletedBy: ctx.user!.id,
             deleteReason: input.reason,
-          }).where(eq(abastecimentos.id, input.id));
+          }).where(eq(abastecimentos.id, input.id)).returning();
+
+          await createAuditLog(ctx, {
+            acao: "DELETE",
+            tabela: "abastecimentos",
+            registroId: input.id,
+            dadosAntes: { reason: input.reason },
+          });
+
           return { success: true };
         }, "abastecimentos.softDelete");
       }),
