@@ -3,6 +3,7 @@
   "name": "rotiq-frontend",
   "version": "1.0.2",
   "private": true,
+  "name": "@nexcore/web-main",
   "scripts": {
     "dev": "vite",
     "dev:server": "cd server && npm run start",
