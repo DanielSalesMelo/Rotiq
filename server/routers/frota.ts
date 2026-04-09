@@ -1,7 +1,7 @@
 import { protectedProcedure, router } from "../_core/trpc";
 import { createAuditLog } from "../_core/audit";
 import { getDb } from "../db";
-import { abastecimentos, manutencoes, controleTanque, veiculos, funcionarios } from "../drizzle/schema";
+import { abastecimentos, manutencoes, controleTanque, veiculos, funcionarios, pneus, historicoPneus } from "../drizzle/schema";
 import { eq, and, isNull, isNotNull, desc, gte, lte, sql } from "drizzle-orm";
 import { z } from "zod";
 import { safeDb, requireDb } from "../helpers/errorHandler";
@@ -592,4 +592,158 @@ export const frotaRouter = router({
         return { success: true };
       }, "frota.salvarSimulacao");
     }),
+
+  // ─── PNEUS ────────────────────────────────────────────────────────────────
+  pneus: router({
+    list: protectedProcedure
+      .input(z.object({
+        empresaId: z.number(),
+        veiculoId: z.number().optional(),
+        status: z.enum(["novo", "em_uso", "recapado", "sucata", "estoque"]).optional(),
+      }))
+      .query(async ({ input }) => {
+        return safeDb(async () => {
+          const db = requireDb(await getDb(), "pneus.list");
+          return db.select().from(pneus)
+            .where(and(
+              eq(pneus.empresaId, input.empresaId),
+              isNull(pneus.deletedAt),
+              input.veiculoId ? eq(pneus.veiculoId, input.veiculoId) : undefined,
+              input.status ? eq(pneus.status, input.status) : undefined,
+            ))
+            .orderBy(pneus.numeroSerie);
+        }, "pneus.list");
+      }),
+
+    create: protectedProcedure
+      .input(z.object({
+        empresaId: z.number(),
+        numeroSerie: z.string().min(1),
+        marca: z.string().optional(),
+        modelo: z.string().optional(),
+        medida: z.string().optional(),
+        kmInicial: z.number().default(0),
+        status: z.enum(["novo", "em_uso", "recapado", "sucata", "estoque"]).default("novo"),
+        veiculoId: z.number().nullable().optional(),
+        posicao: z.string().optional(),
+        dataAquisicao: z.string().optional(),
+        valorAquisicao: z.string().optional(),
+        observacoes: z.string().optional(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        return safeDb(async () => {
+          const db = requireDb(await getDb(), "pneus.create");
+          const empresaId = ctx.user.role !== "master_admin" ? ctx.user.empresaId! : input.empresaId;
+          const [result] = await db.insert(pneus).values({
+            ...input,
+            empresaId,
+            dataAquisicao: parseDate(input.dataAquisicao),
+            kmAtual: input.kmInicial,
+          }).returning({ id: pneus.id });
+
+          await createAuditLog(ctx, {
+            acao: "CREATE",
+            tabela: "pneus",
+            registroId: result.id,
+            dadosDepois: input,
+          });
+
+          return { id: result.id };
+        }, "pneus.create");
+      }),
+
+    update: protectedProcedure
+      .input(z.object({
+        id: z.number(),
+        numeroSerie: z.string().optional(),
+        marca: z.string().optional(),
+        modelo: z.string().optional(),
+        medida: z.string().optional(),
+        status: z.enum(["novo", "em_uso", "recapado", "sucata", "estoque"]).optional(),
+        veiculoId: z.number().nullable().optional(),
+        posicao: z.string().optional(),
+        kmAtual: z.number().optional(),
+        observacoes: z.string().optional(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        return safeDb(async () => {
+          const db = requireDb(await getDb(), "pneus.update");
+          const { id, ...data } = input;
+          const [oldData] = await db.select().from(pneus).where(eq(pneus.id, id)).limit(1);
+          
+          const [updated] = await db.update(pneus).set({
+            ...data,
+            updatedAt: new Date(),
+          }).where(and(
+            eq(pneus.id, id),
+            ctx.user.role !== "master_admin" ? eq(pneus.empresaId, ctx.user.empresaId!) : undefined
+          )).returning();
+
+          if (!updated) throw new Error("Pneu não encontrado ou sem permissão");
+
+          await createAuditLog(ctx, {
+            acao: "UPDATE",
+            tabela: "pneus",
+            registroId: id,
+            dadosAntes: oldData,
+            dadosDepois: updated,
+          });
+
+          return { success: true };
+        }, "pneus.update");
+      }),
+
+    getHistorico: protectedProcedure
+      .input(z.object({ pneuId: z.number() }))
+      .query(async ({ input }) => {
+        return safeDb(async () => {
+          const db = requireDb(await getDb(), "pneus.getHistorico");
+          return db.select().from(historicoPneus)
+            .where(eq(historicoPneus.pneuId, input.pneuId))
+            .orderBy(desc(historicoPneus.data));
+        }, "pneus.getHistorico");
+      }),
+
+    registrarMovimentacao: protectedProcedure
+      .input(z.object({
+        pneuId: z.number(),
+        tipo: z.string(), // "TROCA", "RECAPAGEM", etc
+        veiculoId: z.number().nullable().optional(),
+        posicao: z.string().optional(),
+        kmVeiculo: z.number().optional(),
+        custo: z.string().optional(),
+        observacoes: z.string().optional(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        return safeDb(async () => {
+          const db = requireDb(await getDb(), "pneus.registrarMovimentacao");
+          const [pneu] = await db.select().from(pneus).where(eq(pneus.id, input.pneuId)).limit(1);
+          if (!pneu) throw new Error("Pneu não encontrado");
+
+          await db.insert(historicoPneus).values({
+            empresaId: pneu.empresaId,
+            pneuId: input.pneuId,
+            tipo: input.tipo,
+            veiculoId: input.veiculoId,
+            posicao: input.posicao,
+            kmVeiculo: input.kmVeiculo,
+            kmPneu: pneu.kmAtual,
+            custo: input.custo,
+            observacoes: input.observacoes,
+          });
+
+          // Se for troca, atualiza o pneu
+          if (input.tipo === "TROCA") {
+            await db.update(pneus).set({
+              veiculoId: input.veiculoId,
+              posicao: input.posicao,
+              status: input.veiculoId ? "em_uso" : "estoque",
+              updatedAt: new Date(),
+            }).where(eq(pneus.id, input.pneuId));
+          }
+
+          return { success: true };
+        }, "pneus.registrarMovimentacao");
+      }),
+  }),
 });

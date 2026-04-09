@@ -777,3 +777,46 @@ export const cobrancas = pgTable("cobrancas", {
   updatedAt: timestamp("updatedAt").defaultNow().notNull(),
 });
 export type Cobranca = typeof cobrancas.$inferSelect;
+
+// ─── PNEUS (Inteligência de Pneus) ───────────────────────────────────────────
+export const statusPneuEnum = pgEnum("status_pneu", ["novo", "em_uso", "recapado", "sucata", "estoque"]);
+
+export const pneus = pgTable("pneus", {
+  id: serial("id").primaryKey(),
+  empresaId: integer("empresaId").notNull(),
+  numeroSerie: varchar("numeroSerie", { length: 50 }).notNull(),
+  marca: varchar("marca", { length: 100 }),
+  modelo: varchar("modelo", { length: 100 }),
+  medida: varchar("medida", { length: 50 }),
+  kmInicial: integer("kmInicial").default(0),
+  kmAtual: integer("kmAtual").default(0),
+  status: statusPneuEnum("status").default("novo").notNull(),
+  veiculoId: integer("veiculoId"), // null se estiver em estoque
+  posicao: varchar("posicao", { length: 50 }), // Ex: "Eixo 1 - Lado Esquerdo"
+  dataAquisicao: date("dataAquisicao"),
+  valorAquisicao: decimal("valorAquisicao", { precision: 10, scale: 2 }),
+  observacoes: text("observacoes"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+  deletedAt: timestamp("deletedAt"),
+  deletedBy: integer("deletedBy"),
+  deleteReason: text("deleteReason"),
+});
+
+export const historicoPneus = pgTable("historico_pneus", {
+  id: serial("id").primaryKey(),
+  empresaId: integer("empresaId").notNull(),
+  pneuId: integer("pneuId").notNull(),
+  data: timestamp("data").defaultNow().notNull(),
+  tipo: varchar("tipo", { length: 50 }).notNull(), // "TROCA", "RECAPAGEM", "MANUTENCAO", "INVENTARIO"
+  veiculoId: integer("veiculoId"),
+  posicao: varchar("posicao", { length: 50 }),
+  kmVeiculo: integer("kmVeiculo"),
+  kmPneu: integer("kmPneu"),
+  custo: decimal("custo", { precision: 10, scale: 2 }),
+  observacoes: text("observacoes"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type Pneu = typeof pneus.$inferSelect;
+export type HistoricoPneu = typeof historicoPneus.$inferSelect;
