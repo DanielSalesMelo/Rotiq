@@ -5,6 +5,7 @@
     "dev": "ts-node-dev src/server.ts"
   },
   "dependencies": {
+    "@prisma/client": "4.16.2",
     "express": "4.19.2"
   },
   "devDependencies": {
