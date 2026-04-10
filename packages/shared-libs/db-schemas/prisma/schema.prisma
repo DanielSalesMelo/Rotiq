@@ -1,57 +1,71 @@
-
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
 generator client {
   provider = "prisma-client-js"
 }
+
 model Tenant {
-  id         String       @id @default(cuid())
-  name       String       @unique
-  companies  Company[]
-  users      Membership[]
-  roles      Role[]
-  createdAt  DateTime     @default(now())
-  updatedAt  DateTime     @updatedAt
+  id        String       @id @default(cuid())
+  name      String       @unique
+  companies Company[]
+  users     Membership[]
+  roles     Role[]
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
 }
+
 model Company {
-  id         String       @id @default(cuid())
-  name       String
-  cnpj       String?      @unique
-  tenant     Tenant       @relation(fields: [tenantId], references: [id])
-  tenantId   String
-  members    Membership[]
-  tickets    Ticket[]
-  vehicles   Vehicle[]
-  drivers    Driver[]
-  trips      Trip[]
-  createdAt  DateTime     @default(now())
-  updatedAt  DateTime     @updatedAt
+  id        String       @id @default(cuid())
+  name      String
+  cnpj      String?      @unique
+  tenant    Tenant       @relation(fields: [tenantId], references: [id])
+  tenantId  String
+  members   Membership[]
+  tickets   Ticket[]
+  vehicles  Vehicle[]
+  drivers   Driver[]
+  trips     Trip[]
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
 }
+
 model User {
-  id              String        @id @default(cuid())
-  email           String        @unique
+  id                  String    @id @default(cuid())
+  email               String    @unique
+  role                String    @default("USER")
+  isTemporaryPassword Boolean   @default(false)
+  failedLoginAttempts Int       @default(0)
+  isLocked            Boolean   @default(false)
+  lockedUntil         DateTime?
+
   password        String
   name            String
   memberships     Membership[]
-  createdTickets  Ticket[]      @relation("CreatedTickets")
-  assignedTickets Ticket[]      @relation("AssignedTickets")
+  createdTickets  Ticket[]        @relation("CreatedTickets")
+  assignedTickets Ticket[]        @relation("AssignedTickets")
   comments        TicketComment[]
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  passwordResetRequests PasswordResetRequest[]
 }
+
 model Role {
   id          String       @id @default(cuid())
-  name        String
+  name        String   @unique
   tenant      Tenant       @relation(fields: [tenantId], references: [id])
   tenantId    String
   members     Membership[]
   permissions Permission[]
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
+
   @@unique([tenantId, name])
 }
+
 model Membership {
   id        String   @id @default(cuid())
   user      User     @relation(fields: [userId], references: [id])
@@ -64,14 +78,17 @@ model Membership {
   companyId String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
   @@unique([userId, roleId, tenantId, companyId])
 }
+
 model Permission {
-  id          String @id @default(cuid())
-  name        String @unique
+  id          String  @id @default(cuid())
+  name        String  @unique
   description String?
   roles       Role[]
 }
+
 enum TicketStatus {
   OPEN
   IN_PROGRESS
@@ -79,12 +96,14 @@ enum TicketStatus {
   RESOLVED
   CLOSED
 }
+
 enum TicketPriority {
   LOW
   MEDIUM
   HIGH
   CRITICAL
 }
+
 model Ticket {
   id                 String          @id @default(cuid())
   title              String
@@ -104,12 +123,14 @@ model Ticket {
   createdAt          DateTime        @default(now())
   updatedAt          DateTime        @updatedAt
 }
+
 model TicketCategory {
   id          String   @id @default(cuid())
   name        String   @unique
   description String?
   tickets     Ticket[]
 }
+
 model TicketComment {
   id          String   @id @default(cuid())
   content     String
@@ -120,6 +141,7 @@ model TicketComment {
   createdAt   DateTime @default(now())
   attachments String[]
 }
+
 model Vehicle {
   id        String   @id @default(cuid())
   plate     String   @unique
@@ -133,6 +155,7 @@ model Vehicle {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
 model Driver {
   id              String   @id @default(cuid())
   name            String
@@ -145,6 +168,7 @@ model Driver {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 }
+
 model Trip {
   id          String    @id @default(cuid())
   origin      String
@@ -160,4 +184,17 @@ model Trip {
   vehicleId   String
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+}
+
+// Modelo para gerenciar solicitações de redefinição de senha assistida
+model PasswordResetRequest {
+  id        String   @id @default(cuid())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  code      String   @unique // Código curto e legível (ex: A4T-8B1)
+  status    String   @default("PENDING_APPROVAL") // PENDING_APPROVAL, COMPLETED, EXPIRED
+  createdAt DateTime @default(now())
+  expiresAt DateTime // Define uma expiração para o código, ex: 24 horas
+
+  @@index([userId])
 }

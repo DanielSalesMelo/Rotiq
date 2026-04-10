@@ -101,5 +101,11 @@
     "tailwindcss": "^4.1.14",
     "vite": "^7.1.7",
     "vite-tsconfig-paths": "^5.1.4"
+  },
+  "pnpm": {
+    "overrides": {
+      "@types/express": "4.17.21",
+      "@types/express-serve-static-core": "4.17.41"
+    }
   }
 }
