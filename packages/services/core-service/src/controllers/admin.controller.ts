@@ -5,6 +5,15 @@ import { tenantSchema, companySchema, roleSchema } from '../schemas';
 const prisma = new PrismaClient();
 
 export class AdminController {
+  async getConfig(req: Request, res: Response) {
+    return res.json({
+      UNAUTHED_ERR_MSG: 'Please login (10001)',
+      NOT_ADMIN_ERR_MSG: 'You do not have required permission (10002)',
+      AXIOS_TIMEOUT_MS: 30000,
+      COOKIE_NAME: 'app_session_id'
+    });
+  }
+
   async createTenant(req: Request, res: Response) {
     try {
       const { name } = tenantSchema.parse(req.body);

@@ -13,7 +13,6 @@ Sentry.init({
 });
 
 import { trpc } from "@/lib/trpc";
-import { UNAUTHED_ERR_MSG } from '@shared/const';
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { httpBatchLink, TRPCClientError } from "@trpc/client";
 import { createRoot } from "react-dom/client";
@@ -24,6 +23,18 @@ import "./index.css";
 import "./lib/i18n";
 
 const queryClient = new QueryClient();
+
+let UNAUTHED_ERR_MSG = 'Please login (10001)'; // Fallback
+
+// Busca configurações da API de forma assíncrona
+fetch('https://rotiq-production.up.railway.app/api/config')
+  .then(res => res.json())
+  .then(config => {
+    if (config.UNAUTHED_ERR_MSG) {
+      UNAUTHED_ERR_MSG = config.UNAUTHED_ERR_MSG;
+    }
+  })
+  .catch(err => console.error('Erro ao carregar config da API:', err));
 
 // Função para redirecionar ao login se o usuário não estiver autenticado
 const redirectToLoginIfUnauthorized = (error: unknown) => {
