@@ -1,6 +1,4 @@
 packages:
-  - '.'
+  - 'packages/apps/*'
   - 'packages/services/*'
-  - 'packages/frontend/*'
   - 'packages/shared-libs/*'
-
