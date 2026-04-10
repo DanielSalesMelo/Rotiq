@@ -1,21 +1,21 @@
 const { exec } = require('child_process');
+const path = require('path');
 
-console.log("🚀 Iniciando todos os serviços do NexCore (versão corrigida)...");
+console.log("🚀 Iniciando todos os serviços do NexCore (versão compatível com Windows)...");
 
-// Define os comandos para cada serviço
+// Constrói o caminho para o web-app de forma segura
+const webAppPath = path.join('packages', 'apps', 'web-app');
+
 const commands = [
   { name: "TI-API", command: "pnpm --filter @nexcore/ti-desk-service dev", color: "bgCyan.black" },
   { name: "FROTA-API", command: "pnpm --filter @nexcore/fleet dev", color: "bgGreen.black" },
-  { name: "WEB-APP", command: "pnpm --filter @nexcore/web-app dev", color: "bgMagenta.black" }
+  // Comando corrigido para o WEB-APP: usa o caminho correto para o Windows
+  { name: "WEB-APP", command: `cd ${webAppPath} && pnpm dev`, color: "bgMagenta.black" }
 ];
 
-// Monta o comando final para o 'concurrently'
 const concurrentlyCommand = `pnpm exec concurrently --names "${commands.map(c => c.name).join(',')}" -c "${commands.map(c => c.color).join(',')}" ${commands.map(c => `"${c.command}"`).join(' ')}`;
 
-// Usa 'exec' (assíncrono) e conecta a saída ao terminal atual
 const child = exec(concurrentlyCommand);
-
-// Conecta a saída do processo filho (concurrently) ao nosso terminal
 child.stdout.pipe(process.stdout);
 child.stderr.pipe(process.stderr);
 

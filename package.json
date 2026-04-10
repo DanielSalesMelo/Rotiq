@@ -4,7 +4,7 @@
   "version": "1.0.2",
   "private": true,
   "scripts": {
-    "dev": "vite",
+    "dev": "concurrently \"pnpm --filter @nexcore/ti-desk-service dev\" \"pnpm --filter @nexcore/fleet dev\" \"cd packages\\\\apps\\\\web-app && pnpm dev\"",
     "dev:server": "cd server && npm run start",
     "build": "vite build && npx esbuild server/index.ts --bundle --platform=node --target=node20 --format=esm --outfile=server/dist/index.js",
     "build:server": "npx esbuild server/index.ts --bundle --platform=node --target=node20 --format=esm --outfile=server/dist/index.js",

@@ -1,4 +1,48 @@
+const fs = require('fs');
+const path = require('path');
+const { execSync } = require('child_process');
 
+// --- Funções de Utilidade ---
+const run = (command, cwd = '.') => {
+    console.log(`>> [${cwd}] Executando: ${command}`);
+    try {
+        execSync(command, { stdio: 'inherit', cwd });
+    } catch (error) {
+        console.error(`\n❌ Falha ao executar o comando: ${command}`);
+        process.exit(1);
+    }
+};
+
+const replaceInFile = (filePath, oldText, newText) => {
+    if (fs.existsSync(filePath)) {
+        console.log(`>> Modificando ${filePath}`);
+        let content = fs.readFileSync(filePath, 'utf8');
+        // Usa uma expressão regular global para substituir todas as ocorrências
+        const regex = new RegExp(oldText.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&'), 'g');
+        content = content.replace(regex, newText);
+        fs.writeFileSync(filePath, content, 'utf8');
+    } else {
+        console.warn(`⚠️ Arquivo não encontrado para modificação: ${filePath}`);
+    }
+};
+
+const createDir = (dirPath) => {
+    if (!fs.existsSync(dirPath)) {
+        console.log(`>> Criando diretório: ${dirPath}`);
+        fs.mkdirSync(dirPath, { recursive: true });
+    }
+};
+
+// --- Início do Script ---
+console.log("🚀 INICIANDO SPRINT DE ARQUITETURA v2.0 (Parte 1) 🚀");
+
+const schemaPath = 'packages/shared-libs/db-schemas/prisma/schema.prisma';
+
+try {
+    // --- Etapa 1: Limpar o schema antigo e criar a nova base ---
+    console.log("\n--- Etapa 1: Recriando o Schema do Banco de Dados com a Arquitetura Core ---");
+
+    const newSchemaContent = `
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
@@ -137,4 +181,14 @@ model Trip {
   vehicleId   String
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+}
+`;
+    fs.writeFileSync(schemaPath, newSchemaContent);
+    console.log("✅ Schema.prisma recriado com a nova arquitetura.");
+
+    console.log("\n🏁 FIM DA PARTE 1. Execute a Parte 2 para continuar. 🏁");
+
+} catch (error) {
+    console.error("\n🚨 Ocorreu um erro durante a execução da Parte 1:", error.message);
+    process.exit(1);
 }
