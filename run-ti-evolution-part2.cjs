@@ -1,4 +1,14 @@
+const fs = require('fs');
+const path = require('path');
+const { execSync } = require('child_process');
 
+console.log("🚀 RE-EXECUTANDO EVOLUÇÃO DO MÓDULO DE TI (Parte 2 de 2) 🚀");
+
+const run = (command) => execSync(command, { stdio: 'inherit' });
+const schemaPath = 'packages/shared-libs/db-schemas/prisma/schema.prisma';
+const tiServerPath = 'packages/services/ti-desk/src/server.ts';
+
+const newApiCode = `
 import express from 'express';
 import { PrismaClient } from '@prisma/client';
 
@@ -102,5 +112,32 @@ app.get('/ticket-categories', async (req, res) => {
 
 
 app.listen(PORT, () => {
-  console.log(`🚀 Servidor do Módulo de TI (v2) rodando na porta ${PORT}`);
+  console.log(\`🚀 Servidor do Módulo de TI (v2) rodando na porta \${PORT}\`);
 });
+`;
+
+try {
+    console.log("--- Etapa 2: Sincronizando o Banco de Dados com o novo Schema ---");
+    run(`pnpm exec prisma migrate dev --name "evolve_ti_module_v2" --schema=${schemaPath}`);
+    console.log("✅ Banco de dados atualizado.");
+
+    console.log("--- Etapa 3: Atualizando a API do TI Service Desk ---");
+    fs.writeFileSync(tiServerPath, newApiCode);
+    console.log("✅ Código da API de TI atualizado para a versão 2.");
+
+    console.log("--- Etapa 4: Finalizando e Salvando ---");
+    run('git add .');
+    run('git commit -m "feat(ti-desk): evolve ti module with advanced features (v2 fix)"');
+    run('git push');
+    console.log("✅ Progresso salvo no GitHub.");
+
+    console.log("\n🏁 SUCESSO! EVOLUÇÃO DO MÓDULO DE TI CONCLUÍDA.");
+    
+    // Limpa os scripts antigos
+    if (fs.existsSync('run-ti-evolution-part1.cjs')) fs.unlinkSync('run-ti-evolution-part1.cjs');
+    if (fs.existsSync('run-ti-evolution-part2.cjs')) fs.unlinkSync('run-ti-evolution-part2.cjs');
+
+} catch (e) {
+    console.error("🚨 Erro na Parte 2:", e.message);
+    process.exit(1);
+}

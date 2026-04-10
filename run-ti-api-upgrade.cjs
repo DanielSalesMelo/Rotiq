@@ -1,4 +1,14 @@
+const fs = require('fs');
+const path = require('path');
+const { execSync } = require('child_process');
 
+console.log("🚀 INICIANDO ATUALIZAÇÃO DA API DE TI (v2) 🚀");
+
+const run = (command) => execSync(command, { stdio: 'inherit' });
+const tiServerPath = 'packages/services/ti-desk/src/server.ts';
+
+// O NOVO CÓDIGO COMPLETO E PODEROSO PARA A API DE TI
+const newApiCode = `
 import express from 'express';
 import { PrismaClient } from '@prisma/client';
 
@@ -102,5 +112,25 @@ app.get('/ticket-categories', async (req, res) => {
 
 
 app.listen(PORT, () => {
-  console.log(`🚀 Servidor do Módulo de TI (v2) rodando na porta ${PORT}`);
+  console.log(\`🚀 Servidor do Módulo de TI (v2) rodando na porta \${PORT}\`);
 });
+`;
+
+try {
+    console.log("--- Etapa 1: Atualizando o código da API de TI ---");
+    fs.writeFileSync(tiServerPath, newApiCode);
+    console.log("✅ Código da API de TI atualizado para a versão 2.");
+
+    console.log("\n--- Etapa 2: Salvando progresso no GitHub ---");
+    run('git add .');
+    run('git commit -m "feat(ti-desk): upgrade ti-desk api to v2"');
+    run('git push');
+    console.log("✅ Progresso salvo no GitHub.");
+
+    console.log("\n🏁 SUCESSO! ATUALIZAÇÃO DA API DE TI CONCLUÍDA.");
+    fs.unlinkSync('run-ti-api-upgrade.cjs');
+
+} catch (e) {
+    console.error("\n🚨 FALHA NA ATUALIZAÇÃO DA API:", e.message);
+    process.exit(1);
+}
