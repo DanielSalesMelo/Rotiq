@@ -1,4 +1,9 @@
+const fs = require('fs');
+console.log("🚀 INICIANDO ARQUITETURA DEFINITIVA (Parte 1 de 3) 🚀");
+console.log("--- Etapa 1: Recriando o Schema do Banco de Dados com a Arquitetura Core ---");
 
+const schemaPath = 'packages/shared-libs/db-schemas/prisma/schema.prisma';
+const newSchemaContent = `
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
@@ -122,4 +127,12 @@ model Trip {
   vehicleId   String
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+}
+`;
+try {
+    fs.writeFileSync(schemaPath, newSchemaContent);
+    console.log("✅ Schema.prisma recriado com a arquitetura definitiva.");
+    console.log("\n🏁 FIM DA PARTE 1. Execute a Parte 2 para continuar. 🏁");
+} catch (e) {
+    console.error("🚨 Erro na Parte 1:", e.message);
 }
