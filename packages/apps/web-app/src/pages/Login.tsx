@@ -1,103 +1,53 @@
-import React, { useState } from 'react';
-import { useLocation } from 'wouter';
-import axios from 'axios';
-import { Lock, Mail, Loader2 } from 'lucide-react';
 
-export default function Login() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [, setLocation] = useLocation();
+// packages/apps/web-app/src/pages/Login.tsx
+import React from 'react';
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    setLoading(true);
-
-    try {
-      const response = await axios.post('http://localhost:3000/auth/login', {
-        email,
-        password,
-      });
-
-      const { token, user } = response.data;
-      
-      // Salvar no localStorage
-      localStorage.setItem('nexcore_token', token);
-      localStorage.setItem('nexcore_user', JSON.stringify(user));
-
-      // Redirecionar
-      setLocation('/dashboard');
-    } catch (err: any) {
-      console.error('Erro no login:', err);
-      setError(err.response?.data?.error || 'Falha ao conectar ao servidor. Verifique se a API está rodando.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
+const LoginPage = () => {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8 w-full">
-      <div className="max-w-md w-full space-y-8 bg-white p-10 rounded-xl shadow-lg">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            NexCore
-          </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            Entre na sua conta para continuar
-          </p>
-        </div>
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          {error && (
-            <div className="bg-red-50 border-l-4 border-red-400 p-4 mb-4">
-              <p className="text-sm text-red-700">{error}</p>
-            </div>
-          )}
-          <div className="rounded-md shadow-sm space-y-4">
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Mail className="h-5 w-5 text-gray-400" />
-              </div>
-              <input
-                type="email"
-                required
-                className="appearance-none rounded-lg relative block w-full px-10 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                placeholder="Email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </div>
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Lock className="h-5 w-5 text-gray-400" />
-              </div>
-              <input
-                type="password"
-                required
-                className="appearance-none rounded-lg relative block w-full px-10 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                placeholder="Senha"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-            </div>
+    <div className="flex items-center justify-center min-h-screen bg-gray-100">
+      <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md">
+        <h1 className="text-3xl font-bold text-center text-gray-900">
+          Bem-vindo ao NexCore
+        </h1>
+        <form className="space-y-6">
+          <div>
+            <label htmlFor="email" className="text-sm font-medium text-gray-700">
+              Email
+            </label>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              required
+              className="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+              placeholder="seu@email.com"
+            />
           </div>
-
+          <div>
+            <label htmlFor="password" className="text-sm font-medium text-gray-700">
+              Senha
+            </label>
+            <input
+              id="password"
+              name="password"
+              type="password"
+              required
+              className="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+              placeholder="Sua senha"
+            />
+          </div>
           <div>
             <button
               type="submit"
-              disabled={loading}
-              className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 transition-colors"
+              className="w-full px-4 py-2 font-semibold text-white bg-indigo-600 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
             >
-              {loading ? (
-                <Loader2 className="animate-spin h-5 w-5" />
-              ) : (
-                'Entrar'
-              )}
+              Entrar
             </button>
           </div>
         </form>
       </div>
     </div>
   );
-}
+};
+
+export default LoginPage;

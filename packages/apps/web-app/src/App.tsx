@@ -1,22 +1,22 @@
 import React from 'react';
-import { Route, Switch, Redirect } from 'wouter';
-import Login from './pages/Login';
-import Dashboard from './pages/Dashboard';
+import { Button } from '@nexcore/ui-components';
+import ChatWidget from './components/ai/ChatWidget'; // Importamos nosso novo componente
 
 function App() {
   return (
-    <Switch>
-      <Route path="/login" component={Login} />
-      <Route path="/dashboard" component={Dashboard} />
-      <Route path="/">
-        <Redirect to="/login" />
-      </Route>
-      <Route>
-        <div className="flex items-center justify-center min-h-screen">
-          <h1 className="text-4xl font-bold">404 - NÃ£o Encontrado</h1>
-        </div>
-      </Route>
-    </Switch>
+    <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center">
+      <div className="text-center">
+        <h1 className="text-4xl font-bold mb-4">NexCore</h1>
+        <p className="text-lg text-gray-600 mb-8">Sua plataforma de gestão 360°.</p>
+        <Button>
+          Botão do UI Components
+        </Button>
+      </div>
+
+      {/* Adicionamos o Widget do Chat aqui */}
+      {/* Ele será renderizado por cima de todo o conteúdo da aplicação */}
+      <ChatWidget />
+    </div>
   );
 }
 

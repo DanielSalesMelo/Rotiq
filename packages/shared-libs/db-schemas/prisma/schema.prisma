@@ -1,200 +1,430 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  url      = env("DATABASE_URL" )
 }
 
 generator client {
   provider = "prisma-client-js"
 }
 
-model Tenant {
-  id        String       @id @default(cuid())
-  name      String       @unique
-  companies Company[]
-  users     Membership[]
-  roles     Role[]
-  createdAt DateTime     @default(now())
-  updatedAt DateTime     @updatedAt
-}
+// =========================================
+// CORE MODELS: Tenant, User, Auth
+// =========================================
 
-model Company {
-  id        String       @id @default(cuid())
-  name      String
-  cnpj      String?      @unique
-  tenant    Tenant       @relation(fields: [tenantId], references: [id])
-  tenantId  String
-  members   Membership[]
-  tickets   Ticket[]
-  vehicles  Vehicle[]
-  drivers   Driver[]
-  trips     Trip[]
-  createdAt DateTime     @default(now())
-  updatedAt DateTime     @updatedAt
+model Tenant {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  users       User[]
+  companies   Company[]
+  roles       Role[]
+  pipelines   Pipeline[]
+  deals       Deal[]
+  contacts    Contact[]
+  activities  Activity[]
+  tickets     Ticket[]
+  employees   Employee[]
+  leaveRequests LeaveRequest[]
+  invoices    Invoice[]
+  expenses    Expense[]
+  assets      Asset[]
+  products    Product[]
+  productionOrders ProductionOrder[]
+  inventoryMovements InventoryMovement[]
+
+  @@map("tenants")
 }
 
 model User {
-  id                  String    @id @default(cuid())
-  email               String    @unique
-  role                String    @default("USER")
-  isTemporaryPassword Boolean   @default(false)
-  failedLoginAttempts Int       @default(0)
-  isLocked            Boolean   @default(false)
-  lockedUntil         DateTime?
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String?
+  passwordHash  String
+  avatarUrl     String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  isMasterAdmin Boolean   @default(false)
+  isDeleted     Boolean   @default(false)
+  deletedAt     DateTime?
 
-  password        String
-  name            String
-  memberships     Membership[]
-  createdTickets  Ticket[]        @relation("CreatedTickets")
-  assignedTickets Ticket[]        @relation("AssignedTickets")
-  comments        TicketComment[]
-  createdAt       DateTime        @default(now())
-  updatedAt       DateTime        @updatedAt
-
+  // Relations
+  tenantId      String
+  tenant        Tenant    @relation(fields: [tenantId], references: [id])
+  memberships   Membership[]
   passwordResetRequests PasswordResetRequest[]
+  
+  // CRM Relations
+  ownedDeals    Deal[]     @relation("OwnedDeals")
+  activities    Activity[] @relation("UserActivities")
+
+  // TI Relations
+  assignedTickets Ticket[] @relation("AssignedTickets")
+  createdTickets  Ticket[] @relation("CreatedTickets")
+
+  // RH Relations
+  employeeProfile Employee?
+
+  @@map("users")
 }
 
 model Role {
-  id          String       @id @default(cuid())
-  name        String   @unique
-  tenant      Tenant       @relation(fields: [tenantId], references: [id])
+  id          String   @id @default(cuid())
+  name        String   // e.g., "Admin", "Sales Rep", "IT Support"
+  permissions String[] // e.g., ["deal:create", "deal:delete", "user:invite"]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
   tenantId    String
-  members     Membership[]
-  permissions Permission[]
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
+  tenant      Tenant     @relation(fields: [tenantId], references: [id])
+  memberships Membership[]
 
   @@unique([tenantId, name])
+  @@map("roles")
 }
 
 model Membership {
-  id        String   @id @default(cuid())
-  user      User     @relation(fields: [userId], references: [id])
-  userId    String
-  role      Role     @relation(fields: [roleId], references: [id])
-  roleId    String
-  tenant    Tenant   @relation(fields: [tenantId], references: [id])
-  tenantId  String
-  company   Company? @relation(fields: [companyId], references: [id])
-  companyId String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id      String @id @default(cuid())
+  userId  String
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  roleId  String
+  role    Role   @relation(fields: [roleId], references: [id], onDelete: Cascade)
 
-  @@unique([userId, roleId, tenantId, companyId])
+  @@unique([userId, roleId])
+  @@map("memberships")
 }
 
-model Permission {
-  id          String  @id @default(cuid())
-  name        String  @unique
-  description String?
-  roles       Role[]
-}
-
-enum TicketStatus {
-  OPEN
-  IN_PROGRESS
-  PENDING_USER
-  RESOLVED
-  CLOSED
-}
-
-enum TicketPriority {
-  LOW
-  MEDIUM
-  HIGH
-  CRITICAL
-}
-
-model Ticket {
-  id                 String          @id @default(cuid())
-  title              String
-  description        String?
-  status             TicketStatus    @default(OPEN)
-  priority           TicketPriority  @default(MEDIUM)
-  company            Company         @relation(fields: [companyId], references: [id])
-  companyId          String
-  requester          User            @relation("CreatedTickets", fields: [requesterId], references: [id])
-  requesterId        String
-  assignee           User?           @relation("AssignedTickets", fields: [assigneeId], references: [id])
-  assigneeId         String?
-  category           TicketCategory? @relation(fields: [categoryId], references: [id])
-  categoryId         String?
-  comments           TicketComment[]
-  satisfactionRating Int?            @db.SmallInt
-  createdAt          DateTime        @default(now())
-  updatedAt          DateTime        @updatedAt
-}
-
-model TicketCategory {
-  id          String   @id @default(cuid())
-  name        String   @unique
-  description String?
-  tickets     Ticket[]
-}
-
-model TicketComment {
-  id          String   @id @default(cuid())
-  content     String
-  ticket      Ticket   @relation(fields: [ticketId], references: [id])
-  ticketId    String
-  author      User     @relation(fields: [authorId], references: [id])
-  authorId    String
-  createdAt   DateTime @default(now())
-  attachments String[]
-}
-
-model Vehicle {
-  id        String   @id @default(cuid())
-  plate     String   @unique
-  model     String
-  brand     String
-  year      Int
-  status    String   @default("AVAILABLE")
-  company   Company  @relation(fields: [companyId], references: [id])
-  companyId String
-  trips     Trip[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-model Driver {
-  id              String   @id @default(cuid())
-  name            String
-  licenseNumber   String   @unique
-  licenseCategory String
-  status          String   @default("ACTIVE")
-  company         Company  @relation(fields: [companyId], references: [id])
-  companyId       String
-  trips           Trip[]
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-}
-
-model Trip {
-  id          String    @id @default(cuid())
-  origin      String
-  destination String
-  startDate   DateTime  @default(now())
-  endDate     DateTime?
-  status      String    @default("IN_PROGRESS")
-  company     Company   @relation(fields: [companyId], references: [id])
-  companyId   String
-  driver      Driver    @relation(fields: [driverId], references: [id])
-  driverId    String
-  vehicle     Vehicle   @relation(fields: [vehicleId], references: [id])
-  vehicleId   String
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-}
-
-// Modelo para gerenciar solicitações de redefinição de senha assistida
 model PasswordResetRequest {
   id        String   @id @default(cuid())
-  user      User     @relation(fields: [userId], references: [id])
   userId    String
-  code      String   @unique // Código curto e legível (ex: A4T-8B1)
-  status    String   @default("PENDING_APPROVAL") // PENDING_APPROVAL, COMPLETED, EXPIRED
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token     String   @unique
+  expiresAt DateTime
   createdAt DateTime @default(now())
-  expiresAt DateTime // Define uma expiração para o código, ex: 24 horas
 
-  @@index([userId])
+  @@map("password_reset_requests")
+}
+
+// =========================================
+// CRM & SALES MODELS
+// =========================================
+
+model Company {
+  id        String   @id @default(cuid())
+  name      String
+  domain    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  isDeleted Boolean  @default(false)
+  deletedAt DateTime?
+
+  // Relations
+  tenantId  String
+  tenant    Tenant    @relation(fields: [tenantId], references: [id])
+  contacts  Contact[]
+  deals     Deal[]
+
+  @@map("companies")
+}
+
+model Contact {
+  id        String   @id @default(cuid())
+  name      String
+  email     String?
+  phone     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  isDeleted Boolean  @default(false)
+  deletedAt DateTime?
+
+  // Relations
+  tenantId  String
+  tenant    Tenant  @relation(fields: [tenantId], references: [id])
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
+  deals     Deal[]
+
+  @@unique([tenantId, email])
+  @@map("contacts")
+}
+
+model Pipeline {
+  id        String   @id @default(cuid())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  tenantId  String
+  tenant    Tenant   @relation(fields: [tenantId], references: [id])
+  stages    PipelineStage[]
+  deals     Deal[]
+
+  @@map("pipelines")
+}
+
+model PipelineStage {
+  id        String   @id @default(cuid())
+  name      String
+  order     Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  pipelineId String
+  pipeline   Pipeline @relation(fields: [pipelineId], references: [id])
+  deals      Deal[]
+
+  @@map("pipeline_stages")
+}
+
+model Deal {
+  id                String    @id @default(cuid())
+  title             String
+  value             Decimal
+  expectedCloseDate DateTime?
+  status            String    @default("Open") // Open, Won, Lost
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  isDeleted         Boolean   @default(false)
+  deletedAt         DateTime?
+
+  // Relations
+  tenantId          String
+  tenant            Tenant        @relation(fields: [tenantId], references: [id])
+  pipelineId        String
+  pipeline          Pipeline      @relation(fields: [pipelineId], references: [id])
+  stageId           String
+  stage             PipelineStage @relation(fields: [stageId], references: [id])
+  companyId         String
+  company           Company       @relation(fields: [companyId], references: [id])
+  contactId         String
+  contact           Contact       @relation(fields: [contactId], references: [id])
+  ownerId           String
+  owner             User          @relation("OwnedDeals", fields: [ownerId], references: [id])
+  activities        Activity[]
+
+  @@map("deals")
+}
+
+model Activity {
+  id        String    @id @default(cuid())
+  type      String    // "call", "meeting", "email", "task"
+  subject   String
+  dueDate   DateTime
+  isDone    Boolean   @default(false)
+  notes     String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  isDeleted Boolean   @default(false)
+  deletedAt DateTime?
+
+  // Relations
+  tenantId  String
+  tenant    Tenant @relation(fields: [tenantId], references: [id])
+  dealId    String
+  deal      Deal   @relation(fields: [dealId], references: [id])
+  userId    String
+  user      User   @relation("UserActivities", fields: [userId], references: [id])
+
+  @@map("activities")
+}
+
+// =========================================
+// IT & SUPPORT MODELS
+// =========================================
+
+model Ticket {
+  id          String    @id @default(cuid())
+  subject     String
+  description String
+  status      String    @default("Open") // Open, In Progress, Closed
+  priority    String    @default("Medium") // Low, Medium, High, Critical
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  isDeleted   Boolean   @default(false)
+  deletedAt   DateTime?
+
+  // Relations
+  tenantId    String
+  tenant      Tenant @relation(fields: [tenantId], references: [id])
+  creatorId   String
+  creator     User   @relation("CreatedTickets", fields: [creatorId], references: [id])
+  assigneeId  String?
+  assignee    User?  @relation("AssignedTickets", fields: [assigneeId], references: [id])
+  assetId     String?
+  asset       Asset? @relation(fields: [assetId], references: [id])
+
+  @@map("tickets")
+}
+
+model Asset {
+  id              String    @id @default(cuid())
+  name            String    // e.g., "Notebook Dell-01"
+  type            String    // "Notebook", "Server", "Printer"
+  serialNumber    String?   @unique
+  purchaseDate    DateTime?
+  warrantyExpires DateTime?
+  status          String    // "In Use", "In Stock", "In Repair", "Retired"
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  isDeleted       Boolean   @default(false)
+  deletedAt       DateTime?
+
+  // Relations
+  tenantId        String
+  tenant          Tenant   @relation(fields: [tenantId], references: [id])
+  tickets         Ticket[]
+
+  @@map("assets")
+}
+
+// =========================================
+// HR MODELS
+// =========================================
+
+model Employee {
+  id             String    @id @default(cuid())
+  jobTitle       String
+  department     String
+  startDate      DateTime
+  endDate        DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  isDeleted      Boolean   @default(false)
+  deletedAt      DateTime?
+
+  // Relations
+  tenantId       String
+  tenant         Tenant         @relation(fields: [tenantId], references: [id])
+  userId         String         @unique // Link to the User model
+  user           User           @relation(fields: [userId], references: [id])
+  leaveRequests  LeaveRequest[]
+
+  @@map("employees")
+}
+
+model LeaveRequest {
+  id        String    @id @default(cuid())
+  type      String    // "Vacation", "Sick Leave", "Personal"
+  startDate DateTime
+  endDate   DateTime
+  reason    String?
+  status    String    @default("Pending") // Pending, Approved, Rejected
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  isDeleted Boolean   @default(false)
+  deletedAt DateTime?
+
+  // Relations
+  tenantId   String
+  tenant     Tenant   @relation(fields: [tenantId], references: [id])
+  employeeId String
+  employee   Employee @relation(fields: [employeeId], references: [id])
+
+  @@map("leave_requests")
+}
+
+// =========================================
+// FINANCE MODELS
+// =========================================
+
+model Invoice {
+  id          String    @id @default(cuid())
+  number      String
+  issueDate   DateTime
+  dueDate     DateTime
+  totalAmount Decimal
+  status      String    @default("Draft") // Draft, Sent, Paid, Overdue
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  isDeleted   Boolean   @default(false)
+  deletedAt   DateTime?
+
+  // Relations
+  tenantId    String
+  tenant      Tenant @relation(fields: [tenantId], references: [id])
+
+  @@map("invoices")
+}
+
+model Expense {
+  id          String    @id @default(cuid())
+  description String
+  amount      Decimal
+  date        DateTime
+  category    String
+  status      String    @default("Pending") // Pending, Approved, Reimbursed
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  isDeleted   Boolean   @default(false)
+  deletedAt   DateTime?
+
+  // Relations
+  tenantId    String
+  tenant      Tenant @relation(fields: [tenantId], references: [id])
+
+  @@map("expenses")
+}
+
+// =========================================
+// PRODUCTION & INVENTORY (BASIC MODELS)
+// =========================================
+
+model Product {
+  id          String    @id @default(cuid())
+  name        String
+  sku         String    @unique
+  description String?
+  price       Decimal
+  quantityInStock Int   @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  isDeleted   Boolean   @default(false)
+  deletedAt   DateTime?
+
+  // Relations
+  tenantId    String
+  tenant      Tenant @relation(fields: [tenantId], references: [id])
+
+  @@map("products")
+}
+
+model ProductionOrder {
+  id                String    @id @default(cuid())
+  productId         String
+  quantityToProduce Int
+  status            String    @default("Pending") // Pending, In Progress, Completed
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  isDeleted         Boolean   @default(false)
+  deletedAt         DateTime?
+
+  // Relations
+  tenantId          String
+  tenant            Tenant @relation(fields: [tenantId], references: [id])
+
+  @@map("production_orders")
+}
+
+model InventoryMovement {
+  id        String   @id @default(cuid())
+  productId String
+  type      String   // "In" (from production/purchase), "Out" (from sale)
+  quantity  Int
+  reason    String?
+  createdAt DateTime @default(now())
+
+  // Relations
+  tenantId  String
+  tenant    Tenant @relation(fields: [tenantId], references: [id])
+
+  @@map("inventory_movements")
 }
