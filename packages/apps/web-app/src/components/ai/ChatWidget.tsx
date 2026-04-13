@@ -24,7 +24,7 @@ const ChatWidget: React.FC = () => {
     try {
       const apiUrl = import.meta.env.VITE_AI_SERVICE_URL || 'http://localhost:3001';
       // SINTAXE CORRETA E SIMPLES
-      const response = await axios.post(${"$"}{apiUrl}/api/v1/ai/chat, {
+      const response = await axios.post(`${apiUrl}/api/v1/ai/chat`, {
         question: input,
         userId: 'user-from-auth',
         tenantId: 'tenant-from-auth',
