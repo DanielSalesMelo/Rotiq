@@ -1,53 +1,42 @@
-
-// packages/apps/web-app/src/pages/Login.tsx
 import React from 'react';
+import { useAuth0 } from '@auth0/auth0-react';
+import { LogIn } from 'lucide-react';
 
-const LoginPage = () => {
+const Login = () => {
+  const { loginWithRedirect } = useAuth0();
+
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
-      <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md">
-        <h1 className="text-3xl font-bold text-center text-gray-900">
-          Bem-vindo ao NexCore
-        </h1>
-        <form className="space-y-6">
-          <div>
-            <label htmlFor="email" className="text-sm font-medium text-gray-700">
-              Email
-            </label>
-            <input
-              id="email"
-              name="email"
-              type="email"
-              required
-              className="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-              placeholder="seu@email.com"
-            />
-          </div>
-          <div>
-            <label htmlFor="password" className="text-sm font-medium text-gray-700">
-              Senha
-            </label>
-            <input
-              id="password"
-              name="password"
-              type="password"
-              required
-              className="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-              placeholder="Sua senha"
-            />
-          </div>
-          <div>
-            <button
-              type="submit"
-              className="w-full px-4 py-2 font-semibold text-white bg-indigo-600 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-            >
-              Entrar
-            </button>
-          </div>
-        </form>
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8 w-full">
+      <div className="max-w-md w-full space-y-8 bg-white p-10 rounded-xl shadow-lg border border-gray-100">
+        <div className="text-center">
+          <h2 className="mt-6 text-3xl font-extrabold text-gray-900 tracking-tight">
+            NexCore
+          </h2>
+          <p className="mt-2 text-sm text-gray-600">
+            Sua plataforma de gestão inteligente
+          </p>
+        </div>
+        
+        <div className="mt-8">
+          <button
+            onClick={() => loginWithRedirect()}
+            className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-200 shadow-md"
+          >
+            <span className="absolute left-0 inset-y-0 flex items-center pl-3">
+              <LogIn className="h-5 w-5 text-indigo-500 group-hover:text-indigo-400" aria-hidden="true" />
+            </span>
+            Entrar ou Cadastrar
+          </button>
+        </div>
+
+        <div className="mt-6 text-center">
+          <p className="text-xs text-gray-400">
+            Ao entrar, você concorda com nossos Termos de Uso e Política de Privacidade.
+          </p>
+        </div>
       </div>
     </div>
   );
 };
 
-export default LoginPage;
+export default Login;
