@@ -428,3 +428,77 @@ model InventoryMovement {
 
   @@map("inventory_movements")
 }
+
+//============== SALES & CRM MODELS ==============
+
+// Representa um funil de vendas (ex: "Vendas 2024", "Prospecção de Grandes Contas")
+model Funnel {
+  id          String  @id @default(cuid())
+  name        String
+  description String?
+  tenantId    String
+  tenant      Tenant  @relation(fields: [tenantId], references: [id])
+  stages      Stage[]
+  deals       Deal[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Representa uma etapa dentro de um funil (ex: "Contato Inicial", "Proposta Enviada", "Negociação")
+model Stage {
+  id       String  @id @default(cuid())
+  name     String
+  order    Int     // Ordem da etapa no funil (1, 2, 3...)
+  funnelId String
+  funnel   Funnel  @relation(fields: [funnelId], references: [id])
+  deals    Deal[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([funnelId, order])
+}
+
+// Representa uma negociação ou "card" no funil.
+model Deal {
+  id          String    @id @default(cuid())
+  title       String    // Ex: "Projeto de ERP para Empresa X"
+  value       Float     @default(0)
+  status      String    @default("OPEN") // "OPEN", "WON", "LOST"
+  
+  funnelId    String
+  funnel      Funnel    @relation(fields: [funnelId], references: [id])
+
+  stageId     String
+  stage       Stage     @relation(fields: [stageId], references: [id])
+
+  ownerId     String?   // ID do vendedor responsável
+  owner       User?     @relation(fields: [ownerId], references: [id])
+
+  contactId   String
+  contact     Contact   @relation(fields: [contactId], references: [id])
+
+  tenantId    String
+  tenant      Tenant    @relation(fields: [tenantId], references: [id])
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+// Representa um contato (pessoa ou empresa).
+model Contact {
+  id          String   @id @default(cuid())
+  name        String
+  email       String?  @unique
+  phone       String?
+  companyName String?
+  
+  deals       Deal[]
+  
+  tenantId    String
+  tenant      Tenant   @relation(fields: [tenantId], references: [id])
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}

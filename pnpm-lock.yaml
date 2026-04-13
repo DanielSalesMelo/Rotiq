@@ -6,6 +6,25 @@ settings:
 
 importers:
 
+  .:
+    dependencies:
+      axios:
+        specifier: ^1.15.0
+        version: 1.15.0
+    devDependencies:
+      '@types/node':
+        specifier: ^20.11.24
+        version: 20.19.39
+      prisma:
+        specifier: ^4.16.2
+        version: 4.16.2
+      ts-node:
+        specifier: ^10.9.2
+        version: 10.9.2(@types/node@20.19.39)(typescript@5.9.3)
+      typescript:
+        specifier: ^5.3.3
+        version: 5.9.3
+
   packages/apps/web-app:
     dependencies:
       '@auth0/auth0-react':
@@ -3014,7 +3033,7 @@ snapshots:
 
   '@types/express-serve-static-core@5.1.1':
     dependencies:
-      '@types/node': 25.6.0
+      '@types/node': 20.19.39
       '@types/qs': 6.15.0
       '@types/range-parser': 1.2.7
       '@types/send': 1.2.1
@@ -3061,7 +3080,7 @@ snapshots:
 
   '@types/pg@8.20.0':
     dependencies:
-      '@types/node': 25.6.0
+      '@types/node': 20.19.39
       pg-protocol: 1.13.0
       pg-types: 2.2.0
 
@@ -3095,7 +3114,7 @@ snapshots:
   '@types/serve-static@2.2.0':
     dependencies:
       '@types/http-errors': 2.0.5
-      '@types/node': 25.6.0
+      '@types/node': 20.19.39
 
   '@types/strip-bom@3.0.0': {}
 
