@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@prisma/client':
+        specifier: 5.10.0
+        version: 5.10.0(prisma@5.10.0)
       axios:
         specifier: ^1.15.0
         version: 1.15.0
@@ -16,8 +19,8 @@ importers:
         specifier: ^20.11.24
         version: 20.19.39
       prisma:
-        specifier: ^4.16.2
-        version: 4.16.2
+        specifier: ^5.10.0
+        version: 5.10.0
       ts-node:
         specifier: ^10.9.2
         version: 10.9.2(@types/node@20.19.39)(typescript@5.9.3)
@@ -126,7 +129,7 @@ importers:
     dependencies:
       '@prisma/client':
         specifier: 4.16.2
-        version: 4.16.2(prisma@4.16.2)
+        version: 4.16.2(prisma@5.10.0)
       bcryptjs:
         specifier: ^2.4.3
         version: 2.4.3
@@ -223,7 +226,7 @@ importers:
         version: 0.31.10
       drizzle-orm:
         specifier: ^0.45.2
-        version: 0.45.2(@prisma/client@4.16.2(prisma@4.16.2))(@types/pg@8.20.0)(postgres@3.4.9)(prisma@4.16.2)
+        version: 0.45.2(@prisma/client@5.10.0(prisma@5.10.0))(@types/pg@8.20.0)(postgres@3.4.9)(prisma@5.10.0)
       express:
         specifier: ^4.21.2
         version: 4.22.1
@@ -874,11 +877,35 @@ packages:
       prisma:
         optional: true
 
+  '@prisma/client@5.10.0':
+    resolution: {integrity: sha512-JQqKYpKplsAaPDk0RVKBsN4ly6AWJys6Hkjh9PJMgtdY0IME1C0aHckyGUhHpenmOO2J6liPDDm1svSrzce8BQ==}
+    engines: {node: '>=16.13'}
+    peerDependencies:
+      prisma: '*'
+    peerDependenciesMeta:
+      prisma:
+        optional: true
+
+  '@prisma/debug@5.10.0':
+    resolution: {integrity: sha512-xBs8M4bGIBUqJ/9lZM+joEJkrNaGPKMUcK3a5JqUDQtwPDaWDTq24wOpkHfoJtvNbmGtlDl9Ky5HAbctN5+x7g==}
+
   '@prisma/engines-version@4.16.1-1.4bc8b6e1b66cb932731fb1bdbbc550d1e010de81':
     resolution: {integrity: sha512-q617EUWfRIDTriWADZ4YiWRZXCa/WuhNgLTVd+HqWLffjMSPzyM5uOWoauX91wvQClSKZU4pzI4JJLQ9Kl62Qg==}
 
+  '@prisma/engines-version@5.10.0-34.5a9203d0590c951969e85a7d07215503f4672eb9':
+    resolution: {integrity: sha512-uCy/++3Jx/O3ufM+qv2H1L4tOemTNqcP/gyEVOlZqTpBvYJUe0tWtW0y3o2Ueq04mll4aM5X3f6ugQftOSLdFQ==}
+
   '@prisma/engines@4.16.2':
     resolution: {integrity: sha512-vx1nxVvN4QeT/cepQce68deh/Turxy5Mr+4L4zClFuK1GlxN3+ivxfuv+ej/gvidWn1cE1uAhW7ALLNlYbRUAw==}
+
+  '@prisma/engines@5.10.0':
+    resolution: {integrity: sha512-9NVgMD3bjB5fsxVnrqbasZG3PwurfI2/XKhFfKuZulVRldm5Nz/SJ38t+o0DcOoOmuYMrY4R+UFO57QAB6hCeA==}
+
+  '@prisma/fetch-engine@5.10.0':
+    resolution: {integrity: sha512-6A7Rh7ItuenDo0itgJ8V90cTeLejN1+vUjUzgdonhcNN+7UhZczZfEGe16nI+steW6+ScB5O8+LZybRLNBb0HA==}
+
+  '@prisma/get-platform@5.10.0':
+    resolution: {integrity: sha512-pSxK2RTVhnG6FVkTlSBdBPuvf8087VliR1MMF5ca8/loyY07FtvYF02SP9ZQZITvbZ+6XX1LTwo8WjIp/EHgIQ==}
 
   '@rolldown/pluginutils@1.0.0-rc.3':
     resolution: {integrity: sha512-eybk3TjzzzV97Dlj5c+XrBFW57eTNhzod66y9HrBlzJ6NsCrWCp/2kaPS3K9wJmurBC0Tdw4yPjXKZqlznim3Q==}
@@ -2092,6 +2119,11 @@ packages:
     engines: {node: '>=14.17'}
     hasBin: true
 
+  prisma@5.10.0:
+    resolution: {integrity: sha512-uN3jT1v1XP12tvatsBsMUDC/aK+3kA2VUXznl3UutgK4XHdVjM3SBW8bFb/bT9dHU40apwsEazUK9M/vG13YmA==}
+    engines: {node: '>=16.13'}
+    hasBin: true
+
   proxy-addr@2.0.7:
     resolution: {integrity: sha512-llQsMLSUDUPT44jdrU/O37qlnifitDP+ZwrmmZcoSKyLKvtZxpyV0n2/bD/N4tBAAZ/gJEdZU7KMraoK1+XYAg==}
     engines: {node: '>= 0.10'}
@@ -2820,9 +2852,40 @@ snapshots:
     optionalDependencies:
       prisma: 4.16.2
 
+  '@prisma/client@4.16.2(prisma@5.10.0)':
+    dependencies:
+      '@prisma/engines-version': 4.16.1-1.4bc8b6e1b66cb932731fb1bdbbc550d1e010de81
+    optionalDependencies:
+      prisma: 5.10.0
+
+  '@prisma/client@5.10.0(prisma@5.10.0)':
+    optionalDependencies:
+      prisma: 5.10.0
+
+  '@prisma/debug@5.10.0': {}
+
   '@prisma/engines-version@4.16.1-1.4bc8b6e1b66cb932731fb1bdbbc550d1e010de81': {}
 
+  '@prisma/engines-version@5.10.0-34.5a9203d0590c951969e85a7d07215503f4672eb9': {}
+
   '@prisma/engines@4.16.2': {}
+
+  '@prisma/engines@5.10.0':
+    dependencies:
+      '@prisma/debug': 5.10.0
+      '@prisma/engines-version': 5.10.0-34.5a9203d0590c951969e85a7d07215503f4672eb9
+      '@prisma/fetch-engine': 5.10.0
+      '@prisma/get-platform': 5.10.0
+
+  '@prisma/fetch-engine@5.10.0':
+    dependencies:
+      '@prisma/debug': 5.10.0
+      '@prisma/engines-version': 5.10.0-34.5a9203d0590c951969e85a7d07215503f4672eb9
+      '@prisma/get-platform': 5.10.0
+
+  '@prisma/get-platform@5.10.0':
+    dependencies:
+      '@prisma/debug': 5.10.0
 
   '@rolldown/pluginutils@1.0.0-rc.3': {}
 
@@ -3328,12 +3391,12 @@ snapshots:
       esbuild: 0.25.12
       tsx: 4.21.0
 
-  drizzle-orm@0.45.2(@prisma/client@4.16.2(prisma@4.16.2))(@types/pg@8.20.0)(postgres@3.4.9)(prisma@4.16.2):
+  drizzle-orm@0.45.2(@prisma/client@5.10.0(prisma@5.10.0))(@types/pg@8.20.0)(postgres@3.4.9)(prisma@5.10.0):
     optionalDependencies:
-      '@prisma/client': 4.16.2(prisma@4.16.2)
+      '@prisma/client': 5.10.0(prisma@5.10.0)
       '@types/pg': 8.20.0
       postgres: 3.4.9
-      prisma: 4.16.2
+      prisma: 5.10.0
 
   dunder-proto@1.0.1:
     dependencies:
@@ -3906,6 +3969,10 @@ snapshots:
   prisma@4.16.2:
     dependencies:
       '@prisma/engines': 4.16.2
+
+  prisma@5.10.0:
+    dependencies:
+      '@prisma/engines': 5.10.0
 
   proxy-addr@2.0.7:
     dependencies:

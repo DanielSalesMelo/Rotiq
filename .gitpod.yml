@@ -1,0 +1,12 @@
+tasks:
+  - name: Setup Project
+    init: |
+      pnpm install
+      pnpm --filter @nexcore/db-schemas exec prisma generate
+    command: |
+      pnpm --filter @nexcore/core-service dev
+ports:
+  - port: 3000
+    onOpen: notify
+  - port: 5432
+    onOpen: ignore
